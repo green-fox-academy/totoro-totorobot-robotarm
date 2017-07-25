@@ -1,4 +1,4 @@
-# totoro-robo-robotarm
+# totoro-totorobot-robotarm
 
 Robot arm project
 
