@@ -39,7 +39,7 @@ void servo_control_thread(void const * argument)
 void pwm_init(void)
 {
 	// TIM1 init as PWM
-	pwm_handle.Instance = TIM1;
+	pwm_handle.Instance = TIM3;
 	pwm_handle.State = HAL_TIM_STATE_RESET;
 	pwm_handle.Channel = HAL_TIM_ACTIVE_CHANNEL_1;
 	pwm_handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
