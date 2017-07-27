@@ -123,18 +123,21 @@ static void StartThread(void const * argument)
     /* Initialize LCD */
     BSP_Config();
   
-    /* Create tcp_ip stack thread */
-    tcpip_init(NULL, NULL);
+    // Create tcp_ip stack thread
+    // tcpip_init(NULL, NULL);
   
-    /* Initialize the LwIP stack */
-    Netif_Config();
+    // Initialize the LwIP stack
+    // Netif_Config();
 
-    /* Notify user about the network interface config */
-    User_notification(&gnetif);
+    // Notify user about the network interface config
+    // User_notification(&gnetif);
   
-    /* Start DHCPClient */
-    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(DHCP), &gnetif);
+    // Enable for networking
+    // Start DHCPClient
+    // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    // osThreadCreate (osThread(DHCP), &gnetif);
+
+    LCD_UsrLog((char*) "TotoRobot started.\n");
 
     while (1) {
         /* Delete the Init Thread */
@@ -198,7 +201,7 @@ static void BSP_Config(void)
     LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
-    LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
+    // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 }
 
 /**
