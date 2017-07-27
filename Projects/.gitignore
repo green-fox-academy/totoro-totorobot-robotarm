@@ -1,0 +1,6 @@
+*/SW4STM32/*/*
+!*.cproject
+!*.project
+!*.ld
+!*.s
+
