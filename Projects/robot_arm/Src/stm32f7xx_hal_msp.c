@@ -91,25 +91,34 @@ void HAL_MspDeInit(void)
    */
 }
 
-void HAL_ADC_MspInit(ADC_HandleTypeDef* adch)
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 {
-	// A3 Port F8 ADC3_IN6
+	// TIM3_CH1 PB4 D3 4
 
-	GPIO_InitTypeDef GPIO_InitStruct;
-
-  // Enable peripherals and GPIO Clocks
-  __HAL_RCC_ADC3_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-
-  // ConfigureGPIO
-  GPIO_InitStruct.Pin = GPIO_PIN_8;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+	// TIM1_CH1 PA8 D10 3
+	__HAL_RCC_TIM1_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin = GPIO_PIN_8;
+	GPIO_Init.Speed = GPIO_SPEED_FAST;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Mode = GPIO_MODE_AF_PP;
+	GPIO_Init.Alternate = GPIO_AF1_TIM1;
+	HAL_GPIO_Init(GPIOA, &GPIO_Init);
 }
 
+void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
+{
+	// 1 A0 PA0 ADC3_IN0
+	__HAL_RCC_ADC3_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin = GPIO_PIN_0;
+	GPIO_Init.Speed = GPIO_SPEED_FAST;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Mode = GPIO_MODE_ANALOG;
+	HAL_GPIO_Init(GPIOA, &GPIO_Init);
+}
 
 /**
   * @}
