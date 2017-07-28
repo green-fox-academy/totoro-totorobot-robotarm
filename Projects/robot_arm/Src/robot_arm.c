@@ -21,10 +21,8 @@ void servo_control_thread(void const * argument)
 
 	while (1) {
 		pwm_set_duty_from_adc();
-		osDelay(1000);
+		osDelay(10);
 	}
-
-	// }
 
 	while (1) {
 		osThreadTerminate(NULL);
@@ -38,7 +36,7 @@ void servo_control_thread(void const * argument)
   */
 void pwm_init(void)
 {
-	// TIM1 init as PWM
+	// TIM3 init as PWM
 	pwm_handle.Instance = TIM3;
 	pwm_handle.State = HAL_TIM_STATE_RESET;
 	pwm_handle.Channel = HAL_TIM_ACTIVE_CHANNEL_1;
@@ -52,7 +50,7 @@ void pwm_init(void)
 	pwm_oc_init.OCFastMode = TIM_OCFAST_DISABLE;
 	pwm_oc_init.OCIdleState = TIM_OCIDLESTATE_RESET;
 	pwm_oc_init.OCMode = TIM_OCMODE_PWM1;
-	pwm_oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
+	pwm_oc_init.OCPolarity = TIM_OCPOLARITY_LOW;
 	pwm_oc_init.Pulse = 0x7FFF;
 	HAL_TIM_PWM_ConfigChannel(&pwm_handle, &pwm_oc_init, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&pwm_handle, TIM_CHANNEL_1);
@@ -87,7 +85,7 @@ void pwm_set_duty(uint8_t rot_degree)
 
 	if (debug) {
 		char tmp[20];
-		sprintf(tmp, "Pulse: %d \n", pulse);
+		sprintf(tmp, "Angle: %2d - Pulse: %5d \n", rot_degree, pulse);
 		LCD_UsrLog(tmp);
 	}
 
@@ -150,12 +148,6 @@ uint8_t get_degrees(void)
 {
 	uint16_t adc_value = adc_measure();
 	uint8_t degrees = (uint32_t) ( adc_value * (MAX_DEGREE - MIN_DEGREE)) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
-
-	if (debug) {
-		char tmp[20];
-		sprintf(tmp, "Position: %d degrees\n", degrees);
-		LCD_UsrLog(tmp);
-	}
 
 	return degrees;
 }
