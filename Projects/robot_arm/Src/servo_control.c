@@ -8,9 +8,9 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-void servo_confing(void) {
-
-	// Set servo position to 0 degree
+void servo_config(void)
+{
+	// Configure up servo related data
 
 	pwm_conf[0].instance = SERVO0_INST;
 	pwm_conf[0].period = SERVO0_PERIOD;
@@ -37,17 +37,29 @@ void servo_confing(void) {
 	adc_channels[2] = SERVO2_ADC_CHANNEL;
 	adc_channels[3] = SERVO3_ADC_CHANNEL;
 
-	angle[0].min_angle = SERVO0_MIN_ANGLE;
-	angle[0].max_angle = SERVO0_MAX_ANGLE;
+	servo_pos_conf[0].min_angle = SERVO0_MIN_ANGLE;
+	servo_pos_conf[0].max_angle = SERVO0_MAX_ANGLE;
 
-	angle[1].min_angle = SERVO1_MIN_ANGLE;
-	angle[1].max_angle = SERVO1_MAX_ANGLE;
+	servo_pos_conf[1].min_angle = SERVO1_MIN_ANGLE;
+	servo_pos_conf[1].max_angle = SERVO1_MAX_ANGLE;
 
-	angle[2].min_angle = SERVO2_MIN_ANGLE;
-	angle[2].max_angle = SERVO2_MAX_ANGLE;
+	servo_pos_conf[2].min_angle = SERVO2_MIN_ANGLE;
+	servo_pos_conf[2].max_angle = SERVO2_MAX_ANGLE;
 
-	angle[3].min_angle = SERVO3_MIN_ANGLE;
-	angle[3].max_angle = SERVO3_MAX_ANGLE;
+	servo_pos_conf[3].min_angle = SERVO3_MIN_ANGLE;
+	servo_pos_conf[3].max_angle = SERVO3_MAX_ANGLE;
+
+	for (int i = 0; i < SERVOS; i++) {
+		servo_pos_conf[i].adc_to_angle_const = (servo_pos_conf[i].max_angle - servo_pos_conf[i].min_angle) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
+	}
+
+	for (int i = 0; i < SERVOS; i++) {
+		servo_pos_conf[i].angle_to_pulse = (servo_pos_conf[i].max_pulse - servo_pos_conf[i].min_pulse) / (servo_pos_conf[i].max_angle - servo_pos_conf[i].min_angle);
+	}
+
+	for (int i = 0; i < SERVOS; i++) {
+		servo_pos_conf[i].adc_to_pulse = (servo_pos_conf[i].max_pulse - servo_pos_conf[i].min_pulse) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
+	}
 
 	return;
 }
@@ -76,35 +88,21 @@ void pwm_init(void)
 	return;
 }
 
-void pwm_set_duty_from_adc(uint8_t servo)
+void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 {
-	pwm_set_duty(get_degrees());
-
-	return;
-}
-
-
-void pwm_set_duty(uint8_t servo, uint8_t rot_degree)
-{
-	// Calculate pulse width
-	int min_duty = (65536 * MIN_POS_DUTY_CYCLE) / 100;
-	int max_duty = (65536 * MAX_POS_DUTY_CYCLE) / 100;
-
 	// Set pulse width
-	uint16_t pulse = min_duty + ((max_duty - min_duty) * rot_degree) / 180;
-	pwm_oc_init.Pulse = pulse;
-	HAL_TIM_PWM_ConfigChannel(&pwm[0], &pwm_oc_init, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&pwm[0], TIM_CHANNEL_1);
+	pwm_oc_init[servo].Pulse = pulse;
+	HAL_TIM_PWM_ConfigChannel(&pwm[servo], &pwm_oc_init[servo], TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&pwm[servo], TIM_CHANNEL_1);
 
 	if (debug) {
 		char tmp[20];
-		sprintf(tmp, "Angle: %2d - Pulse: %5d \n", rot_degree, pulse);
+		sprintf(tmp, "Servo%d pulse: %5d \n", servo, pulse);
 		LCD_UsrLog(tmp);
 	}
 
 	return;
 }
-
 
 void adc_init(void)
 {
@@ -131,35 +129,144 @@ void adc_init(void)
 	return;
 }
 
-uint16_t adc_measure(void)
+uint16_t adc_measure(uint8_t servo)
 {
-	HAL_ADC_Start(&adc[0]);
-	HAL_ADC_PollForConversion(&adc[0], HAL_MAX_DELAY);
-	uint16_t value = HAL_ADC_GetValue(&adc[0]);
-	HAL_ADC_Stop(&adc[0]);
+	HAL_ADC_Start(&adc[servo]);
+	HAL_ADC_PollForConversion(&adc[servo], HAL_MAX_DELAY);
+	uint16_t adc_value = HAL_ADC_GetValue(&adc[servo]);
+	HAL_ADC_Stop(&adc[servo]);
 
 	if (debug) {
 		char tmp[20];
-		sprintf(tmp, "ADC value: %d\n", value);
+		sprintf(tmp, "ADC%d value: %d\n", servo, adc_value);
 		LCD_UsrLog(tmp);
 	}
 
-	return value;
+	return adc_value;
 }
 
-/**
-  * @brief  Calculates degree of rotation from ADC measurement
-  * @param  None
-  * @retval Degree (0-180)
-  */
-uint8_t get_degrees(void)
+uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value)
 {
-	uint16_t adc_value = adc_measure();
-	uint8_t degrees = (uint32_t) ( adc_value * (MAX_DEGREE - MIN_DEGREE)) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
+	uint8_t degrees = (float) adc_value * servo_pos_conf[servo].adc_to_angle_const;
 
 	return degrees;
 }
 
+uint32_t angle_to_pulse(uint8_t servo, uint8_t degree)
+{
 
+	// Calculate pulse width
+	uint32_t pulse = (float) degree * servo_pos_conf[servo].angle_to_pulse;
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+	return pulse;
+}
+
+uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value)
+{
+
+	// Calculate pulse width
+	uint32_t pulse = (float) adc_value * servo_pos_conf[servo].adc_to_pulse;
+
+	return pulse;
+}
+
+void adc_thread(void const * argument)
+{
+	adc_ready = 0;
+
+	if (debug) {
+		LCD_UsrLog((char*) "ADC thread started\n");
+	}
+
+	// Initialize all ADC channels
+	adc_init();
+
+	adc_ready = 1;
+
+	// Measure on all channels repeatedly
+	while (1) {
+		for (int i = 0; i < SERVOS; i++) {
+
+			// Measure on one ADC at a time
+			uint16_t adc_value = adc_measure(i);
+
+			// Convert to angle
+			uint8_t servo_angle = adc_to_angle(i, adc_value);
+
+			// Convert to pulse
+			uint32_t servo_pulse = adc_to_pulse(i, adc_value);
+
+			// Lock mutex
+			osMutexWait(servo_pos_mutex, osWaitForever);
+
+			// Save angle
+			servo_pos[i].angle = servo_angle;
+
+			// Save pulse
+			servo_pos[i].pulse = servo_pulse;
+
+			// Release mutex
+			osMutexRelease(servo_pos_mutex);
+
+		osDelay(10);
+
+		}
+
+	}
+
+    while (1) {
+        // Terminate thread
+        if (debug) {
+        	LCD_ErrLog((char*) "ADC thread terminated\n");
+        }
+    	adc_ready = 0;
+    	osThreadTerminate(NULL);
+    }
+}
+
+void pwm_thread(void const * argument)
+{
+	pwm_ready = 0;
+
+	if (debug) {
+		LCD_UsrLog((char*) "PWM thread started\n");
+	}
+
+	// Initialize all PWM channels
+	pwm_init();
+
+	pwm_ready = 1;
+
+	if (debug) {
+			LCD_UsrLog((char*) "PWM ready\n");
+		}
+
+	// Set servo positions
+	while (1) {
+		for (int i = 0; i < SERVOS; i++) {
+
+			// Lock mutex
+			osMutexWait(servo_pos_mutex, osWaitForever);
+
+			// Get pulse value
+			uint32_t servo_pulse = servo_pos[i].pulse;
+
+			// Release mutex
+			osMutexRelease(servo_pos_mutex);
+
+			// Set position
+			pwm_set_pulse(i, servo_pulse);
+
+			osDelay(10);
+		}
+	}
+
+    while (1) {
+        // Terminate thread
+        if (debug) {
+        	LCD_ErrLog((char*) "PWM thread terminated\n");
+        }
+    	pwm_ready = 0;
+        osThreadTerminate(NULL);
+    }
+}

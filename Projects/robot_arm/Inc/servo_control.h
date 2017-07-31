@@ -71,15 +71,24 @@ typedef struct {
 typedef struct {
 	uint8_t min_angle;
 	uint8_t max_angle;
-	uint8_t angle_prev;
-	uint8_t angle;
-} angle_t;
+	uint32_t min_pulse;
+	uint32_t max_pulse;
+	float adc_to_angle_const;
+	float angle_to_pulse;
+	float adc_to_pulse;
+} servo_pos_conf_t;
 
 typedef struct {
 	uint32_t x;
 	uint32_t y;
 	uint32_t z;
-} position_t;
+} arm_pos_t;
+
+typedef struct {
+	uint32_t pulse;
+	uint8_t angle;
+} servo_pos_t;
+
 
 uint32_t adc_channels[SERVOS];
 ADC_HandleTypeDef adc[SERVOS];
@@ -89,17 +98,24 @@ pwm_conf_t pwm_conf[SERVOS];
 TIM_HandleTypeDef pwm[SERVOS];
 TIM_OC_InitTypeDef pwm_oc_init[SERVOS];
 
-angle_t angle[SERVOS];
-position_t position;
+servo_pos_conf_t servo_pos_conf[SERVOS];
+servo_pos_t servo_pos[SERVOS];
+arm_pos_t arm_position;
 uint8_t debug;
+uint8_t adc_ready;
+uint8_t pwm_ready;
 
+osMutexId servo_pos_mutex;
 
 void servo_config(void);
 void pwm_init(void);
-void adc_config(void);
+void pwm_set_pulse(uint8_t servo, uint32_t pulse);
 void adc_init(void);
-void pwm_set_duty(uint8_t rot_degree);
-void pwm_set_duty_from_adc(void);
-uint8_t get_degrees(void);
+uint16_t adc_measure(uint8_t servo);
+uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value);
+uint32_t angle_to_pulse(uint8_t servo, uint8_t degree);
+uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value);
+void adc_thread(void const * argument);
+void pwm_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */
