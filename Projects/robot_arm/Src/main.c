@@ -56,6 +56,7 @@
 #include "app_ethernet.h"
 #include "lcd_log.h"
 #include "robot_arm.h"
+#include "client.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -124,21 +125,24 @@ static void StartThread(void const * argument)
     BSP_Config();
   
     // Create tcp_ip stack thread
-    // tcpip_init(NULL, NULL);
+    tcpip_init(NULL, NULL);
   
     // Initialize the LwIP stack
-    // Netif_Config();
+     Netif_Config();
 
     // Notify user about the network interface config
-    // User_notification(&gnetif);
+     User_notification(&gnetif);
   
     // Enable for networking
     // Start DHCPClient
-    // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    // osThreadCreate (osThread(DHCP), &gnetif);
+     osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+     osThreadCreate (osThread(DHCP), &gnetif);
 
-    osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(SERVO_CONTROL), NULL);
+    //osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    //osThreadCreate (osThread(SERVO_CONTROL), NULL);
+     osDelay(1000);
+    osThreadDef(socket_client, socket_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(socket_client), NULL);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 
@@ -204,7 +208,7 @@ static void BSP_Config(void)
     LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
-    // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
+    LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 
 
 }
