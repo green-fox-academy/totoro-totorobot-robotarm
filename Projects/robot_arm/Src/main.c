@@ -146,12 +146,13 @@ static void StartThread(void const * argument)
     osThreadDef(ADC, adc_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(ADC), NULL);
 
+
     while(!adc_ready) {
     	osDelay(100);
     }
 
-    osThreadDef(PWM, pwm_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
-    osThreadCreate (osThread(PWM), NULL);
+    //osThreadDef(PWM, pwm_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 15);
+    //osThreadCreate (osThread(PWM), NULL);
 
     if(debug) {
     	LCD_UsrLog((char*) "TotoRobot started.\n");

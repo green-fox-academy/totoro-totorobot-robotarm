@@ -61,6 +61,12 @@ void servo_config(void)
 		servo_pos_conf[i].adc_to_pulse = (servo_pos_conf[i].max_pulse - servo_pos_conf[i].min_pulse) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
 	}
 
+	// Set arm to origo
+	for (int i = 0; i < SERVOS; i++) {
+		servo_pos[i].angle = servo_pos_conf[i].min_angle;
+		servo_pos[i].pulse = pwm_conf[i].pulse;
+	}
+
 	return;
 }
 
@@ -77,13 +83,38 @@ void pwm_init(void)
 		pwm[i].Init.Prescaler = pwm_conf[i].prescaler;
 		HAL_TIM_PWM_Init(&pwm[i]);
 
+		if (debug) {
+			sprintf(lcd_log, "Servo%d init done\n", i);
+			LCD_UsrLog(lcd_log);
+		}
+
+
 		pwm_oc_init[i].OCFastMode = TIM_OCFAST_DISABLE;
 		pwm_oc_init[i].OCIdleState = TIM_OCIDLESTATE_RESET;
 		pwm_oc_init[i].OCMode = TIM_OCMODE_PWM1;
 		pwm_oc_init[i].OCPolarity = TIM_OCPOLARITY_LOW;
 		pwm_oc_init[i].Pulse = pwm_conf[i].pulse;
 		HAL_TIM_PWM_ConfigChannel(&pwm[i], &pwm_oc_init[i], TIM_CHANNEL_1);
+
+
+		if (debug) {
+
+			sprintf(lcd_log, "Servo%d config channel done\n", i);
+			LCD_UsrLog(lcd_log);
+		}
+
+
 		HAL_TIM_PWM_Start(&pwm[i], TIM_CHANNEL_1);
+
+		if (debug) {
+
+			sprintf(lcd_log, "Servo%d started\n", i);
+			LCD_UsrLog(lcd_log);
+		}
+
+
+
+
 	}
 	return;
 }
@@ -92,13 +123,13 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 {
 	// Set pulse width
 	pwm_oc_init[servo].Pulse = pulse;
+
 	HAL_TIM_PWM_ConfigChannel(&pwm[servo], &pwm_oc_init[servo], TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&pwm[servo], TIM_CHANNEL_1);
 
 	if (debug) {
-		char tmp[20];
-		sprintf(tmp, "Servo%d pulse: %5d \n", servo, pulse);
-		LCD_UsrLog(tmp);
+		sprintf(lcd_log, "Servo%d pulse: %5d\n", servo, pulse);
+		LCD_UsrLog(lcd_log);
 	}
 
 	return;
@@ -119,7 +150,8 @@ void adc_init(void)
 		adc[i].Init.ScanConvMode = DISABLE;
 		HAL_ADC_Init(&adc[i]);
 
-		adc_ch[i].Channel = adc_channels[i];
+		// Hard coded to ADC0 pin for now
+		adc_ch[i].Channel = adc_channels[0];
 		adc_ch[i].Offset = 0;
 		adc_ch[i].Rank = 1;
 		adc_ch[i].SamplingTime = ADC_SAMPLETIME_480CYCLES;
@@ -131,15 +163,15 @@ void adc_init(void)
 
 uint16_t adc_measure(uint8_t servo)
 {
+	uint16_t adc_value = 0;
 	HAL_ADC_Start(&adc[servo]);
 	HAL_ADC_PollForConversion(&adc[servo], HAL_MAX_DELAY);
-	uint16_t adc_value = HAL_ADC_GetValue(&adc[servo]);
+	adc_value = HAL_ADC_GetValue(&adc[servo]);
 	HAL_ADC_Stop(&adc[servo]);
 
 	if (debug) {
-		char tmp[20];
-		sprintf(tmp, "ADC%d value: %d\n", servo, adc_value);
-		LCD_UsrLog(tmp);
+		sprintf(lcd_log, "ADC%d value: %d\n", servo, adc_value);
+		LCD_UsrLog(lcd_log);
 	}
 
 	return adc_value;
@@ -196,6 +228,18 @@ void adc_thread(void const * argument)
 			// Convert to pulse
 			uint32_t servo_pulse = adc_to_pulse(i, adc_value);
 
+			if (debug) {
+
+				sprintf(lcd_log, "adc_to_pulse: %d\n", 1000* servo_pos_conf[i].adc_to_pulse);
+				LCD_UsrLog(lcd_log);
+
+
+				sprintf(lcd_log, "Set pulse to: %d\n", servo_pulse);
+				LCD_UsrLog(lcd_log);
+			}
+
+
+
 			// Lock mutex
 			osMutexWait(servo_pos_mutex, osWaitForever);
 
@@ -208,7 +252,7 @@ void adc_thread(void const * argument)
 			// Release mutex
 			osMutexRelease(servo_pos_mutex);
 
-		osDelay(10);
+		osDelay(1000);
 
 		}
 
@@ -235,21 +279,33 @@ void pwm_thread(void const * argument)
 	// Initialize all PWM channels
 	pwm_init();
 
+
 	pwm_ready = 1;
 
 	if (debug) {
-			LCD_UsrLog((char*) "PWM ready\n");
-		}
+		LCD_UsrLog((char*) "PWM ready\n");
+	}
+
+	// while(1);
 
 	// Set servo positions
 	while (1) {
 		for (int i = 0; i < SERVOS; i++) {
 
+			LCD_UsrLog(lcd_log);
+
 			// Lock mutex
 			osMutexWait(servo_pos_mutex, osWaitForever);
 
 			// Get pulse value
+
 			uint32_t servo_pulse = servo_pos[i].pulse;
+/*
+			servo_pulse += 500;
+
+			if (servo_pulse == 6000)
+				servo_pulse = 2000;
+*/
 
 			// Release mutex
 			osMutexRelease(servo_pos_mutex);
@@ -257,7 +313,7 @@ void pwm_thread(void const * argument)
 			// Set position
 			pwm_set_pulse(i, servo_pulse);
 
-			osDelay(10);
+			osDelay(1000);
 		}
 	}
 

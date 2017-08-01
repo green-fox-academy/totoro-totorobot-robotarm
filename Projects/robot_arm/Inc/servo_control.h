@@ -7,10 +7,13 @@
 #include "robot_arm_conf.h"
 
 #define SERVOS				4
+#define MIN_ADC_VALUE		0
+#define MAX_ADC_VALUE		4095
 
 /* SERVO 0 Configuration */
 
-// 4 D3 PB4 TIM3_CH1
+// PWM D3 PB4 TIM3_CH1
+// ADC A0 PA0 ADC3_IN0
 #define SERVO0_INST			TIM3
 #define SERVO0_PERIOD		0xffff
 #define SERVO0_PRESCALER	30
@@ -22,7 +25,8 @@
 
 /* SERVO 1 Configuration */
 
-// 7 D6 PH6 TIM12_CH1
+// PWM D6 PH6 TIM12_CH1
+// ADC A1 PF10 ADC3_IN8
 #define SERVO1_INST			TIM12
 #define SERVO1_PERIOD		0xffff
 #define SERVO1_PRESCALER	30
@@ -34,7 +38,8 @@
 
 /* SERVO 2 Configuration */
 
-// 2 D9 PA15 TIM2_CH1
+// PWM D9 PA15 TIM2_CH1
+// ADC A2 PF9 ADC3_IN7
 #define SERVO2_INST			TIM2
 #define SERVO2_PERIOD		0xffff
 #define SERVO2_PRESCALER	30
@@ -46,7 +51,8 @@
 
 /* SERVO 3 Configuration */
 
-// 3 D10 PA8 TIM1_CH1
+// PWM D10 PA8 TIM1_CH1
+// ADC A3 PF8 ADC3_IN6
 #define SERVO3_INST			TIM1
 #define SERVO3_PERIOD		0xffff
 #define SERVO3_PRESCALER	30
@@ -55,11 +61,6 @@
 #define SERVO3_MIN_ANGLE	0
 #define SERVO3_MAX_ANGLE	180
 #define SERVO3_ADC_CHANNEL	ADC_CHANNEL_6
-
-/* ADC Confoguration */
-
-#define MIN_ADC_VALUE		0
-#define MAX_ADC_VALUE		4095
 
 typedef struct {
 	TIM_TypeDef* instance;
@@ -104,6 +105,7 @@ arm_pos_t arm_position;
 uint8_t debug;
 uint8_t adc_ready;
 uint8_t pwm_ready;
+char lcd_log[100];
 
 osMutexId servo_pos_mutex;
 
