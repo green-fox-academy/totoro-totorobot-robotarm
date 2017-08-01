@@ -65,11 +65,8 @@ void pwm_init(void)
 void pwm_set_duty_from_adc(void)
 {
 	pwm_set_duty(get_degrees());
-
 	return;
 }
-
-
 
 void pwm_set_duty(uint8_t rot_degree)
 {
@@ -88,7 +85,6 @@ void pwm_set_duty(uint8_t rot_degree)
 		sprintf(tmp, "Angle: %2d - Pulse: %5d \n", rot_degree, pulse);
 		LCD_UsrLog(tmp);
 	}
-
 	return;
 }
 
@@ -135,7 +131,6 @@ uint16_t adc_measure(void)
 		sprintf(tmp, "ADC value: %d\n", value);
 		LCD_UsrLog(tmp);
 	}
-
 	return value;
 }
 
@@ -151,7 +146,5 @@ uint8_t get_degrees(void)
 
 	return degrees;
 }
-
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
