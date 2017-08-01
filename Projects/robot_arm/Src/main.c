@@ -56,6 +56,7 @@
 #include "app_ethernet.h"
 #include "lcd_log.h"
 #include "robot_arm.h"
+#include "uart.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

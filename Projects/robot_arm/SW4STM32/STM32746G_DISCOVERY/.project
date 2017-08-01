@@ -76,6 +76,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/stm32f7xx_it.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/uart.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/uart.c</locationURI>
+		</link>
+		<link>
 			<name>Application/Utilities/lcd_log.c</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Utilities/Log/lcd_log.c</locationURI>
