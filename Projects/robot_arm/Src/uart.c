@@ -70,6 +70,15 @@ void UART_Error_Handler(void){
 
 }
 
+void UART_send(char* buffer, uint32_t buffer_len)
+{
+	uint32_t timeout = 100;
+	HAL_UART_Transmit(&uart_handle, buffer, buffer_len, timeout);
+
+	return;
+}
+
+
 /**
 * @brief  Retargets the C library printf function to the USART.
 * @param  None

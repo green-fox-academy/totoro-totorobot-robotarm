@@ -48,6 +48,7 @@ uint8_t aRxBuffer[100];
 void uart_init(void);
 void send_string(void);
 void UART_Error_Handler(void);
+void UART_send(char* buffer, uint32_t buffer_len);
 
 
 

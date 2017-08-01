@@ -22,6 +22,11 @@ void servo_control_thread(void const * argument)
 
 	send_string();
 
+	char u_buffer[100];
+	sprintf(u_buffer, "Text and number: %d\n", 2);
+
+	UART_send(u_buffer, strlen(u_buffer));
+
 	while(1) {
 		osDelay(100);
 	}
