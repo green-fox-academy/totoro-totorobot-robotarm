@@ -23,33 +23,25 @@
 #define USARTx_RX_GPIO_PORT              GPIOC
 #define USARTx_RX_AF                     GPIO_AF8_USART6
 
-/* Size of Trasmission buffer */
-#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
-/* Size of Reception buffer */
-#define RXBUFFERSIZE                      TXBUFFERSIZE
+/* Size of buffers */
+#define TXBUFFERSIZE                      100				// transmit
+#define RXBUFFERSIZE                      TXBUFFERSIZE		// reveive
 
 UART_HandleTypeDef uart_handle;
 
-/* Buffer used for transmission */
-uint8_t aTxBuffer[100];
+uint8_t TX_buffer[TXBUFFERSIZE];
+uint8_t RX_buffer[RXBUFFERSIZE];
 
-/* Buffer used for reception */
-uint8_t aRxBuffer[100];
+uint8_t rx_index;
+uint8_t rx_char;
+uint8_t rx_complete;
 
-//#ifdef __GNUC__
-/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-//#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-//#else
-//#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-//#endif /* __GNUC__ */
-
+extern uint8_t debug;
 
 void uart_init(void);
 void send_string(void);
 void UART_Error_Handler(void);
-void UART_send(char* buffer, uint32_t buffer_len);
-
+void UART_send(char* buffer, uint16_t buffer_len);
 
 
 #endif /* __UART_H_ */

@@ -44,7 +44,7 @@ void uart_init(void)
 		UART_Error_Handler();
 	}
 
-
+	rx_complete = 0;
 
 
 	return;
@@ -59,44 +59,64 @@ void send_string(void)
 	char string[] = "Hello through UART function!\r\n";
 	int string_length = strlen(string);
 
-	if(HAL_UART_Transmit(&uart_handle, (uint8_t*) string, string_length, 100)!= HAL_OK) {
+	if (HAL_UART_Transmit(&uart_handle, (uint8_t*) string, string_length, 100)!= HAL_OK) {
 		UART_Error_Handler();
 	}
 
 	return;
 }
 
-void UART_Error_Handler(void){
+void UART_Error_Handler(void)
+{
 
 }
 
-void UART_send(char* buffer, uint32_t buffer_len)
+void UART_send(char* buffer, uint16_t buffer_len)
 {
 	uint32_t timeout = 100;
-	HAL_UART_Transmit(&uart_handle, buffer, buffer_len, timeout);
+	HAL_UART_Transmit(&uart_handle, (uint8_t*) buffer, buffer_len, timeout);
+
+	if (debug) {
+		LCD_UsrLog((char*) "UART TX: ");
+		LCD_UsrLog((char*) buffer);
+		LCD_UsrLog((char*) "\n");
+	}
 
 	return;
 }
 
-
-/**
-* @brief  Retargets the C library printf function to the USART.
-* @param  None
-* @retval None
-*/
-/*
-PUTCHAR_PROTOTYPE
+//Interrupt callback routine
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-*/
-	/* Place your implementation of fputc here */
-	/* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
+	// Check for current UART
+	if (huart->Instance == USARTx) {
 
-/*HAL_UART_Transmit(&uart_handle, (uint8_t *)&ch, 1, 0xFFFF);
+		if (rx_index == 0) {
+			// TODO zero out buffer if needed
+		}
 
-	return ch;
+		// Unless we receive an LF save the received char in the receive buffer
+		if (rx_char != '\n') {
+			RX_buffer[rx_index++] = rx_char;
+
+		// Receive is complete, data is ready to read
+		} else {
+			RX_buffer[rx_index] = 0;	// add string terminator
+			rx_index = 0;
+			rx_complete = 1;
+
+			if (debug) {
+				LCD_UsrLog((char*) "UART RX: ");
+				LCD_UsrLog((char*) RX_buffer);
+				LCD_UsrLog((char*) "\n");
+			}
+		}
+
+		// Activate UART receive interrupt every time
+		HAL_UART_Receive_IT(&uart_handle, &rx_char, sizeof(uint8_t));
+	}
+	return;
 }
-
-*/
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
