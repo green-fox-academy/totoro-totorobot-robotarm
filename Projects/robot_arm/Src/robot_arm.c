@@ -15,9 +15,16 @@ void servo_control_thread(void const * argument)
 
 	LCD_UsrLog((char*) "Servo control thread started\n");
 
+	uart_init();
 	pwm_init();
 	adc_init();
 	position = 0;
+
+	send_string();
+
+	while(1) {
+		osDelay(100);
+	}
 
 	while (1) {
 		pwm_set_duty_from_adc();

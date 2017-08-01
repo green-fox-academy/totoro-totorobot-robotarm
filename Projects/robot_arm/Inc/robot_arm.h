@@ -4,6 +4,7 @@
 #include "stm32f7xx_hal.h"
 #include "cmsis_os.h"
 #include "lcd_log.h"
+#include "uart.h"
 
 #define MIN_DEGREE	0
 #define MAX_DEGREE	180
