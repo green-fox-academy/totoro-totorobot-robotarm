@@ -1,5 +1,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "robot_arm.h"
+#include "lwip/sockets.h"
+#include "stm32746g_discovery_ts.h"
+
+#include <string.h>
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -8,6 +12,69 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+
+void socket_server_thread(void const *argument)
+{
+	// Server address structure initialization
+	struct sockaddr_in addr_in;                                 // Inet address structure definition
+	addr_in.sin_family = AF_INET;                               // This address is an internet address
+	addr_in.sin_port = htons (54545);                      		// Server port
+	addr_in.sin_addr.s_addr = INADDR_ANY;             			// Server IP
+	struct sockaddr *addr = (struct sockaddr *)&addr_in;        // Make a struct sockaddr pointer, which points to the address stucture
+
+	// Creating the socket
+	int master_sock = socket(AF_INET, SOCK_STREAM, 0);
+	// Check if socket is ok
+	if (master_sock < 0)
+		LCD_ErrLog("socket() ");
+
+	// Start binding the socket to the previously set address
+	int flag = bind(master_sock, addr, sizeof(*addr));
+	// Check if the binding is ok
+	if (flag < 0)
+		LCD_ErrLog("bind() ");
+
+	// Start listening on with the set socket with a predefined queue size
+	flag = listen(master_sock, 100);
+	// Check is listening is ok
+	if (flag < 0)
+		LCD_ErrLog("listen() ");
+
+	// Create variables which will be used in the while loop
+	struct sockaddr client_addr;    				// Client address structure
+	int slave_sock;              					// Slave socket definition, this will be used to store the incoming socket
+	char recv_buff[100];                			// Buffer for incoming and outgoing data
+	char send_buff[] = "Yeahh, I got it..";			// Buffer for feedback
+
+	while (1) {
+		// Accept the connection and save the incoming socket
+		slave_sock = accept(master_sock, &client_addr, NULL);
+
+		// Check if the socket is valid
+		if (slave_sock < 0)
+			LCD_ErrLog("accept()");
+		LCD_UsrLog("connection accepted\n");
+
+		// Receive the data sent by the client
+		int received_bytes;
+		do {
+			received_bytes = recv(slave_sock, recv_buff, 100, 0);
+			if (received_bytes > 0) {
+				printf("Received string: %s \n", recv_buff);
+				// Send back the received string
+				send(slave_sock, send_buff, sizeof(send_buff), 0);
+			} else if (received_bytes < 0) {
+				LCD_UsrLog("Something went wrong with the client socket, trying to close it...\n");
+				break;
+			}
+		} while (received_bytes > 0);
+		closesocket(slave_sock);
+		LCD_UsrLog("client socket closed\n\n");
+	}
+	// Cleaning up used memory
+	LCD_UsrLog("Closing server socket\n");
+	closesocket(master_sock);
+}
 
 void servo_control_thread(void const * argument)
 {
