@@ -10,8 +10,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define CLIENT_SERVER_IP			"10.27.6.186"
-#define UDP_SERVER_PORT					54545
+#define CLIENT_SERVER_IP			"216.239.32.15"
+#define UDP_SERVER_PORT					123
 
 void udp_client_thread(void const *argument)
 {
@@ -60,7 +60,7 @@ void udp_client_thread(void const *argument)
 
 		LCD_UsrLog((char*) "UDP client is ready.\n");
 		char buff[128];
-		char message[] = "time1.google.com";
+		char message[] = {010,0,0,0,0,0,0,0,0};
 
 		LCD_UsrLog("%s\n", message);
 
