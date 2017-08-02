@@ -25,13 +25,12 @@ void servo_control_thread(void const * argument)
 
 	send_string();
 
-	char u_buffer[100];
-	sprintf(u_buffer, "Text and number: %d\r\n", 2);
 
-	UART_send(u_buffer, strlen(u_buffer));
+	sprintf(TX_buffer, (uint8_t*) "Text and number: %d\r\n", 2);
 
-	sprintf(u_buffer, "rx_complete: %d\n", rx_complete);
-	LCD_UsrLog((char*) u_buffer);
+	UART_send(TX_buffer, strlen(TX_buffer));
+
+	printf("rx_complete: %d\n", rx_complete);
 
 	if(HAL_UART_Receive_IT(&uart_handle, (uint8_t*) RX_buffer, RXBUFFERSIZE) != HAL_OK) {
 		UART_Error_Handler();

@@ -32,18 +32,10 @@ void uart_init(void)
 	// Configure COM1 as USART
 	BSP_COM_Init(COM1, &uart_handle);
 
-/*
-	// Some error handling
-	if (HAL_UART_DeInit(&uart_handle) != HAL_OK) {
-		UART_Error_Handler();
+	// Configure the NVIC for UART
+	HAL_NVIC_SetPriority(USARTx_IRQn, 0, 1);
+	HAL_NVIC_EnableIRQ(USARTx_IRQn);
 
-
-	}
-
-	if (HAL_UART_Init(&uart_handle) != HAL_OK) {
-		UART_Error_Handler();
-	}
-*/
 	rx_complete = 0;
 	rx_index = 0;
 
@@ -121,5 +113,45 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	return;
 }
 */
+
+/**
+  * @brief  Tx Transfer completed callback
+  * @param  UartHandle: UART handle.
+  * @note   This example shows a simple way to report end of IT Tx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *uart_handle)
+{
+  /* Set transmission flag: transfer complete */
+  uart_ready = SET;
+}
+
+/**
+  * @brief  Rx Transfer completed callback
+  * @param  UartHandle: UART handle
+  * @note   This example shows a simple way to report end of DMA Rx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *uart_handle)
+{
+  /* Set transmission flag: transfer complete */
+  uart_ready = SET;
+}
+
+/**
+  * @brief  UART error callbacks
+  * @param  UartHandle: UART handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *uart_handle)
+{
+    UART_Error_Handler();
+}
+
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
