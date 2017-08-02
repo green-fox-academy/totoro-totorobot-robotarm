@@ -32,7 +32,7 @@ void uart_init(void)
 	// Configure COM1 as USART
 	BSP_COM_Init(COM1, &uart_handle);
 
-
+/*
 	// Some error handling
 	if (HAL_UART_DeInit(&uart_handle) != HAL_OK) {
 		UART_Error_Handler();
@@ -43,9 +43,11 @@ void uart_init(void)
 	if (HAL_UART_Init(&uart_handle) != HAL_OK) {
 		UART_Error_Handler();
 	}
-
+*/
 	rx_complete = 0;
+	rx_index = 0;
 
+	uart_ready = RESET;
 
 	return;
 
@@ -86,6 +88,7 @@ void UART_send(char* buffer, uint16_t buffer_len)
 }
 
 //Interrupt callback routine
+/*
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	// Check for current UART
@@ -96,8 +99,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		}
 
 		// Unless we receive an LF save the received char in the receive buffer
-		if (rx_char != '\n') {
-			RX_buffer[rx_index++] = rx_char;
+		if (rx_char[0] != '\n') {
+			RX_buffer[rx_index++] = rx_char[0];
 
 		// Receive is complete, data is ready to read
 		} else {
@@ -113,10 +116,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		}
 
 		// Activate UART receive interrupt every time
-		HAL_UART_Receive_IT(&uart_handle, &rx_char, sizeof(uint8_t));
+		HAL_UART_Receive_IT(&uart_handle, rx_char, 1);
 	}
 	return;
 }
-
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

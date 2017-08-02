@@ -16,6 +16,9 @@ void servo_control_thread(void const * argument)
 	LCD_UsrLog((char*) "Servo control thread started\n");
 
 	uart_init();
+
+	// HAL_UART_Receive_IT(&uart_handle, rx_char, 1);
+
 	pwm_init();
 	adc_init();
 	position = 0;
@@ -23,29 +26,34 @@ void servo_control_thread(void const * argument)
 	send_string();
 
 	char u_buffer[100];
-	sprintf(u_buffer, "Text and number: %d\n", 2);
+	sprintf(u_buffer, "Text and number: %d\r\n", 2);
 
 	UART_send(u_buffer, strlen(u_buffer));
 
 	sprintf(u_buffer, "rx_complete: %d\n", rx_complete);
 	LCD_UsrLog((char*) u_buffer);
 
-	while (1) {
-		while(!rx_complete) {
-
-			LCD_UsrLog((char*) ".");
-			osDelay(100);
-		}
-
-		LCD_UsrLog((char*) "\n");
-
-		if (debug) {
-			LCD_UsrLog((char*) "UART RX: ");
-			LCD_UsrLog((char*) RX_buffer);
-			LCD_UsrLog((char*) "\n");
-		}
-		rx_complete = 0;
+	if(HAL_UART_Receive_IT(&uart_handle, (uint8_t*) RX_buffer, RXBUFFERSIZE) != HAL_OK) {
+		UART_Error_Handler();
 	}
+
+	while (uart_ready != SET) {
+		osDelay(10);
+	}
+
+	LCD_UsrLog((char*) "UART RX: ");
+	LCD_UsrLog((char*) RX_buffer);
+	LCD_UsrLog((char*) "\n");
+
+	uart_ready = RESET;
+
+	while (1) {
+		LCD_UsrLog((char*) ".");
+		osDelay(100);
+	}
+
+
+
 
 	while (1) {
 		pwm_set_duty_from_adc();

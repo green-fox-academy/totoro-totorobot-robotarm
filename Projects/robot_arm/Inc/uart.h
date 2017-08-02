@@ -28,13 +28,17 @@
 #define RXBUFFERSIZE                      TXBUFFERSIZE		// reveive
 
 UART_HandleTypeDef uart_handle;
+__IO ITStatus uart_ready;
+
 
 uint8_t TX_buffer[TXBUFFERSIZE];
 uint8_t RX_buffer[RXBUFFERSIZE];
 
 uint8_t rx_index;
-uint8_t rx_char;
+uint8_t rx_char[2];
 uint8_t rx_complete;
+
+
 
 extern uint8_t debug;
 
