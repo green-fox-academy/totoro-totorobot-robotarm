@@ -7,7 +7,7 @@
 #include <string.h>
 
 /* Definition for USARTx clock resources */
-#define USARTx                           USART6
+#define USARTx                           USART1
 #define USARTx_CLK_ENABLE()              __USART6_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
@@ -23,12 +23,12 @@
 #define USARTx_RX_GPIO_PORT              GPIOC
 #define USARTx_RX_AF                     GPIO_AF8_USART6
 
-#define USARTx_IRQn                      USART6_IRQn
-#define USARTx_IRQHandler                USART6_IRQHandler
+#define USARTx_IRQn                      USART1_IRQn
+#define USARTx_IRQHandler                USART1_IRQHandler
 
 /* Size of buffers */
 #define TXBUFFERSIZE                      100				// transmit
-#define RXBUFFERSIZE                      TXBUFFERSIZE		// reveive
+#define RXBUFFERSIZE                      10		// reveive
 
 UART_HandleTypeDef uart_handle;
 __IO ITStatus uart_ready;

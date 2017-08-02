@@ -36,6 +36,8 @@ void servo_control_thread(void const * argument)
 		UART_Error_Handler();
 	}
 
+	UART_send(TX_buffer, strlen(TX_buffer));
+
 	while (uart_ready != SET) {
 		osDelay(10);
 	}

@@ -33,8 +33,10 @@ void uart_init(void)
 	BSP_COM_Init(COM1, &uart_handle);
 
 	// Configure the NVIC for UART
-	HAL_NVIC_SetPriority(USARTx_IRQn, 0, 1);
+	HAL_NVIC_SetPriority(USARTx_IRQn, 8, 0);
 	HAL_NVIC_EnableIRQ(USARTx_IRQn);
+
+	__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_TC);
 
 	rx_complete = 0;
 	rx_index = 0;
@@ -68,7 +70,7 @@ void UART_Error_Handler(void)
 void UART_send(char* buffer, uint16_t buffer_len)
 {
 	uint32_t timeout = 100;
-	HAL_UART_Transmit(&uart_handle, (uint8_t*) buffer, buffer_len, timeout);
+	HAL_UART_Transmit_IT(&uart_handle, (uint8_t*) buffer, buffer_len);
 
 	if (debug) {
 		LCD_UsrLog((char*) "UART TX: ");
