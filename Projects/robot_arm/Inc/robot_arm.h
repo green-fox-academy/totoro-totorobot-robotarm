@@ -9,8 +9,8 @@
 #define MAX_DEGREE	180
 #define MIN_POS_DUTY_CYCLE	5				// pwm duty cycle in %
 #define MAX_POS_DUTY_CYCLE	10				// pwm duty cycle in %
-#define MIN_ADC_VALUE		0
-#define MAX_ADC_VALUE		4095
+#define MIN_ADC_VALUE	0
+#define MAX_ADC_VALUE	4095
 
 ADC_HandleTypeDef adc_handle;
 ADC_ChannelConfTypeDef adc_ch_conf;
@@ -20,6 +20,7 @@ uint16_t position; 							// angle of rotation 0-180 degrees
 uint8_t debug;
 
 void servo_control_thread(void const * argument);
+void socket_server_thread(void const * argument);
 
 void pwm_init(void);
 void adc_init(void);
