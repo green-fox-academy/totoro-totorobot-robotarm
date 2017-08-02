@@ -23,37 +23,25 @@ void servo_control_thread(void const * argument)
 	adc_init();
 	position = 0;
 
-	send_string();
-
-
 	sprintf(TX_buffer, (uint8_t*) "Text and number: %d\r\n", 2);
 
 	UART_send(TX_buffer, strlen(TX_buffer));
 
 	printf("rx_complete: %d\n", rx_complete);
 
-	if(HAL_UART_Receive_IT(&uart_handle, (uint8_t*) RX_buffer, RXBUFFERSIZE) != HAL_OK) {
+	if(HAL_UART_Receive(&uart_handle, (uint8_t*) RX_buffer, RXBUFFERSIZE, 0x1FFFFFF) != HAL_OK) {
 		UART_Error_Handler();
 	}
 
-	UART_send(TX_buffer, strlen(TX_buffer));
-
-	while (uart_ready != SET) {
-		osDelay(10);
-	}
 
 	LCD_UsrLog((char*) "UART RX: ");
 	LCD_UsrLog((char*) RX_buffer);
 	LCD_UsrLog((char*) "\n");
 
-	uart_ready = RESET;
-
 	while (1) {
-		LCD_UsrLog((char*) ".");
+		printf(".");
 		osDelay(100);
 	}
-
-
 
 
 	while (1) {

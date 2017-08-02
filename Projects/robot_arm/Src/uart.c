@@ -32,32 +32,10 @@ void uart_init(void)
 	// Configure COM1 as USART
 	BSP_COM_Init(COM1, &uart_handle);
 
-	// Configure the NVIC for UART
-	HAL_NVIC_SetPriority(USARTx_IRQn, 8, 0);
-	HAL_NVIC_EnableIRQ(USARTx_IRQn);
-
-	__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_TC);
-
 	rx_complete = 0;
 	rx_index = 0;
 
 	uart_ready = RESET;
-
-	return;
-
-
-
-}
-
-void send_string(void)
-{
-	// String to send
-	char string[] = "Hello through UART function!\r\n";
-	int string_length = strlen(string);
-
-	if (HAL_UART_Transmit(&uart_handle, (uint8_t*) string, string_length, 100)!= HAL_OK) {
-		UART_Error_Handler();
-	}
 
 	return;
 }
@@ -70,7 +48,7 @@ void UART_Error_Handler(void)
 void UART_send(char* buffer, uint16_t buffer_len)
 {
 	uint32_t timeout = 100;
-	HAL_UART_Transmit_IT(&uart_handle, (uint8_t*) buffer, buffer_len);
+	HAL_UART_Transmit(&uart_handle, (uint8_t*) buffer, buffer_len, timeout);
 
 	if (debug) {
 		LCD_UsrLog((char*) "UART TX: ");
@@ -80,80 +58,6 @@ void UART_send(char* buffer, uint16_t buffer_len)
 
 	return;
 }
-
-//Interrupt callback routine
-/*
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	// Check for current UART
-	if (huart->Instance == USARTx) {
-
-		if (rx_index == 0) {
-			// TODO zero out buffer if needed
-		}
-
-		// Unless we receive an LF save the received char in the receive buffer
-		if (rx_char[0] != '\n') {
-			RX_buffer[rx_index++] = rx_char[0];
-
-		// Receive is complete, data is ready to read
-		} else {
-			RX_buffer[rx_index] = 0;	// add string terminator
-			rx_index = 0;
-			rx_complete = 1;
-
-			if (debug) {
-				LCD_UsrLog((char*) "UART RX: ");
-				LCD_UsrLog((char*) RX_buffer);
-				LCD_UsrLog((char*) "\n");
-			}
-		}
-
-		// Activate UART receive interrupt every time
-		HAL_UART_Receive_IT(&uart_handle, rx_char, 1);
-	}
-	return;
-}
-*/
-
-/**
-  * @brief  Tx Transfer completed callback
-  * @param  UartHandle: UART handle.
-  * @note   This example shows a simple way to report end of IT Tx transfer, and
-  *         you can add your own implementation.
-  * @retval None
-  */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *uart_handle)
-{
-  /* Set transmission flag: transfer complete */
-  uart_ready = SET;
-}
-
-/**
-  * @brief  Rx Transfer completed callback
-  * @param  UartHandle: UART handle
-  * @note   This example shows a simple way to report end of DMA Rx transfer, and
-  *         you can add your own implementation.
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *uart_handle)
-{
-  /* Set transmission flag: transfer complete */
-  uart_ready = SET;
-}
-
-/**
-  * @brief  UART error callbacks
-  * @param  UartHandle: UART handle
-  * @note   This example shows a simple way to report transfer error, and you can
-  *         add your own implementation.
-  * @retval None
-  */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *uart_handle)
-{
-    UART_Error_Handler();
-}
-
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

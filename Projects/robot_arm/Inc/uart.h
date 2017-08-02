@@ -46,7 +46,6 @@ uint8_t rx_complete;
 extern uint8_t debug;
 
 void uart_init(void);
-void send_string(void);
 void UART_Error_Handler(void);
 void UART_send(char* buffer, uint16_t buffer_len);
 

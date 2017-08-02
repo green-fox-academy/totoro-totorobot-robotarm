@@ -48,7 +48,6 @@
 /* Private variables ---------------------------------------------------------*/
 extern ETH_HandleTypeDef EthHandle;
 extern TIM_HandleTypeDef TimHandle;
-extern UART_HandleTypeDef uart_handle;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -176,18 +175,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &TimHandle)
 		HAL_IncTick();
-}
-
-/**
-  * @brief  This function handles UART interrupt request.
-  * @param  None
-  * @retval None
-  * @Note   This function is redefined in "main.h" and related to DMA
-  *         used for USART data transmission
-  */
-void USARTx_IRQHandler(void)
-{
-  HAL_UART_IRQHandler(&uart_handle);
 }
 
 /**
