@@ -23,6 +23,9 @@
 #define USARTx_RX_GPIO_PORT              GPIOC
 #define USARTx_RX_AF                     GPIO_AF8_USART6
 
+#define USARTx_IRQn                      USART6_IRQn
+#define USARTx_IRQHandler                USART6_IRQHandler
+
 /* Size of buffers */
 #define TXBUFFERSIZE                      100				// transmit
 #define RXBUFFERSIZE                      TXBUFFERSIZE		// reveive
