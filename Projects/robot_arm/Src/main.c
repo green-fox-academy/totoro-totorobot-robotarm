@@ -138,8 +138,12 @@ static void StartThread(void const * argument)
     // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(DHCP), &gnetif);
 
+    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadCreate (osThread(UART_RX), NULL);
+
     osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(SERVO_CONTROL), NULL);
+
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 

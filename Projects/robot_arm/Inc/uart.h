@@ -28,7 +28,7 @@
 
 /* Size of buffers */
 #define TXBUFFERSIZE                      100				// transmit
-#define RXBUFFERSIZE                      10		// reveive
+#define RXBUFFERSIZE                      100		// reveive
 
 UART_HandleTypeDef uart_handle;
 __IO ITStatus uart_ready;
@@ -37,8 +37,6 @@ __IO ITStatus uart_ready;
 uint8_t TX_buffer[TXBUFFERSIZE];
 uint8_t RX_buffer[RXBUFFERSIZE];
 
-uint8_t rx_index;
-uint8_t rx_char[2];
 uint8_t rx_complete;
 
 
@@ -48,6 +46,10 @@ extern uint8_t debug;
 void uart_init(void);
 void UART_Error_Handler(void);
 void UART_send(char* buffer, uint16_t buffer_len);
+void send_help(void);
+void mail_rx_msg(void);
+void UART_rx_thread(void const * argument);
+
 
 
 #endif /* __UART_H_ */
