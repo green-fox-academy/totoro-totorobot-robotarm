@@ -141,8 +141,8 @@ static void StartThread(void const * argument)
     //osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     //osThreadCreate (osThread(SERVO_CONTROL), NULL);
      osDelay(1000);
-    osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(udp_client), NULL);
+   /* osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(udp_client), NULL);*/
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 
