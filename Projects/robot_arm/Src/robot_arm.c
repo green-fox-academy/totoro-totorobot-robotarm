@@ -60,6 +60,7 @@ void socket_server_thread(void const *argument)
 		do {
 			received_bytes = recv(slave_sock, recv_buff, 100, 0);
 			if (received_bytes > 0) {
+				recv_buff[received_bytes] = '\0';
 				printf("Received string: %s \n", recv_buff);
 				// Send back the received string
 				send(slave_sock, send_buff, sizeof(send_buff), 0);
