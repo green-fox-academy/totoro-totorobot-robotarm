@@ -82,6 +82,8 @@ static void CPU_CACHE_Enable(void);
   */
 int main(void)
 {
+	debug = 1;
+
     /* Configure the MPU attributes as Device memory for ETH DMA descriptors */
     MPU_Config();
 
@@ -98,18 +100,22 @@ int main(void)
   
     /* Configure the system clock to 200 MHz */
     SystemClock_Config();
+
+    BSP_Config();
   
-    /* Init thread */
+    /* Init thread
     osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(Start), NULL);
   
-    /* Start scheduler */
+    // Start scheduler
     osKernelStart();
   
-    /* We should never get here as control is now taken by the scheduler */
-    while(1) {
+    // We should never get here as control is now taken by the scheduler
+    while(1);
+    */
 
-  }
+    UART_rx_thread(NULL);
+
 }
 
 /**

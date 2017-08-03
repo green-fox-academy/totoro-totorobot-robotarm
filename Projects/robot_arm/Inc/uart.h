@@ -8,12 +8,12 @@
 
 /* Definition for USARTx clock resources */
 #define USARTx                           USART1
-#define USARTx_CLK_ENABLE()              __USART6_CLK_ENABLE()
+#define USARTx_CLK_ENABLE()              __USART1_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 
-#define USARTx_FORCE_RESET()             __USART6_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __USART6_RELEASE_RESET()
+#define USARTx_FORCE_RESET()             __USART1_FORCE_RESET()
+#define USARTx_RELEASE_RESET()           __USART1_RELEASE_RESET()
 
 /* Definition for USARTx Pins */
 #define USARTx_TX_PIN                    GPIO_PIN_6

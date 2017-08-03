@@ -21,14 +21,9 @@ void servo_control_thread(void const * argument)
 
 
 
-	osDelay(10000);
-
-	LCD_UsrLog((char*) "UART RX: ");
-	LCD_UsrLog((char*) RX_buffer);
-	LCD_UsrLog((char*) "\n");
 
 	while (1) {
-		printf(".");
+
 		osDelay(100);
 	}
 

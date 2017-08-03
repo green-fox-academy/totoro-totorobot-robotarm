@@ -70,40 +70,60 @@ void send_help(void)
 
 void mail_rx_msg(void)
 {
+	LCD_UsrLog((char*) RX_buffer);
+	LCD_UsrLog((char*) "\n");
 
+	return;
 }
 
 void UART_rx_thread(void const * argument)
 {
 	uart_init();
 
-	uint32_t timeout = 1000;
-	uint8_t rx_data[1];
+	uint32_t timeout = 100;
+	uint8_t rx_data[10];
 	uint8_t rx_index = 0;
 
 	rx_complete = 0;
 
-	send_help();
+	strcpy((char*) RX_buffer, "hello world!");
+
+	mail_rx_msg();
+	// send_help();
 
 	while(1) {
 
+		// Empty buffer
+		for (int i = 0; i < RXBUFFERSIZE; i++) {
+			//RX_buffer[i] = 0;
+		}
+
 		// UART polling mode receives one character at a time
-		if(HAL_UART_Receive(&uart_handle, rx_data, 1, timeout) != HAL_OK) {
+		if(HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
 			UART_Error_Handler();
 		}
 
-
-		// Add character to RX_buffer, if LF, then close string and use it
-		if (rx_data[0] == '\n') {
-			RX_buffer[rx_index] = '\0';
-			rx_index = 0;
-			rx_complete = 1;
-			mail_rx_msg();
-		} else {
-			RX_buffer[rx_index++] = rx_data;
+		for (int i = 0; i < RXBUFFERSIZE; i++) {
+			if ((RX_buffer[i] == '\r') || (RX_buffer[i]) == '\n') {
+				RX_buffer[i] = '\0';
+				break;
+			}
 		}
 
-		osDelay(10);
+		// Process command
+		if (RX_buffer[0] != '\0') {
+
+			// Log to screen
+			LCD_UsrLog((char*) "RX_buffer:");
+			LCD_UsrLog((char*) RX_buffer);
+			LCD_UsrLog((char*) "\n");
+
+			// TODO implement process command
+
+			// Clear buffer
+			RX_buffer[0] = '\0';
+		}
+
 	}
 
 	while (1) {
