@@ -21,13 +21,13 @@
 /* Private define ------------------------------------------------------------*/
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 
-int main(int argc,char** argv)
+void udp_client_thread(void const *argument)
 {
    int      sockfd;
    int      n;             // Socket file descriptor and the n return result from writing/reading from the socket.
    int      portno = 123;  // NTP UDP port number.
 
-   char*    host_name = "europe.pool.ntp.org"; // NTP server host-name.
+   char*    host_name = "212.18.3.18"; // NTP server host-name.
 
    // Structure that defines the 48 byte NTP packet protocol.
    // Check TWICE size of fields !!
@@ -70,21 +70,21 @@ typedef struct
    // Create a UDP socket, convert the host-name to an IP address, set the port number,
    // connect to the server,send the packet,and then read in the return packet.
    struct sockaddr_in  serv_addr;  // Server address data structure.
-   struct hostent *server;     // Server data structure.
+   struct hostent server;     // Server data structure.
 
    sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
 
    if (sockfd < 0)
    {
-    printf("UDP Socket error");
+    LCD_UsrLog("UDP Socket error");
     }
 
-   server *lh = gethostbyname(host_name); // Convert URL to IP.
+//   server *lh = gethostbyname(host_name); // Convert URL to IP.
 
-   if (!server)
+  /* if (!server)
    {
       printf("url ip error");
-   }
+   }*/
 
    // Zero out the server address structure.
    memset(&serv_addr,0,sizeof(serv_addr));
@@ -92,7 +92,7 @@ typedef struct
    serv_addr.sin_family = AF_INET;
 
    // Copy the server's IP address to the server address structure.
-   memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+//   memcpy(&serv_addr.sin_addr.s_addr, server->, server->h_length);
 
    // Convert the port number integer to network big-endian style and save it to the server address structure.
    serv_addr.sin_port = htons((unsigned short)portno);
@@ -100,7 +100,7 @@ typedef struct
    // Call up the server using its IP address and port number.
    if (connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
    {
-    printf("error");
+	   LCD_UsrLog("error");
    }
 
    // Send it the NTP packet it wants. If n == -1, it failed.
@@ -108,7 +108,7 @@ typedef struct
 
    if (n < 0)
    {
-    printf("error");
+	   LCD_UsrLog("error");
    }
 
    // Wait and receive the packet back from the server. If n == -1, it failed.
@@ -116,7 +116,7 @@ typedef struct
 
    if (n < 0)
    {
-    printf("error");
+	   LCD_UsrLog("error");
    }
 
    // These two fields contain the time-stamp seconds as the packet left the NTP server.
@@ -132,9 +132,9 @@ typedef struct
    time_t   txTm = (time_t)(packet.txTm_s - NTP_TIMESTAMP_DELTA);
 
    // Print the time we got from the server,accounting for local timezone and conversion from UTC time.
-   printf("Time: %s",ctime((const time_t*)&txTm));
+   LCD_UsrLog("Time: %s",ctime((const time_t*)&txTm));
 
    closesocket(sockfd);
 
-   return 0;
+
 }
