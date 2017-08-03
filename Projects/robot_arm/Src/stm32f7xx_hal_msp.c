@@ -115,26 +115,29 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 	GPIO_Init.Pull = GPIO_NOPULL;
 	GPIO_Init.Mode = GPIO_MODE_AF_PP;
 
+	// SERVO0
 	// 4 D3 PB4 TIM3_CH1
 	GPIO_Init.Pin = GPIO_PIN_4;
 	GPIO_Init.Alternate = GPIO_AF2_TIM3;
 	HAL_GPIO_Init(GPIOB, &GPIO_Init);
 
-	// 3 D10 PA8 TIM1_CH1
-	GPIO_Init.Pin = GPIO_PIN_8;
-	GPIO_Init.Alternate = GPIO_AF1_TIM1;
-	HAL_GPIO_Init(GPIOA, &GPIO_Init);
-
+	// SERVO1
 	// 7 D6 PH6 TIM12_CH1
 	GPIO_Init.Pin = GPIO_PIN_6;
 	GPIO_Init.Alternate = GPIO_AF9_TIM12;
 	HAL_GPIO_Init(GPIOH, &GPIO_Init);
 
+	// SERVO2
 	// 2 D9 PA15 TIM2_CH1
 	GPIO_Init.Pin = GPIO_PIN_15;
 	GPIO_Init.Alternate = GPIO_AF1_TIM2;
 	HAL_GPIO_Init(GPIOA, &GPIO_Init);
 
+	// SERVO3
+	// 3 D10 PA8 TIM1_CH1
+	GPIO_Init.Pin = GPIO_PIN_8;
+	GPIO_Init.Alternate = GPIO_AF1_TIM1;
+	HAL_GPIO_Init(GPIOA, &GPIO_Init);
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
@@ -157,18 +160,22 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 	GPIO_Init.Pull = GPIO_NOPULL;
 	GPIO_Init.Mode = GPIO_MODE_ANALOG;
 
+	// SERVO0
 	// 1 A0 PA0 ADC3_IN0
 	GPIO_Init.Pin = GPIO_PIN_0;
 	HAL_GPIO_Init(GPIOA, &GPIO_Init);
 
+	// SERVO1
 	// 2 A1 PF10 ADC3_IN8
 	GPIO_Init.Pin = GPIO_PIN_10;
 	HAL_GPIO_Init(GPIOF, &GPIO_Init);
 
+	// SERVO2
 	// 3 A2 PF9 ADC3_IN7
 	GPIO_Init.Pin = GPIO_PIN_9;
 	HAL_GPIO_Init(GPIOF, &GPIO_Init);
 
+	// SERVO3
 	//4 A3 PF8 ADC3_IN6
 	GPIO_Init.Pin = GPIO_PIN_8;
 	HAL_GPIO_Init(GPIOF, &GPIO_Init);

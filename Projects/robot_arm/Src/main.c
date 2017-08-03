@@ -126,6 +126,10 @@ int main(void)
 
 static void StartThread(void const * argument)
 { 
+	osMutexDef(SERVO_POS_MUTEX_DEF);
+	servo_pos_mutex = osMutexCreate(osMutex(SERVO_POS_MUTEX_DEF));
+
+	debug = 1;
 
     /* Initialize LCD */
     BSP_Config();
@@ -144,14 +148,27 @@ static void StartThread(void const * argument)
     // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(DHCP), &gnetif);
 
+    servo_config();
+
+    osThreadDef(ADC, adc_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadCreate (osThread(ADC), NULL);
+    
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(UART_RX), NULL);
 
-    osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(SERVO_CONTROL), NULL);
 
 
-    LCD_UsrLog((char*) "TotoRobot started.\n");
+
+    while(!adc_ready) {
+    	osDelay(100);
+    }
+
+    //osThreadDef(PWM, pwm_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 15);
+    //osThreadCreate (osThread(PWM), NULL);
+
+    if(debug) {
+    	LCD_UsrLog((char*) "TotoRobot started.\n");
+    }
 
     while (1) {
         /* Delete the Init Thread */
