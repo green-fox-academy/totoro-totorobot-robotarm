@@ -8,16 +8,6 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-
-// Init the UART peripherial
-/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
-/* UART configured as follows:
-  - Word Length = 8 Bits
-  - Stop Bit = One Stop bit
-  - Parity = None
-  - BaudRate = 115200 baud
-  - Hardware flow control disabled (RTS and CTS signals) */
-
 void uart_init(void)
 {
 	// Configure UART instance
@@ -60,44 +50,31 @@ void UART_send_help(void)
 	UART_send("*** Greetings from TotoRobot! ***\r\n");
 	UART_send("\r\n");
 	UART_send("Commands:\r\n");
-	UART_send("get s<X> pwm            - Get servo current pwm\r\n");
-	UART_send("get s<X> angle          - Get servo current angle\r\n");
-	UART_send("get r pos               - Get robot arm current xyz coordinates\r\n");
-	UART_send("set s<X> pwm <value>    - Get servo current pwm\r\n");
-	UART_send("set s<X> angle <value>  - Get servo current angle\r\n");
-	UART_send("set r pos <x,y,z>       - Get robot arm current xyz coordinates\r\n");
+	UART_send("\r\n");
+	UART_send("get pulse                    - Get servos' current pulse width\r\n");
+	UART_send("get angle                    - Get servos' current angle\r\n");
+	UART_send("get pos                      - Get robot arm's current xyz coordinates\r\n");
+	UART_send("\r\n");
+	UART_send("set pulse <servo> <value>    - Set servo pulse width\r\n");
+	UART_send("set angle <servo> <value>    - Set servo angle\r\n");
+	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates\r\n");
 	UART_send("\r\n");
 	UART_send("Always terminate commands with LF!\r\n");
-
-	return;
-}
-
-void mail_rx_msg(void)
-{
-	LCD_UsrLog((char*) RX_buffer);
-	LCD_UsrLog((char*) "\n");
+	UART_send("\r\n");
 
 	return;
 }
 
 void UART_rx_thread(void const * argument)
 {
-	uart_init();
-
 	uint32_t timeout = 100;
-	uint8_t rx_data[10];
-	uint8_t rx_index = 0;
 
-	rx_complete = 0;
-
-	strcpy((char*) RX_buffer, "hello world!");
-
-	mail_rx_msg();
-	// send_help();
+	uart_init();
+	UART_send_help();
 
 	while(1) {
 
-		// UART polling mode
+		// UART RX polling mode
 		if(HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
 			UART_Error_Handler();
 		}
@@ -114,13 +91,14 @@ void UART_rx_thread(void const * argument)
 
 			// Log to screen
 			if (debug) {
-				LCD_UsrLog((char*) "RX:");
+				LCD_UsrLog((char*) "UART RX:");
 				LCD_UsrLog((char*) RX_buffer);
 				LCD_UsrLog((char*) "\n");
 			}
 
 			// Process command
 			process_command();
+			execute_command();
 
 			// Clear buffer
 			RX_buffer[0] = '\0';
@@ -134,111 +112,144 @@ void UART_rx_thread(void const * argument)
 		}
 		osThreadTerminate(NULL);
 	}
-
 }
 
 void process_command(void)
 {
+	// Clear command structure
+	c_params.attrib = NO_ATTRIB;
+	c_params.command = NO_COMMAND;
+	c_params.device_id = 255;
+	c_params.value = 0;
+	c_params.value_x = 65535;
+	c_params.value_y = 65535;
+	c_params.value_z = 65535;
+	c_params.error = 0;
+
 	// Copy command from UART RX buffer
-	char command[RXBUFFERSIZE];
-	strcpy(command, (char*) RX_buffer);
+	char received[RXBUFFERSIZE];
+	strcpy(received, (char*) RX_buffer);
 
-	char* s = strtok(command, " ");
+	// Get command
+	char* s = strtok(received, " ");
 
-	// Help
-	if ((s[0] == 'h') || (s[0] == 'H')) {
-		UART_send_help();
-
-	// Get
-	} else if (strcmp(s, "get") == 0) {
-
-		s = strtok(NULL, " ");
-		switch (s[0]) {
-
-		// Servo
-		case 's':
-			if (strlen(s) == 2) {
-				uint8_t servo_id = s[1] - 48;
-				if (servo_id < SERVOS) {
-					UART_send("s0 pwm: 2000\r\n");
-				} else {
-					UART_send("Unrecognized servo id\r\n");
-				}
-			} else {
-				UART_send("Unrecognized command\r\n");
-			}
-			break;
-
-		// Robot arm
-		case 'r':
-			if (strlen(s) == 1) {
-				// TODO execute set command
-
-			} else {
-				UART_send("Unrecognized command\r\n");
-			}
-			break;
-
-
-
-			break;
-
-		// Error
-		default:
-			UART_send("Unrecognized command\r\n");
-			break;
-		}
-
-
-	// Set
-	} else if (strcmp(s, "set") == 0) {
-
-		s = strtok(NULL, " ");
-		switch (s[0]) {
-
-		// Servo
-		case 's':
-			if (strlen(s) == 2) {
-				uint8_t servo_id = s[1];
-				if (servo_id < SERVOS) {
-					// TODO execute set command
-				} else {
-					UART_send("Unrecognized servo id\r\n");
-				}
-			} else {
-				UART_send("Unrecognized command\r\n");
-			}
-			break;
-
-		// Robot arm
-		case 'r':
-			if (strlen(s) == 1) {
-				// TODO execute set command
-
-			} else {
-				UART_send("Unrecognized command\r\n");
-			}
-			break;
-
-
-
-			break;
-
-		// Error
-		default:
-			UART_send("Unrecognized command\r\n");
-			break;
-		}
-
-
-	// Error message
+	if ((strcmp(s, "set") == 0) || (strcmp(s, "s") == 0)) {
+		c_params.command = SET_VALUE;
+	} else if ((strcmp(s, "get") == 0) || (strcmp(s, "g") == 0)) {
+		c_params.command = GET_VALUE;
+	} else if ((strcmp(s, "help") == 0) || (strcmp(s, "h") == 0)) {
+		c_params.command = HELP;
 	} else {
-		UART_send("Unrecognized command\r\n");
+		c_params.error = 1;
+	}
+
+	// Get command attribute
+	s = strtok(NULL, " ");
+
+	if ((strcmp(s, "pulse") == 0) || (strcmp(s, "pul") == 0)) {
+		c_params.attrib = PULSE;
+	} else if ((strcmp(s, "position") == 0) || (strcmp(s, "pos") == 0)) {
+		c_params.attrib = POSITION;
+	} else if ((strcmp(s, "angle") == 0) || (strcmp(s, "ang") == 0)) {
+		c_params.attrib = ANGLE;
+	} else {
+		c_params.error = 1;
+	}
+
+	// Get device id
+	if ((c_params.command == SET_VALUE) &&
+		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE))) {
+		char* s = strtok(NULL, " ");
+
+		// Convert ASCII to integer
+		c_params.device_id = atoi(s);
+
+		// Check if we are in the accepted range
+		if (c_params.device_id >= SERVOS) {
+			c_params.error = 1;
+		}
+	}
+
+	// Get value
+	if ((c_params.command == SET_VALUE) &&
+		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE))) {
+		char* s = strtok(NULL, " ");
+
+		// Convert ASCII to integer
+		c_params.value = atoi(s);
+	}
+
+	// Get xyz value
+	if ((c_params.command == SET_VALUE) && (c_params.attrib == POSITION)) {
+		char* s = strtok(NULL, " ");
+
+		char* coord = strtok(s, ",");
+		c_params.value_x = atoi(coord);
+
+		coord = strtok(NULL, ",");
+		c_params.value_y = atoi(coord);
+
+		coord = strtok(NULL, ",");
+		c_params.value_y = atoi(coord);
+
+		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
 	}
 	return;
 }
 
+void execute_command(void)
+{
+	// Send error message
+	if (c_params.error) {
+		UART_send("Unrecognized command or value\r\n");
+		return;
+	}
 
+	// Execute command
+	switch (c_params.command) {
+
+	// Help
+	case HELP:
+		UART_send_help();
+		break;
+
+	// Get value
+	case GET_VALUE:
+		UART_send_settings();
+		break;
+
+	// Set value
+	case SET_VALUE:
+		set_value();
+		break;
+
+	// Error
+	default:
+		UART_send("Unrecognized command or value\r\n");
+		return;
+	}
+	return;
+}
+
+void UART_send_settings(void)
+{
+	UART_send("servo0 pulse: 2000\r\n");
+	UART_send("servo1 pulse: 2000\r\n");
+	UART_send("servo2 pulse: 2000\r\n");
+	UART_send("servo3 pulse: 2000\r\n");
+
+	return;
+
+}
+
+void set_value(void)
+{
+
+}
+
+uint8_t verify_coordinates(uint16_t x, uint16_t y, uint16_t z) {
+	return 0;
+}
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
