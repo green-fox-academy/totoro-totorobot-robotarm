@@ -111,10 +111,6 @@ void pwm_init(void)
 			sprintf(lcd_log, "Servo%d started\n", i);
 			LCD_UsrLog(lcd_log);
 		}
-
-
-
-
 	}
 	return;
 }
@@ -278,15 +274,11 @@ void pwm_thread(void const * argument)
 
 	// Initialize all PWM channels
 	pwm_init();
-
-
 	pwm_ready = 1;
 
 	if (debug) {
 		LCD_UsrLog((char*) "PWM ready\n");
 	}
-
-	// while(1);
 
 	// Set servo positions
 	while (1) {
@@ -298,14 +290,7 @@ void pwm_thread(void const * argument)
 			osMutexWait(servo_pos_mutex, osWaitForever);
 
 			// Get pulse value
-
 			uint32_t servo_pulse = servo_pos[i].pulse;
-/*
-			servo_pulse += 500;
-
-			if (servo_pulse == 6000)
-				servo_pulse = 2000;
-*/
 
 			// Release mutex
 			osMutexRelease(servo_pos_mutex);
