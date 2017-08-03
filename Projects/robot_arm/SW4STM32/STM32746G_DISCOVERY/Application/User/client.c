@@ -70,7 +70,7 @@ typedef struct
    // Create a UDP socket, convert the host-name to an IP address, set the port number,
    // connect to the server,send the packet,and then read in the return packet.
    struct sockaddr_in  serv_addr;  // Server address data structure.
-   struct hostent server;     // Server data structure.
+   struct hostent *server;     // Server data structure.
 
    sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
 
