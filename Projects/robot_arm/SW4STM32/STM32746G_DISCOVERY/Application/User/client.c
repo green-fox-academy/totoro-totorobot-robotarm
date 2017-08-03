@@ -7,148 +7,134 @@
 #include "lwip/sockets.h"
 #include "stm32746g_discovery_ts.h"
 #include <string.h>
+#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
+#define bcopy(b1,b2,len) (memmove((b2), (b1), (len)), (void) 0)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/types.h>
+#include <stdint.h>
+#include <inttypes.h>
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define NTP_TIMESTAMP_DELTA 2208988800ull
-#define CLIENT_SERVER_IP			"1.hu.pool.ntp.org"
-#define UDP_SERVER_PORT					123
 
-typedef struct
-	{
-
-		unsigned li   : 2;       // Only two bits. Leap indicator.
-		unsigned vn   : 3;       // Only three bits. Version number of the protocol.
-		unsigned mode : 3;       // Only three bits. Mode. Client will pick mode 3 for client.
-
-		uint8_t stratum;         // Eight bits. Stratum level of the local clock.
-		uint8_t poll;            // Eight bits. Maximum interval between successive messages.
-		uint8_t precision;       // Eight bits. Precision of the local clock.
-
-		uint32_t rootDelay;      // 32 bits. Total round trip delay time.
-		uint32_t rootDispersion; // 32 bits. Max error aloud from primary clock source.
-		uint32_t refId;          // 32 bits. Reference clock identifier.
-
-		uint32_t refTm_s;        // 32 bits. Reference time-stamp seconds.
-		uint32_t refTm_f;        // 32 bits. Reference time-stamp fraction of a second.
-
-		uint32_t origTm_s;       // 32 bits. Originate time-stamp seconds.
-		uint32_t origTm_f;       // 32 bits. Originate time-stamp fraction of a second.
-
-		uint32_t rxTm_s;         // 32 bits. Received time-stamp seconds.
-		uint32_t rxTm_f;         // 32 bits. Received time-stamp fraction of a second.
-
-		uint32_t txTm_s;         // 32 bits and the most important field the client cares about. Transmit time-stamp seconds.
-		uint32_t txTm_f;         // 32 bits. Transmit time-stamp fraction of a second.
-
-	} ntp_packet;                 // Total: 384 bits or 48 bytes.
-
-	// Create and zero out the packet. All 48 bytes worth.
-
-	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-void udp_client_thread(void const *argument)
+int main(int argc,char** argv)
 {
-	memset( &packet, 0, sizeof( ntp_packet ) );					//Packet
+   int      sockfd;
+   int      n;             // Socket file descriptor and the n return result from writing/reading from the socket.
+   int      portno = 123;  // NTP UDP port number.
 
-	udp_client_ready = 0;
-	udp_send_allowed = 1;
+   char*    host_name = "europe.pool.ntp.org"; // NTP server host-name.
 
-	*( ( char * ) &packet + 0 ) = 0x1b;
+   // Structure that defines the 48 byte NTP packet protocol.
+   // Check TWICE size of fields !!
+typedef struct
+{
+	unsigned li   : 2;          // Only two bits. Leap indicator.
+	unsigned vn   : 3;          // Only three bits. Version number of the protocol.
+	unsigned mode : 3;          // Only three bits. Mode. Client will pick mode 3 for client.
 
-	// Create a new socket to listen for client connections.
-	int udp_client_socket;
+	uint8_t stratum;           // Eight bits. Stratum level of the local clock.
+	uint8_t poll;              // Eight bits. Maximum interval between successive messages.
+	uint8_t precision;         // Eight bits. Precision of the local clock.
 
-	udp_client_socket = lwip_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (udp_client_socket < 0) {
-		LCD_ErrLog((char*) "Cannot create UDP client socket.\n");
-		LCD_ErrLog((char*) "Closing application.\n");
-		osThreadTerminate(NULL);
-	} else {
-		LCD_UsrLog((char*) "UDP client socket is up.\n");
-	}
-	char* host_name = "1.hu.pool.ntp.org";
+	uint32_t rootDelay;        // 32 bits. Total round trip delay time.
+	uint32_t rootDispersion;   // 32 bits. Max error aloud from primary clock source.
+	uint32_t refId;            // 32 bits. Reference clock identifier.
 
-	// Create client address structure
-		struct sockaddr_in udp_client_addr;
-		udp_client_addr.sin_family = AF_INET;
-		int udp_client_addr_size = sizeof(udp_client_addr);
+	uint32_t refTm_s;          // 32 bits. Reference time-stamp seconds.
+	uint32_t refTm_f;          // 32 bits. Reference time-stamp fraction of a second.
 
-		bzero( ( char* ) &udp_client_addr, sizeof( udp_client_addr ) );
+	uint32_t origTm_s;         // 32 bits. Originate time-stamp seconds.
+	uint32_t origTm_f;         // 32 bits. Originate time-stamp fraction of a second.
 
+	uint32_t rxTm_s;           // 32 bits. Received time-stamp seconds.
+	uint32_t rxTm_f;           // 32 bits. Received time-stamp fraction of a second.
 
+	uint32_t txTm_s;           // 32 bits and the most important field the client cares about. Transmit time-stamp seconds.
+	uint32_t txTm_f;           // 32 bits. Transmit time-stamp fraction of a second.
 
-		// Create remote server address structure
-		struct sockaddr_in udp_remote_addr;
-		udp_remote_addr.sin_family = AF_INET;
-		udp_remote_addr.sin_addr.s_addr = INADDR_BROADCAST;
-		udp_remote_addr.sin_port = htons(UDP_SERVER_PORT);
+}ntp_packet;                         // Total: 384 bits or 48 bytes.
 
-		 // Set socket to broadcast
-		int opt_val = 1;
-		int opt_len = sizeof(int);
-		int set_broadcast = lwip_setsockopt(udp_client_socket, SOL_SOCKET,
-										    SO_BROADCAST, &opt_val, (socklen_t) opt_len);
-		if (set_broadcast < 0) {
-				LCD_ErrLog((char*) "Cannot set UDP client to broadcast.\n");
-				LCD_ErrLog((char*) "Closing application.\n");
-				lwip_close(udp_client_socket);
-				osThreadTerminate(NULL);
-			} else {
-				LCD_UsrLog((char*) "UDP client is ready to broadcast.\n");
-			}
+   // Create and zero out the packet. All 48 bytes worth.
+   ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-		udp_client_ready = 1;
+   memset(&packet,0,sizeof(ntp_packet));
 
-		LCD_UsrLog((char*) "UDP client is ready.\n");
-		char buff[128];
+   // Set the first byte's bits to 00,011,011 for li = 0,vn = 3,and mode = 3. The rest will be left set to zero.
+   *((char*)&packet + 0) = 0x1B; // Represents 27 in base 10 or 00011011 in base 2.
 
-		//LCD_UsrLog("%s\n", message);
+   // Create a UDP socket, convert the host-name to an IP address, set the port number,
+   // connect to the server,send the packet,and then read in the return packet.
+   struct sockaddr_in  serv_addr;  // Server address data structure.
+   struct hostent *server;     // Server data structure.
 
-		LCD_UsrLog("Socket client - startup...\n");
-		LCD_UsrLog("Socket client - waiting for IP address...\n");
+   sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
 
-		// Wait for an IP address
-		while (!is_ip_ok())
-			osDelay(10);
+   if (sockfd < 0)
+   {
+    printf("UDP Socket error");
+    }
 
-		// Try to connect to the server
-		// Send udp package
-		sendto(udp_client_socket, host_name, strlen(host_name),
-								 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
-		LCD_UsrLog("Socket client - data sent\n");
+   server *lh = gethostbyname(host_name); // Convert URL to IP.
 
-		int recv_bytes = recvfrom(udp_client_socket, buff, sizeof(buff),
-								   0, (struct sockaddr*) &udp_client_addr,
-								   (socklen_t*) &udp_client_addr_size);
+   if (!server)
+   {
+      printf("url ip error");
+   }
 
-		packet.txTm_s = ntohl( packet.txTm_s ); // Time-stamp seconds.
-		packet.txTm_f = ntohl( packet.txTm_f ); // Time-stamp fraction of a second.
+   // Zero out the server address structure.
+   memset(&serv_addr,0,sizeof(serv_addr));
 
-		// Extract the 32 bits that represent the time-stamp seconds (since NTP epoch) from when the packet left the server.
-			// Subtract 70 years worth of seconds from the seconds since 1900.
-			// This leaves the seconds since the UNIX epoch of 1970.
-			// (1900)------------------(1970)**************************************(Time Packet Left the Server)
+   serv_addr.sin_family = AF_INET;
 
-			time_t txTm = ( time_t ) (packet.txTm_s - NTP_TIMESTAMP_DELTA - time(NULL));
+   // Copy the server's IP address to the server address structure.
+   memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 
-			// Print the time we got from the server, accounting for local timezone and conversion from UTC time.
+   // Convert the port number integer to network big-endian style and save it to the server address structure.
+   serv_addr.sin_port = htons((unsigned short)portno);
 
-			printf( "Time: %s", ctime( ( const time_t* ) &txTm ) );
+   // Call up the server using its IP address and port number.
+   if (connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+   {
+    printf("error");
+   }
 
+   // Send it the NTP packet it wants. If n == -1, it failed.
+   n = sendto(sockfd,(char*)&packet,sizeof(ntp_packet),0,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
 
-		if (recv_bytes > 0) {
-			LCD_UsrLog("Socket client - data received: \n");
-			buff[recv_bytes] = '\0';
-			LCD_UsrLog(buff);
-			LCD_UsrLog("\n");
-		}
+   if (n < 0)
+   {
+    printf("error");
+   }
 
+   // Wait and receive the packet back from the server. If n == -1, it failed.
+   n = recv(sockfd,(char*)&packet,sizeof(ntp_packet),0);
 
-	    // Close socket
-	    lwip_close(udp_client_socket);
+   if (n < 0)
+   {
+    printf("error");
+   }
 
-	    // Close thread
-	    while (1) {
-	    	osThreadTerminate(NULL);
-	    }
+   // These two fields contain the time-stamp seconds as the packet left the NTP server.
+   // The number of seconds correspond to the seconds passed since 1900.
+   // ntohl() converts the bit/byte order from the network's to host's "endianness".
+   packet.txTm_s = ntohl(packet.txTm_s); // Time-stamp seconds.
+   packet.txTm_f = ntohl(packet.txTm_f); // Time-stamp fraction of a second.
+
+   // Extract the 32 bits that represent the time-stamp seconds (since NTP epoch) from when the packet left the server.
+   // Subtract 70 years worth of seconds from the seconds since 1900.
+   // This leaves the seconds since the UNIX epoch of 1970.
+   // (1900)------------------(1970)**************************************(Time Packet Left the Server)
+   time_t   txTm = (time_t)(packet.txTm_s - NTP_TIMESTAMP_DELTA);
+
+   // Print the time we got from the server,accounting for local timezone and conversion from UTC time.
+   printf("Time: %s",ctime((const time_t*)&txTm));
+
+   closesocket(sockfd);
+
+   return 0;
 }
