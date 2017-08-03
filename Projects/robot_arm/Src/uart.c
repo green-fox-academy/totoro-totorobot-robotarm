@@ -40,8 +40,9 @@ void UART_Error_Handler(void)
 
 }
 
-void UART_send(char* buffer, uint16_t buffer_len)
+void UART_send(char* buffer)
 {
+	uint16_t buffer_len = strlen(buffer);
 	uint32_t timeout = 100;
 	HAL_UART_Transmit(&uart_handle, (uint8_t*) buffer, buffer_len, timeout);
 
@@ -54,16 +55,19 @@ void UART_send(char* buffer, uint16_t buffer_len)
 	return;
 }
 
-void send_help(void)
+void UART_send_help(void)
 {
-	UART_send("Greetings from TotoRobot!\r\n", 28);
-	UART_send("\r\n", 2);
-	UART_send("Available commands:\r\n", 21);
-	UART_send("set -c <x, y, z>         Set xyz position\r\n", 44);
-	UART_send("get -c                   Get current xyz position\r\n", 52);
-	UART_send("set -s <servo_no> <pwm>  Set pwm value\r\n", 40);
-	UART_send("get -s <servo_no>        Get current pwm value\r\n", 49);
-	UART_send("Always terminate commands with LF\r\n", 35);
+	UART_send("*** Greetings from TotoRobot! ***\r\n");
+	UART_send("\r\n");
+	UART_send("Commands:\r\n");
+	UART_send("get s<X> pwm            - Get servo current pwm\r\n");
+	UART_send("get s<X> angle          - Get servo current angle\r\n");
+	UART_send("get r pos               - Get robot arm current xyz coordinates\r\n");
+	UART_send("set s<X> pwm <value>    - Get servo current pwm\r\n");
+	UART_send("set s<X> angle <value>  - Get servo current angle\r\n");
+	UART_send("set r pos <x,y,z>       - Get robot arm current xyz coordinates\r\n");
+	UART_send("\r\n");
+	UART_send("Always terminate commands with LF!\r\n");
 
 	return;
 }
@@ -109,11 +113,14 @@ void UART_rx_thread(void const * argument)
 		if (RX_buffer[0] != '\0') {
 
 			// Log to screen
-			LCD_UsrLog((char*) "RX_buffer:");
-			LCD_UsrLog((char*) RX_buffer);
-			LCD_UsrLog((char*) "\n");
+			if (debug) {
+				LCD_UsrLog((char*) "RX:");
+				LCD_UsrLog((char*) RX_buffer);
+				LCD_UsrLog((char*) "\n");
+			}
 
-			// TODO implement process command
+			// Process command
+			process_command();
 
 			// Clear buffer
 			RX_buffer[0] = '\0';
@@ -129,6 +136,109 @@ void UART_rx_thread(void const * argument)
 	}
 
 }
+
+void process_command(void)
+{
+	// Copy command from UART RX buffer
+	char command[RXBUFFERSIZE];
+	strcpy(command, (char*) RX_buffer);
+
+	char* s = strtok(command, " ");
+
+	// Help
+	if ((s[0] == 'h') || (s[0] == 'H')) {
+		UART_send_help();
+
+	// Get
+	} else if (strcmp(s, "get") == 0) {
+
+		s = strtok(NULL, " ");
+		switch (s[0]) {
+
+		// Servo
+		case 's':
+			if (strlen(s) == 2) {
+				uint8_t servo_id = s[1] - 48;
+				if (servo_id < SERVOS) {
+					UART_send("s0 pwm: 2000\r\n");
+				} else {
+					UART_send("Unrecognized servo id\r\n");
+				}
+			} else {
+				UART_send("Unrecognized command\r\n");
+			}
+			break;
+
+		// Robot arm
+		case 'r':
+			if (strlen(s) == 1) {
+				// TODO execute set command
+
+			} else {
+				UART_send("Unrecognized command\r\n");
+			}
+			break;
+
+
+
+			break;
+
+		// Error
+		default:
+			UART_send("Unrecognized command\r\n");
+			break;
+		}
+
+
+	// Set
+	} else if (strcmp(s, "set") == 0) {
+
+		s = strtok(NULL, " ");
+		switch (s[0]) {
+
+		// Servo
+		case 's':
+			if (strlen(s) == 2) {
+				uint8_t servo_id = s[1];
+				if (servo_id < SERVOS) {
+					// TODO execute set command
+				} else {
+					UART_send("Unrecognized servo id\r\n");
+				}
+			} else {
+				UART_send("Unrecognized command\r\n");
+			}
+			break;
+
+		// Robot arm
+		case 'r':
+			if (strlen(s) == 1) {
+				// TODO execute set command
+
+			} else {
+				UART_send("Unrecognized command\r\n");
+			}
+			break;
+
+
+
+			break;
+
+		// Error
+		default:
+			UART_send("Unrecognized command\r\n");
+			break;
+		}
+
+
+	// Error message
+	} else {
+		UART_send("Unrecognized command\r\n");
+	}
+	return;
+}
+
+
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

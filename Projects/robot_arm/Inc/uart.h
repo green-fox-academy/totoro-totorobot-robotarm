@@ -6,6 +6,8 @@
 #include "lcd_log.h"
 #include <string.h>
 
+#define SERVOS	4
+
 /* Definition for USARTx clock resources */
 #define USARTx                           USART1
 #define USARTx_CLK_ENABLE()              __USART1_CLK_ENABLE()
@@ -45,10 +47,11 @@ extern uint8_t debug;
 
 void uart_init(void);
 void UART_Error_Handler(void);
-void UART_send(char* buffer, uint16_t buffer_len);
-void send_help(void);
+void UART_send(char* buffer);
+void UART_send_help(void);
 void mail_rx_msg(void);
 void UART_rx_thread(void const * argument);
+void process_command(void);
 
 
 
