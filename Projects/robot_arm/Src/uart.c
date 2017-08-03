@@ -93,12 +93,7 @@ void UART_rx_thread(void const * argument)
 
 	while(1) {
 
-		// Empty buffer
-		for (int i = 0; i < RXBUFFERSIZE; i++) {
-			//RX_buffer[i] = 0;
-		}
-
-		// UART polling mode receives one character at a time
+		// UART polling mode
 		if(HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
 			UART_Error_Handler();
 		}

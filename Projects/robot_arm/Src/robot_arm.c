@@ -19,18 +19,13 @@ void servo_control_thread(void const * argument)
 	adc_init();
 	position = 0;
 
-
-
-
-	while (1) {
-
-		osDelay(100);
-	}
-
+	BSP_LED_Init(LED_GREEN);
+	BSP_LED_Off(LED_GREEN);
 
 	while (1) {
-		pwm_set_duty_from_adc();
-		osDelay(10);
+		BSP_LED_Toggle(LED_GREEN);
+		LCD_UsrLog((char*) "toggle led\n");
+		osDelay(1000);
 	}
 
 	while (1) {

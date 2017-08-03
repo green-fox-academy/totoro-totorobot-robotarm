@@ -103,7 +103,7 @@ int main(void)
 
     BSP_Config();
   
-    /* Init thread
+    // Init thread
     osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(Start), NULL);
   
@@ -112,9 +112,9 @@ int main(void)
   
     // We should never get here as control is now taken by the scheduler
     while(1);
-    */
 
-    UART_rx_thread(NULL);
+
+    // UART_rx_thread(NULL);
 
 }
 
