@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1501776136 source:c:\greenfox\okosságok\time request\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<sys/types.h>
+	<stdint.h>
+	<winsock.h>
+
