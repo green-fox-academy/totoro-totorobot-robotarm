@@ -112,10 +112,6 @@ int main(void)
   
     // We should never get here as control is now taken by the scheduler
     while(1);
-
-
-    // UART_rx_thread(NULL);
-
 }
 
 /**
@@ -150,10 +146,6 @@ static void StartThread(void const * argument)
     
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(UART_RX), NULL);
-
-    while(!adc_ready) {
-    	osDelay(100);
-    }
 
     osThreadDef(PWM, pwm_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(PWM), NULL);
