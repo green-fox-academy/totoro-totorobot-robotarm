@@ -6,6 +6,7 @@
 #include "lcd_log.h"
 #include "servo_control.h"
 #include <string.h>
+#include <stdlib.h>
 
 #define USARTx				USART1
 #define TXBUFFERSIZE        100				// transmit
@@ -41,6 +42,8 @@ void UART_rx_thread(void const * argument);
 void process_command(void);
 void execute_command(void);
 uint8_t verify_coordinates(uint16_t x, uint16_t y, uint16_t z);
+uint8_t verify_pulse(uint32_t pulse);
+uint8_t verify_angle(uint32_t angle);
 void set_value(void);
 void UART_send_settings(void);
 

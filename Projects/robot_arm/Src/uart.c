@@ -139,8 +139,10 @@ void process_command(void)
 		c_params.command = GET_VALUE;
 	} else if ((strcmp(s, "help") == 0) || (strcmp(s, "h") == 0)) {
 		c_params.command = HELP;
+		return;
 	} else {
 		c_params.error = 1;
+		return;
 	}
 
 	// Get command attribute
@@ -154,6 +156,7 @@ void process_command(void)
 		c_params.attrib = ANGLE;
 	} else {
 		c_params.error = 1;
+		return;
 	}
 
 	// Get device id
@@ -233,21 +236,85 @@ void execute_command(void)
 
 void UART_send_settings(void)
 {
-	UART_send("servo0 pulse: 2000\r\n");
-	UART_send("servo1 pulse: 2000\r\n");
-	UART_send("servo2 pulse: 2000\r\n");
-	UART_send("servo3 pulse: 2000\r\n");
+	switch (c_params.attrib) {
+	case PULSE:
+		for (int i = 0; i < SERVOS; i++) {
+			// Get value
+			osMutexWait(servo_pos_mutex, osWaitForever);
+			uint32_t pulse = servo_pos[i].pulse;
+			osMutexRelease(servo_pos_mutex);
+			// Send value
+			sprintf(TX_buffer, "servo%d pulse: %d\r\n", i, pulse);
+			UART_send((char*) TX_buffer);
+		}
+		break;
+	case ANGLE:
+		for (int i = 0; i < SERVOS; i++) {
+			// Get value
+			osMutexWait(servo_pos_mutex, osWaitForever);
+			uint8_t angle = servo_pos[i].angle;
+			osMutexRelease(servo_pos_mutex);
+			// Send value
+			sprintf(TX_buffer, "servo%d angle: %4d degrees\r\n", i, angle);
+			UART_send((char*)TX_buffer);
+		}
+		break;
+	case POSITION:
+		// Get value
+		osMutexWait(servo_pos_mutex, osWaitForever);
+		uint32_t x = arm_position.x;
+		uint32_t y = arm_position.y;
+		uint32_t z = arm_position.z;
+		osMutexRelease(servo_pos_mutex);
 
+		// Send value
+		sprintf(TX_buffer, "arm position: x:%d y:%d z:%d\r\n", x, y, z);
+		UART_send((char*) TX_buffer);
+		break;
+	case NO_ATTRIB:
+		break;
+	}
 	return;
-
 }
 
 void set_value(void)
 {
-
+	switch (c_params.attrib) {
+	case PULSE:
+		osMutexWait(servo_pos_mutex, osWaitForever);
+		servo_pos[c_params.device_id].pulse = c_params.value;
+		osMutexRelease(servo_pos_mutex);
+		UART_send("Set pulse done. \r\n");
+		break;
+	case ANGLE:
+		osMutexWait(servo_pos_mutex, osWaitForever);
+		servo_pos[c_params.device_id].angle = c_params.value;
+		osMutexRelease(servo_pos_mutex);
+		UART_send("Set angle done. \r\n");
+		break;
+	case POSITION:
+		osMutexWait(servo_pos_mutex, osWaitForever);
+		arm_position.x = c_params.value_x;
+		arm_position.y = c_params.value_y;
+		arm_position.z = c_params.value_z;
+		osMutexRelease(servo_pos_mutex);
+		UART_send("Set position done. \r\n");
+		break;
+	case NO_ATTRIB:
+		break;
+	}
+	return;
 }
 
 uint8_t verify_coordinates(uint16_t x, uint16_t y, uint16_t z) {
+	return 0;
+}
+
+uint8_t verify_pulse(uint32_t pulse) {
+	return 0;
+}
+
+uint8_t verify_angle(uint32_t angle) {
 	return 0;
 }
 
