@@ -30,8 +30,6 @@ void udp_client_thread(void const *argument)
    int      n;             // Socket file descriptor and the n return result from writing/reading from the socket.
    int      portno = 123;  // NTP UDP port number.
 
-  // char*    host_name = "europe.pool.ntp.org"; // NTP server host-name.
-
    // Structure that defines the 48 byte NTP packet protocol.
    // Check TWICE size of fields !!
 typedef struct
@@ -62,90 +60,73 @@ typedef struct
 
 }ntp_packet;                         // Total: 384 bits or 48 bytes.
 
-   // Create and zero out the packet. All 48 bytes worth.
-   ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	// Create and zero out the packet. All 48 bytes worth.
+	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-   memset(&packet,0,sizeof(ntp_packet));
+	memset(&packet,0,sizeof(ntp_packet));
 
-   // Set the first byte's bits to 00,011,011 for li = 0,vn = 3,and mode = 3. The rest will be left set to zero.
-   *((char*)&packet + 0) = 0x1B; // Represents 27 in base 10 or 00011011 in base 2.
+	// Set the first byte's bits to 00,011,011 for li = 0,vn = 3,and mode = 3. The rest will be left set to zero.
+	*((char*)&packet + 0) = 0x1B; // Represents 27 in base 10 or 00011011 in base 2.
 
-   // Create a UDP socket, convert the host-name to an IP address, set the port number,
-   // connect to the server,send the packet,and then read in the return packet.
-   struct sockaddr_in  serv_addr;  // Server address data structure.
-   //struct hostent *server;     // Server data structure.
+	// Create a UDP socket, convert the host-name to an IP address, set the port number,
+	// connect to the server,send the packet,and then read in the return packet.
+	struct sockaddr_in  serv_addr;  // Server address data structure.
+	//struct hostent *server;     // Server data structure.
 
-   sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
+	sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
 
-   if (sockfd < 0)
-   {
-    LCD_UsrLog("UDP Socket error");
-    }
+	if (sockfd < 0) {
+		LCD_UsrLog("UDP Socket error");
+	}
 
-   //server = gethostbyname(host_name); // Convert URL to IP.
+	// Zero out the server address structure.
+	memset(&serv_addr,0,sizeof(serv_addr));
 
-  /* if (!server)
-   {
-      printf("url ip error");
-   }*/
+	typedef short WORD;
 
-   // Zero out the server address structure.
-   memset(&serv_addr,0,sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
 
-   typedef short WORD;
+	// Convert the port number integer to network big-endian style and save it to the server address structure.
+	serv_addr.sin_port = htons((unsigned short)portno);
 
-   serv_addr.sin_family = AF_INET;
+	// Call up the server using its IP address and port number.
+	if (connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0) {
+		LCD_UsrLog("error");
+	}
 
-   // Convert the port number integer to network big-endian style and save it to the server address structure.
-   serv_addr.sin_port = htons((unsigned short)portno);
-
-   // Call up the server using its IP address and port number.
-   if (connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
-   {
-	   LCD_UsrLog("error");
-   }
-
-   serv_addr.sin_addr.s_addr = inet_addr(server_ip);
-
-
-   // Copy the server's IP address to the server address structure.
-  // memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+	serv_addr.sin_addr.s_addr = inet_addr(server_ip);
 
 	// Convert the port number integer to network big-endian style and save it to the server address structure.
 	serv_addr.sin_port = htons((WORD)portno);
 
-   // Send it the NTP packet it wants. If n == -1, it failed.
-   n = sendto(sockfd,(char*)&packet,sizeof(ntp_packet),0,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
+	// Send it the NTP packet it wants. If n == -1, it failed.
+	n = sendto(sockfd,(char*)&packet,sizeof(ntp_packet),0,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
 
-   if (n < 0)
-   {
+	if (n < 0) {
 	   LCD_UsrLog("error");
-   }
+	}
 
-   // Wait and receive the packet back from the server. If n == -1, it failed.
-   n = recv(sockfd,(char*)&packet,sizeof(ntp_packet),0);
+	// Wait and receive the packet back from the server. If n == -1, it failed.
+	n = recv(sockfd,(char*)&packet,sizeof(ntp_packet),0);
 
-   if (n < 0)
-   {
+	if (n < 0) {
 	   LCD_UsrLog("error");
-   }
+	}
 
-   // These two fields contain the time-stamp seconds as the packet left the NTP server.
-   // The number of seconds correspond to the seconds passed since 1900.
-   // ntohl() converts the bit/byte order from the network's to host's "endianness".
-   packet.txTm_s = ntohl(packet.txTm_s); // Time-stamp seconds.
-   packet.txTm_f = ntohl(packet.txTm_f); // Time-stamp fraction of a second.
+	// These two fields contain the time-stamp seconds as the packet left the NTP server.
+	// The number of seconds correspond to the seconds passed since 1900.
+	// ntohl() converts the bit/byte order from the network's to host's "endianness".
+	packet.txTm_s = ntohl(packet.txTm_s); // Time-stamp seconds.
+	packet.txTm_f = ntohl(packet.txTm_f); // Time-stamp fraction of a second.
 
-   // Extract the 32 bits that represent the time-stamp seconds (since NTP epoch) from when the packet left the server.
-   // Subtract 70 years worth of seconds from the seconds since 1900.
-   // This leaves the seconds since the UNIX epoch of 1970.
-   // (1900)------------------(1970)**************************************(Time Packet Left the Server)
-   time_t   txTm = (time_t)(packet.txTm_s - NTP_TIMESTAMP_DELTA);
+	// Extract the 32 bits that represent the time-stamp seconds (since NTP epoch) from when the packet left the server.
+	// Subtract 70 years worth of seconds from the seconds since 1900.
+	// This leaves the seconds since the UNIX epoch of 1970.
+	// (1900)------------------(1970)**************************************(Time Packet Left the Server)
+	time_t   txTm = (time_t)(packet.txTm_s - NTP_TIMESTAMP_DELTA);
 
-   // Print the time we got from the server,accounting for local timezone and conversion from UTC time.
-   LCD_UsrLog("Time: %s",ctime((const time_t*)&txTm));
+	// Print the time we got from the server,accounting for local timezone and conversion from UTC time.
+	LCD_UsrLog("Time: %s",ctime((const time_t*)&txTm));
 
-   closesocket(sockfd);
-
-
+	closesocket(sockfd);
 }
