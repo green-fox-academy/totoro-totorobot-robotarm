@@ -27,7 +27,7 @@ void udp_client_thread(void const *argument)
    int      n;             // Socket file descriptor and the n return result from writing/reading from the socket.
    int      portno = 123;  // NTP UDP port number.
 
-   char*    host_name = "212.18.3.18"; // NTP server host-name.
+   char*    host_name = "europe.pool.ntp.org"; // NTP server host-name.
 
    // Structure that defines the 48 byte NTP packet protocol.
    // Check TWICE size of fields !!
@@ -79,7 +79,7 @@ typedef struct
     LCD_UsrLog("UDP Socket error");
     }
 
-//   server *lh = gethostbyname(host_name); // Convert URL to IP.
+   server = gethostbyname(host_name)struct server ; // Convert URL to IP.
 
   /* if (!server)
    {
@@ -89,10 +89,9 @@ typedef struct
    // Zero out the server address structure.
    memset(&serv_addr,0,sizeof(serv_addr));
 
-   serv_addr.sin_family = AF_INET;
+   typedef short WORD;
 
-   // Copy the server's IP address to the server address structure.
-//   memcpy(&serv_addr.sin_addr.s_addr, server->, server->h_length);
+   serv_addr.sin_family = AF_INET;
 
    // Convert the port number integer to network big-endian style and save it to the server address structure.
    serv_addr.sin_port = htons((unsigned short)portno);
@@ -104,10 +103,10 @@ typedef struct
    }
 
    // Copy the server's IP address to the server address structure.
-     memcpy(&serv_addr.sin_addr.s_addr,server->h_addr,server->h_length);
+   memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 
-     // Convert the port number integer to network big-endian style and save it to the server address structure.
-     serv_addr.sin_port = htons((WORD)portno);
+	// Convert the port number integer to network big-endian style and save it to the server address structure.
+	serv_addr.sin_port = htons((WORD)portno);
 
    // Send it the NTP packet it wants. If n == -1, it failed.
    n = sendto(sockfd,(char*)&packet,sizeof(ntp_packet),0,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
