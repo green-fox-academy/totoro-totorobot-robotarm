@@ -22,7 +22,7 @@
 /* Private define ------------------------------------------------------------*/
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 
-#define server_ip			"178.239.61.38"
+#define server_ip			"193.6.222.47"
 
 void udp_client_thread(void const *argument)
 {
