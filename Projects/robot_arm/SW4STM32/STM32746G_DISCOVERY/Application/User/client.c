@@ -103,6 +103,12 @@ typedef struct
 	   LCD_UsrLog("error");
    }
 
+   // Copy the server's IP address to the server address structure.
+     memcpy(&serv_addr.sin_addr.s_addr,server->h_addr,server->h_length);
+
+     // Convert the port number integer to network big-endian style and save it to the server address structure.
+     serv_addr.sin_port = htons((WORD)portno);
+
    // Send it the NTP packet it wants. If n == -1, it failed.
    n = sendto(sockfd,(char*)&packet,sizeof(ntp_packet),0,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
 
