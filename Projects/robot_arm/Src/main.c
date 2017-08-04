@@ -56,6 +56,7 @@
 #include "app_ethernet.h"
 #include "lcd_log.h"
 #include "robot_arm.h"
+#include "sd_card.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -105,6 +106,8 @@ int main(void)
     /* Start scheduler */
     osKernelStart();
   
+    sd_card();
+    LCD_UsrLog((char*) "TotoRobot started2.\n");
     /* We should never get here as control is now taken by the scheduler */
     while(1) {
 

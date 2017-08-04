@@ -121,6 +121,11 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_hal_dma_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-8-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_hal_eth.c</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_eth.c</locationURI>
@@ -214,6 +219,11 @@
 			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_ll_fmc.c</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_ll_sdmmc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/FatFs/src</name>
