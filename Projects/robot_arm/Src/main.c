@@ -106,8 +106,6 @@ int main(void)
     /* Start scheduler */
     osKernelStart();
   
-    sd_card();
-    LCD_UsrLog((char*) "TotoRobot started2.\n");
     /* We should never get here as control is now taken by the scheduler */
     while(1) {
 
@@ -144,6 +142,8 @@ static void StartThread(void const * argument)
     //osThreadCreate (osThread(SERVO_CONTROL), NULL);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
+    sd_card();
+    LCD_UsrLog((char*) "TotoRobot started2.\n");
 
     while (1) {
         /* Delete the Init Thread */
@@ -204,8 +204,8 @@ static void BSP_Config(void)
     LCD_LOG_Init();
   
     /* Show Header and Footer texts */
-    LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
-    LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
+    LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm3");
+    LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy3");
   
     // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 

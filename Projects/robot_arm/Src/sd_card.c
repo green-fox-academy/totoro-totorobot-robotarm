@@ -1,5 +1,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "sd_card.h"
+#include "lcd_log.h"
 
 /* Private variables ---------------------------------------------------------*/
 FATFS SDFatFs;  /* File system object for SD card logical drive */
