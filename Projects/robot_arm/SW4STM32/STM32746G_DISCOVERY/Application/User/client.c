@@ -5,6 +5,7 @@
 #include "cmsis_os.h"
 #include "app_ethernet.h"
 #include "lwip/sockets.h"
+#include "lwip/dns.h"
 #include "stm32746g_discovery_ts.h"
 #include <string.h>
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
@@ -21,13 +22,15 @@
 /* Private define ------------------------------------------------------------*/
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 
+#define server_ip			"178.239.61.38"
+
 void udp_client_thread(void const *argument)
 {
    int      sockfd;
    int      n;             // Socket file descriptor and the n return result from writing/reading from the socket.
    int      portno = 123;  // NTP UDP port number.
 
-   char*    host_name = "europe.pool.ntp.org"; // NTP server host-name.
+  // char*    host_name = "europe.pool.ntp.org"; // NTP server host-name.
 
    // Structure that defines the 48 byte NTP packet protocol.
    // Check TWICE size of fields !!
@@ -70,7 +73,7 @@ typedef struct
    // Create a UDP socket, convert the host-name to an IP address, set the port number,
    // connect to the server,send the packet,and then read in the return packet.
    struct sockaddr_in  serv_addr;  // Server address data structure.
-   struct hostent *server;     // Server data structure.
+   //struct hostent *server;     // Server data structure.
 
    sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
 
@@ -79,7 +82,7 @@ typedef struct
     LCD_UsrLog("UDP Socket error");
     }
 
-   server = gethostbyname(host_name)struct server ; // Convert URL to IP.
+   //server = gethostbyname(host_name); // Convert URL to IP.
 
   /* if (!server)
    {
@@ -102,8 +105,11 @@ typedef struct
 	   LCD_UsrLog("error");
    }
 
+   serv_addr.sin_addr.s_addr = inet_addr(server_ip);
+
+
    // Copy the server's IP address to the server address structure.
-   memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+  // memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 
 	// Convert the port number integer to network big-endian style and save it to the server address structure.
 	serv_addr.sin_port = htons((WORD)portno);
