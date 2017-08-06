@@ -13,6 +13,16 @@ typedef struct {
 	uint16_t z;		// mm
 } coord_polar_t;
 
+typedef struct {
+	double theta0;	// radian
+	double theta1;	// radian
+	double theta2;	// radian
+} angles_t;
+
+uint16_t l1;
+uint16_t l2;
+
+
 // All values in mm and rad
 
 // Convert from degrees to radians
@@ -58,22 +68,23 @@ void cart_to_polar(coord_cart_t* pos_cart, coord_polar_t* pos_polar)
 	return;
 }
 
+void calc_forward_kinematics(angles_t* joint_angles, coord_polar_t* pos_polar)
+{
+	// Calculate coord R based on the elbows' joint angles
+	pos_polar->r = (double) l1 * cos(joint_angles->theta1) + (double) l2 * cos(joint_angles->theta2);
 
+	// Calculate coord Z based on the elbows' joint angle
+	pos_polar->r = (double) l1 * sin(joint_angles->theta1) + (double) l2 * sin(joint_angles->theta2);
 
+	// Calculate angle based on given rotation around axis Z
+	pos_polar->angle = joint_angles->theta0;
 
+	return;
+}
 
+void calc_reverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
+{
 
-// l1: vertical arm
-// l2: horizontal arm
+	return;
+}
 
-// Convert xyz -> r, z, theta0
-
-
-
-// Convert theta0, r, z -> xyz
-
-
-// Calculate theta0, r, z from theta0, theta1, theta2
-
-
-// Calculate theta0, theta1, theta2
