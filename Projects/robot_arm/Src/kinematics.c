@@ -1,35 +1,4 @@
 #include "kinematics.h"
-#include <math.h>
-
-typedef struct {
-	double x;		// mm
-	double y;		// mm
-	double z;		// mm
-} coord_cart_t;
-
-typedef struct {
-	double angle;	// radian
-	double r;		// mm
-	double z;		// mm
-} coord_polar_t;
-
-typedef struct {
-	double theta0;	// radian
-	double theta1;	// radian
-	double theta2;	// radian
-} angles_t;
-
-double l1;	// Length of vertical arm
-double l2;	// Length of horizontal arm
-double z0;	// Elevation of joint1 from reference plane
-double z3;	// Distance between joint3 and base Z point of gripper
-double r3;	// Distance between joint3 and base R point of gripper
-
-#define VERTICAL_ARM_SIZE 100
-#define HORIZONTAL_ARM_SIZE 100
-#define PLATFORM_HEIGHT 100
-#define GRIPPER_Z_DIST	100
-#define GRIPPER_R_DIST	100
 
 // Set up basic parameters
 void kinmatics_conf(void)
@@ -51,13 +20,20 @@ double deg_to_rad(int16_t deg)
 }
 
 // Convert from radians to degrees
-int16_t deg_to_rad(double rad)
+int16_t rad_to_deg(double rad)
 {
 	return (rad / (2.0 * M_PI)) * 360.0;
 }
 
+double abs_to_rel_angle(double angle)
+{
+	return 0;
+}
 
-
+double rel_to_abs_angle(double angle)
+{
+	return 0;
+}
 
 
 // Convert from polar to carthesian coordinates
