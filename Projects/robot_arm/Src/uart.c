@@ -154,6 +154,8 @@ void process_command(void)
 		c_params.attrib = POSITION;
 	} else if ((strcmp(s, "angle") == 0) || (strcmp(s, "ang") == 0)) {
 		c_params.attrib = ANGLE;
+	} else if ((strcmp(s, "manual") == 0) || (strcmp(s, "man") == 0)) {
+		c_params.attrib = MANUAL_CONTROL;
 	} else {
 		c_params.error = 1;
 		return;
@@ -175,7 +177,7 @@ void process_command(void)
 
 	// Get value
 	if ((c_params.command == SET_VALUE) &&
-		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE))) {
+		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE) || (c_params.attrib == MANUAL_CONTROL))) {
 		char* s = strtok(NULL, " ");
 
 		// Convert ASCII to integer
@@ -284,13 +286,13 @@ void set_value(void)
 		osMutexWait(servo_pos_mutex, osWaitForever);
 		servo_pos[c_params.device_id].pulse = c_params.value;
 		osMutexRelease(servo_pos_mutex);
-		UART_send("Set pulse done. \r\n");
+		UART_send("Set pulse done.\r\n");
 		break;
 	case ANGLE:
 		osMutexWait(servo_pos_mutex, osWaitForever);
 		servo_pos[c_params.device_id].angle = c_params.value;
 		osMutexRelease(servo_pos_mutex);
-		UART_send("Set angle done. \r\n");
+		UART_send("Set angle done.\r\n");
 		break;
 	case POSITION:
 		osMutexWait(servo_pos_mutex, osWaitForever);
@@ -298,7 +300,16 @@ void set_value(void)
 		arm_position.y = c_params.value_y;
 		arm_position.z = c_params.value_z;
 		osMutexRelease(servo_pos_mutex);
-		UART_send("Set position done. \r\n");
+		UART_send("Set position done.\r\n");
+		break;
+	case MANUAL_CONTROL:
+		if (c_params.value) {
+			start_adc();
+			UART_send("Manual control started, ADC running.\r\n");
+		} else {
+			stop_adc();
+			UART_send("Manual control ended, ADC terminated.\r\n");
+		}
 		break;
 	case NO_ATTRIB:
 		break;

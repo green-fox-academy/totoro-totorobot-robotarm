@@ -1,7 +1,4 @@
 #include "servo_control.h"
-#include <string.h>
-
-__IO uint32_t adc_values[SERVOS];
 
 void servo_config(void)
 {
@@ -216,83 +213,28 @@ uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value)
 	return pulse;
 }
 
-void adc_thread(void const * argument)
+void start_adc(void)
 {
-	adc_ready = 0;
+	adc_init();
+	adc_on = 1;
 
 	if (debug) {
-		LCD_UsrLog((char*) "ADC thread started\n");
+		LCD_UsrLog((char*) "ADC started\n");
 	}
 
-	// Initialize all ADC channels
-	adc_init();
+	return;
+}
 
-	adc_ready = 1;
-/*
-	uint16_t adcs[4];
+void stop_adc(void)
+{
+	adc_deinit();
+	adc_on = 0;
 
-	// Measure on all channels repeatedly
-	while (1) {
-		for (int i = 0; i < SERVOS; i++) {
-
-			// Measure on one ADC at a time
-			uint16_t adc_value = adc_measure(i);
-			adcs[i] = adc_value;
-
-			// Convert to angle
-			uint8_t servo_angle = adc_to_angle(i, adc_value);
-
-			// Convert to pulse
-			uint32_t servo_pulse = adc_to_pulse(i, adc_value);
-
-			if (debug) {
-
-				sprintf(lcd_log, "adc_to_pulse: %d\n", 1000* servo_pos_conf[i].adc_to_pulse);
-				LCD_UsrLog(lcd_log);
-
-
-				sprintf(lcd_log, "Set pulse to: %d\n", servo_pulse);
-				LCD_UsrLog(lcd_log);
-			}
-
-
-
-			// Lock mutex
-			osMutexWait(servo_pos_mutex, osWaitForever);
-
-			// Save angle
-			servo_pos[i].angle = servo_angle;
-
-			// Save pulse
-			servo_pos[i].pulse = servo_pulse;
-
-			// Release mutex
-			osMutexRelease(servo_pos_mutex);
-
-			osDelay(250);
-
-		}
-
-		if (debug) {
-			sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adcs[0], adcs[1], adcs[2], adcs[3]);
-			LCD_UsrLog(lcd_log);
-		}
-
-	}
-*/
-
-	while(1) {
-		osDelay(100);
+	if (debug) {
+		LCD_UsrLog((char*) "ADC terminated\n");
 	}
 
-    while (1) {
-        // Terminate thread
-        if (debug) {
-        	LCD_ErrLog((char*) "ADC thread terminated\n");
-        }
-    	adc_ready = 0;
-    	osThreadTerminate(NULL);
-    }
+	return;
 }
 
 void pwm_thread(void const * argument)
@@ -315,7 +257,8 @@ void pwm_thread(void const * argument)
 	while (1) {
 		for (int i = 0; i < SERVOS; i++) {
 
-			LCD_UsrLog(lcd_log);
+			// TODO : check if ADC is running. If so, convert ADC values to pulse herer
+			// if (adc_on) { .... }
 
 			// Lock mutex
 			osMutexWait(servo_pos_mutex, osWaitForever);

@@ -5,6 +5,7 @@
 #include "cmsis_os.h"
 #include "lcd_log.h"
 #include "robot_arm_conf.h"
+#include <string.h>
 
 #define SERVOS				4
 #define MIN_ADC_VALUE		0
@@ -21,6 +22,11 @@
 #define SERVO0_MAX_PULSE	7500
 #define SERVO0_MIN_ANGLE	0
 #define SERVO0_MAX_ANGLE	174
+#define SERVO0_PWM_PORT		GPIOB
+#define SERVO0_PWM_PIN		GPIO_PIN_4
+#define SERVO0_PWM_AF		GPIO_AF2_TIM3
+#define SERVO0_ADC_PORT		GPIOA
+#define SERVO0_ADC_PIN		GPIO_PIN_0
 #define SERVO0_ADC_CHANNEL	ADC_CHANNEL_0
 
 /* SERVO 1 Configuration */
@@ -34,6 +40,11 @@
 #define SERVO1_MAX_PULSE	7800
 #define SERVO1_MIN_ANGLE	0
 #define SERVO1_MAX_ANGLE	150
+#define SERVO1_PWM_PORT		GPIOH
+#define SERVO1_PWM_PIN		GPIO_PIN_6
+#define SERVO1_PWM_AF		GPIO_AF9_TIM12
+#define SERVO1_ADC_PORT		GPIOF
+#define SERVO1_ADC_PIN		GPIO_PIN_10
 #define SERVO1_ADC_CHANNEL	ADC_CHANNEL_8
 
 /* SERVO 2 Configuration */
@@ -47,6 +58,11 @@
 #define SERVO2_MAX_PULSE	7600
 #define SERVO2_MIN_ANGLE	0
 #define SERVO2_MAX_ANGLE	160
+#define SERVO2_PWM_PORT		GPIOA
+#define SERVO2_PWM_PIN		GPIO_PIN_15
+#define SERVO2_PWM_AF		GPIO_AF1_TIM2
+#define SERVO2_ADC_PORT		GPIOF
+#define SERVO2_ADC_PIN		GPIO_PIN_9
 #define SERVO2_ADC_CHANNEL	ADC_CHANNEL_7
 
 /* SERVO 3 Configuration */
@@ -60,6 +76,11 @@
 #define SERVO3_MAX_PULSE	8500
 #define SERVO3_MIN_ANGLE	0
 #define SERVO3_MAX_ANGLE	174
+#define SERVO3_PWM_PORT		GPIOA
+#define SERVO3_PWM_PIN		GPIO_PIN_8
+#define SERVO3_PWM_AF		GPIO_AF1_TIM1
+#define SERVO3_ADC_PORT		GPIOF
+#define SERVO3_ADC_PIN		GPIO_PIN_8
 #define SERVO3_ADC_CHANNEL	ADC_CHANNEL_6
 
 typedef struct {
@@ -90,7 +111,7 @@ typedef struct {
 	uint8_t angle;
 } servo_pos_t;
 
-
+__IO uint32_t adc_values[SERVOS];
 uint32_t adc_channels[SERVOS];
 ADC_HandleTypeDef adc;
 ADC_ChannelConfTypeDef adc_ch[SERVOS];
@@ -103,7 +124,7 @@ servo_pos_conf_t servo_pos_conf[SERVOS];
 servo_pos_t servo_pos[SERVOS];
 arm_pos_t arm_position;
 uint8_t debug;
-uint8_t adc_ready;
+uint8_t adc_on;
 uint8_t pwm_ready;
 char lcd_log[100];
 
@@ -118,7 +139,8 @@ uint16_t adc_measure(uint8_t servo);
 uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value);
 uint32_t angle_to_pulse(uint8_t servo, uint8_t degree);
 uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value);
-void adc_thread(void const * argument);
 void pwm_thread(void const * argument);
+void start_adc(void);
+void stop_adc(void);
 
 #endif /* __SERVO_CONTROL_H_ */
