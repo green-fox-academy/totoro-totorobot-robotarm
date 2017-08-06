@@ -51,6 +51,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/ethernetif.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/kinematics.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/kinematics.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Src/main.c</locationURI>
