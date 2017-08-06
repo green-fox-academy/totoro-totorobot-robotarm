@@ -20,12 +20,29 @@ typedef struct {
 } angles_t;
 
 double l1;	// Length of vertical arm
-double l2;	// Length of horizaontal arm
+double l2;	// Length of horizontal arm
 double z0;	// Elevation of joint1 from reference plane
 double z3;	// Distance between joint3 and base Z point of gripper
 double r3;	// Distance between joint3 and base R point of gripper
 
-// All values in mm and rad
+#define VERTICAL_ARM_SIZE 100
+#define HORIZONTAL_ARM_SIZE 100
+#define PLATFORM_HEIGHT 100
+#define GRIPPER_Z_DIST	100
+#define GRIPPER_R_DIST	100
+
+// Set up basic parameters
+void kinmatics_conf(void)
+{
+	l1 = (double) VERTICAL_ARM_SIZE;
+	l2 = (double) HORIZONTAL_ARM_SIZE;
+	z0 = (double) PLATFORM_HEIGHT;
+	z3 = (double) GRIPPER_Z_DIST;
+	r3 = (double) GRIPPER_R_DIST;
+
+	return;
+}
+
 
 // Convert from degrees to radians
 double deg_to_rad(int16_t deg)
@@ -38,6 +55,9 @@ int16_t deg_to_rad(double rad)
 {
 	return (rad / (2.0 * M_PI)) * 360.0;
 }
+
+
+
 
 
 // Convert from polar to carthesian coordinates
@@ -70,6 +90,7 @@ void cart_to_polar(coord_cart_t* pos_cart, coord_polar_t* pos_polar)
 	return;
 }
 
+// Calculate forward kinematics: joint angles -> polar coordinates
 void calc_forward_kinematics(angles_t* joint_angles, coord_polar_t* pos_polar)
 {
 
@@ -92,6 +113,7 @@ void calc_forward_kinematics(angles_t* joint_angles, coord_polar_t* pos_polar)
 	return;
 }
 
+// Calculate inverse kinematics: polar coordinates -> joint angles;
 void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 {
 	// Correct gripper displacement and joint0 elevation
@@ -101,6 +123,7 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 	// Calculate theta2
 	double cos_theta2 = (pow(r, 2.0) + pow(z, 2.0) - pow(l1, 2.0) - pow(l2, 2.0)) / (2.0 * l1 * l2);
 
+	// TODO: check if we can do elbow up at all
 	uint8_t elbow_dir = -1; // elbow down, +1 for elbow up
 	joint_angles->theta2 = atan2(elbow_dir * sqrt(1.0 - pow(cos_theta2, 2.0)), cos_theta2);
 
@@ -115,4 +138,6 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 
 	return;
 }
+
+
 
