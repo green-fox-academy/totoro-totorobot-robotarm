@@ -92,7 +92,7 @@ typedef struct {
 
 
 uint32_t adc_channels[SERVOS];
-ADC_HandleTypeDef adc[SERVOS];
+ADC_HandleTypeDef adc;
 ADC_ChannelConfTypeDef adc_ch[SERVOS];
 
 pwm_conf_t pwm_conf[SERVOS];
@@ -113,6 +113,7 @@ void servo_config(void);
 void pwm_init(void);
 void pwm_set_pulse(uint8_t servo, uint32_t pulse);
 void adc_init(void);
+void adc_deinit(void);
 uint16_t adc_measure(uint8_t servo);
 uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value);
 uint32_t angle_to_pulse(uint8_t servo, uint8_t degree);

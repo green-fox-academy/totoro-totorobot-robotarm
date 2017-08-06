@@ -1,12 +1,7 @@
-/* Includes ------------------------------------------------------------------*/
 #include "servo_control.h"
+#include <string.h>
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
+__IO uint32_t adc_values[SERVOS];
 
 void servo_config(void)
 {
@@ -133,41 +128,64 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 
 void adc_init(void)
 {
-	for (int i = 0; i < SERVOS; i++) {
-		adc[i].State = HAL_ADC_STATE_RESET;
-		adc[i].Instance = ADC3;
-		adc[i].Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
-		adc[i].Init.Resolution = ADC_RESOLUTION_12B;
-		adc[i].Init.EOCSelection = ADC_EOC_SEQ_CONV;
-		adc[i].Init.DMAContinuousRequests = DISABLE;
-		adc[i].Init.DataAlign = ADC_DATAALIGN_RIGHT;
-		adc[i].Init.ContinuousConvMode = DISABLE;
-		adc[i].Init.DiscontinuousConvMode = DISABLE;
-		adc[i].Init.ScanConvMode = DISABLE;
-		HAL_ADC_Init(&adc[i]);
+	// Zero out adc_values array
+	memset(adc_values, 0, sizeof(adc_values));
 
-		// Hard coded to ADC0 pin for now
-		adc_ch[i].Channel = adc_channels[0];
+	// General init
+	adc.State = HAL_ADC_STATE_RESET;
+	adc.Instance = ADC3;
+	adc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+	adc.Init.Resolution = ADC_RESOLUTION_12B;
+	adc.Init.EOCSelection = DISABLE;
+	adc.Init.DMAContinuousRequests = ENABLE;
+	adc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	adc.Init.ContinuousConvMode = ENABLE;
+	adc.Init.DiscontinuousConvMode = DISABLE;
+	adc.Init.ScanConvMode = ENABLE;
+	adc.Init.NbrOfConversion = 4;
+	HAL_ADC_Init(&adc);
+
+	// Init channels
+	for (int i = 0; i < SERVOS; i++) {
+		adc_ch[i].Channel = adc_channels[i];
 		adc_ch[i].Offset = 0;
-		adc_ch[i].Rank = 1;
+		adc_ch[i].Rank = i + 1;
 		adc_ch[i].SamplingTime = ADC_SAMPLETIME_480CYCLES;
-		HAL_ADC_ConfigChannel(&adc[i], &adc_ch[i]);
+		HAL_ADC_ConfigChannel(&adc, &adc_ch[i]);
 	}
 
+	// Start continuous conversion with DMA
+	HAL_ADC_Start_DMA(&adc, (uint32_t*) &adc_values, sizeof(adc_values));
+
+	return;
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
+{
+  /* Turn LED1 on: Transfer process is correct */
+  //BSP_LED_On(LED1);
+  sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
+  LCD_UsrLog(lcd_log);
+
+}
+
+void adc_deinit(void)
+{
+	HAL_ADC_Stop_DMA(&adc);
 	return;
 }
 
 uint16_t adc_measure(uint8_t servo)
 {
 	uint16_t adc_value = 0;
-	HAL_ADC_Start(&adc[servo]);
-	HAL_ADC_PollForConversion(&adc[servo], HAL_MAX_DELAY);
-	adc_value = HAL_ADC_GetValue(&adc[servo]);
-	HAL_ADC_Stop(&adc[servo]);
+	HAL_ADC_Start(&adc);
+	HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
+	adc_value = HAL_ADC_GetValue(&adc);
+	HAL_ADC_Stop(&adc);
 
 	if (debug) {
-		sprintf(lcd_log, "ADC%d value: %d\n", servo, adc_value);
-		LCD_UsrLog(lcd_log);
+		// sprintf(lcd_log, "ADC%d value: %d\n", servo, adc_value);
+		// LCD_UsrLog(lcd_log);
 	}
 
 	return adc_value;
@@ -210,6 +228,8 @@ void adc_thread(void const * argument)
 	adc_init();
 
 	adc_ready = 1;
+/*
+	uint16_t adcs[4];
 
 	// Measure on all channels repeatedly
 	while (1) {
@@ -217,6 +237,7 @@ void adc_thread(void const * argument)
 
 			// Measure on one ADC at a time
 			uint16_t adc_value = adc_measure(i);
+			adcs[i] = adc_value;
 
 			// Convert to angle
 			uint8_t servo_angle = adc_to_angle(i, adc_value);
@@ -248,10 +269,20 @@ void adc_thread(void const * argument)
 			// Release mutex
 			osMutexRelease(servo_pos_mutex);
 
-		osDelay(1000);
+			osDelay(250);
 
 		}
 
+		if (debug) {
+			sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adcs[0], adcs[1], adcs[2], adcs[3]);
+			LCD_UsrLog(lcd_log);
+		}
+
+	}
+*/
+
+	while(1) {
+		osDelay(100);
 	}
 
     while (1) {

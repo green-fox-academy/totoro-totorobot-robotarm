@@ -48,6 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 extern ETH_HandleTypeDef EthHandle;
 extern TIM_HandleTypeDef TimHandle;
+extern ADC_HandleTypeDef adc;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -187,6 +188,15 @@ void EXTI15_10_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
 }
 
+/**
+* @brief  This function handles DMA interrupt request.
+* @param  None
+* @retval None
+*/
+void DMA2_Stream0_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(adc.DMA_Handle);
+}
 
 /**
   * @brief  This function handles PPP interrupt request.
