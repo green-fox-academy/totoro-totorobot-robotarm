@@ -27,7 +27,6 @@ RTC_HandleTypeDef RtcHandle;
   */
 void k_CalendarBkupInit(void)
 {
-
   /*##-1- Configure the RTC peripheral #######################################*/
   /* Configure RTC prescaler and RTC data registers */
   /* RTC configured as follow:
@@ -37,7 +36,7 @@ void k_CalendarBkupInit(void)
   - OutPut         = Output Disable
   - OutPutPolarity = High Polarity
   - OutPutType     = Open Drain */
-  RtcHandle.Instance = &txTm;
+  RtcHandle.Instance = txTm;
   RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
   RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
   RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;

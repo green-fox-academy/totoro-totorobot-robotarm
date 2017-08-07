@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define NTP_TIMESTAMP_DELTA 2208988800ull
