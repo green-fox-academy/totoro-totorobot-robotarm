@@ -135,12 +135,13 @@ void pwm_init(void);
 void pwm_set_pulse(uint8_t servo, uint32_t pulse);
 void adc_init(void);
 void adc_deinit(void);
-uint16_t adc_measure(uint8_t servo);
+void adc_measure(void);
 uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value);
 uint32_t angle_to_pulse(uint8_t servo, uint8_t degree);
 uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value);
 void pwm_thread(void const * argument);
-void start_adc(void);
-void stop_adc(void);
+void ttr_start_adc(void);
+void ttr_stop_adc(void);
+void adc_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */

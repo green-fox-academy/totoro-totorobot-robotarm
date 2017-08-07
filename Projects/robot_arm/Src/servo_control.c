@@ -116,8 +116,8 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 	HAL_TIM_PWM_Start(&pwm[servo], TIM_CHANNEL_1);
 
 	if (debug) {
-		sprintf(lcd_log, "Servo%d pulse: %5d\n", servo, pulse);
-		LCD_UsrLog(lcd_log);
+		// sprintf(lcd_log, "Servo%d pulse: %5d\n", servo, pulse);
+		// LCD_UsrLog(lcd_log);
 	}
 
 	return;
@@ -125,8 +125,9 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 
 void adc_init(void)
 {
+	LCD_UsrLog("inside adc_init()\n");
 	// Zero out adc_values array
-	memset(adc_values, 0, sizeof(adc_values));
+	// memset(adc_values, 0, sizeof(adc_values));
 
 	// General init
 	adc.State = HAL_ADC_STATE_RESET;
@@ -134,15 +135,17 @@ void adc_init(void)
 	adc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
 	adc.Init.Resolution = ADC_RESOLUTION_12B;
 	adc.Init.EOCSelection = DISABLE;
-	adc.Init.DMAContinuousRequests = ENABLE;
+	adc.Init.DMAContinuousRequests = DISABLE;
 	adc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	adc.Init.ContinuousConvMode = ENABLE;
+	adc.Init.ContinuousConvMode = DISABLE;
 	adc.Init.DiscontinuousConvMode = DISABLE;
-	adc.Init.ScanConvMode = ENABLE;
+	adc.Init.ScanConvMode = DISABLE;
 	adc.Init.NbrOfConversion = 4;
 	HAL_ADC_Init(&adc);
 
-	// Init channels
+	LCD_UsrLog("after general adc init\n");
+
+	/* Init channels
 	for (int i = 0; i < SERVOS; i++) {
 		adc_ch[i].Channel = adc_channels[i];
 		adc_ch[i].Offset = 0;
@@ -151,19 +154,19 @@ void adc_init(void)
 		HAL_ADC_ConfigChannel(&adc, &adc_ch[i]);
 	}
 
+	LCD_UsrLog("after init adc channels\n");
 	// Start continuous conversion with DMA
 	HAL_ADC_Start_DMA(&adc, (uint32_t*) &adc_values, sizeof(adc_values));
 
+	LCD_UsrLog("after dma init\n");
+	*/
 	return;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
 {
-  /* Turn LED1 on: Transfer process is correct */
-  //BSP_LED_On(LED1);
-  sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
-  LCD_UsrLog(lcd_log);
-
+	// This function runs each time when the DMA finished moving
+	// all ADC values to the memory
 }
 
 void adc_deinit(void)
@@ -172,20 +175,32 @@ void adc_deinit(void)
 	return;
 }
 
-uint16_t adc_measure(uint8_t servo)
+void adc_measure(void)
 {
-	uint16_t adc_value = 0;
-	HAL_ADC_Start(&adc);
-	HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
-	adc_value = HAL_ADC_GetValue(&adc);
-	HAL_ADC_Stop(&adc);
+	// Init channels
+	for (int i = 0; i < SERVOS; i++) {
+
+		ADC_ChannelConfTypeDef adc_chan;
+		adc_chan.Channel = adc_channels[i];
+		adc_chan.Offset = 0;
+		adc_chan.Rank = 1;
+		adc_chan.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+		HAL_ADC_ConfigChannel(&adc, &adc_chan);
+
+		HAL_ADC_Start(&adc);
+
+		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
+		adc_values[i] = HAL_ADC_GetValue(&adc);
+		HAL_ADC_Stop(&adc);
+		osDelay(5);
+	}
 
 	if (debug) {
 		// sprintf(lcd_log, "ADC%d value: %d\n", servo, adc_value);
 		// LCD_UsrLog(lcd_log);
 	}
 
-	return adc_value;
+	// return adc_value;
 }
 
 uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value)
@@ -213,7 +228,7 @@ uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value)
 	return pulse;
 }
 
-void start_adc(void)
+void ttr_start_adc(void)
 {
 	adc_init();
 	adc_on = 1;
@@ -222,10 +237,13 @@ void start_adc(void)
 		LCD_UsrLog((char*) "ADC started\n");
 	}
 
+    osThreadDef(ADC_MEASURE, adc_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(ADC_MEASURE), NULL);
+
 	return;
 }
 
-void stop_adc(void)
+void ttr_stop_adc(void)
 {
 	adc_deinit();
 	adc_on = 0;
@@ -257,7 +275,7 @@ void pwm_thread(void const * argument)
 	while (1) {
 		for (int i = 0; i < SERVOS; i++) {
 
-			// TODO : check if ADC is running. If so, convert ADC values to pulse herer
+			// TODO : check if ADC is running. If so, convert ADC values to pulse here
 			// if (adc_on) { .... }
 
 			// Lock mutex
@@ -284,4 +302,29 @@ void pwm_thread(void const * argument)
     	pwm_ready = 0;
         osThreadTerminate(NULL);
     }
+}
+
+void adc_thread(void const * argument)
+{
+
+	if (debug) {
+		LCD_UsrLog((char*) "ADC thread started\n");
+	}
+
+	while(adc_on) {
+		adc_measure();
+		if (debug) {
+			sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
+			LCD_UsrLog(lcd_log);
+			osDelay(500);
+		}
+	}
+
+	while (1) {
+		// Terminate thread
+		if (debug) {
+			LCD_ErrLog((char*) "ADC printer thread terminated\n");
+		}
+		osThreadTerminate(NULL);
+	}
 }

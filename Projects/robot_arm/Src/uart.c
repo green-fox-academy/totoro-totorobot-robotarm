@@ -54,10 +54,12 @@ void UART_send_help(void)
 	UART_send("get pulse                    - Get servos' current pulse width\r\n");
 	UART_send("get angle                    - Get servos' current angle\r\n");
 	UART_send("get pos                      - Get robot arm's current xyz coordinates\r\n");
+	UART_send("get manual                   - Get current manual control status\r\n");
 	UART_send("\r\n");
 	UART_send("set pulse <servo> <value>    - Set servo pulse width\r\n");
 	UART_send("set angle <servo> <value>    - Set servo angle\r\n");
 	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates\r\n");
+	UART_send("set manual <0|1>             - Turn on or off manual control\r\n");
 	UART_send("\r\n");
 	UART_send("Always terminate commands with LF!\r\n");
 	UART_send("\r\n");
@@ -98,7 +100,9 @@ void UART_rx_thread(void const * argument)
 
 			// Process command
 			process_command();
+			LCD_UsrLog("after process command()\n");
 			execute_command();
+			LCD_UsrLog("after execute command()\n");
 
 			// Clear buffer
 			RX_buffer[0] = '\0';
@@ -303,11 +307,11 @@ void set_value(void)
 		UART_send("Set position done.\r\n");
 		break;
 	case MANUAL_CONTROL:
-		if (c_params.value) {
-			start_adc();
+		if (c_params.value > 0) {
+			ttr_start_adc();
 			UART_send("Manual control started, ADC running.\r\n");
 		} else {
-			stop_adc();
+			ttr_stop_adc();
 			UART_send("Manual control ended, ADC terminated.\r\n");
 		}
 		break;
