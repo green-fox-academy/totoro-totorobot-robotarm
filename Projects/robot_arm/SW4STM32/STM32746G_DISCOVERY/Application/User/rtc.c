@@ -27,26 +27,25 @@ RTC_HandleTypeDef RtcHandle;
   */
 void k_CalendarBkupInit(time_t txTm)
 {
-  /*##-1- Configure the RTC peripheral #######################################*/
-  /* Configure RTC prescaler and RTC data registers */
-  /* RTC configured as follow:
-  - Hour Format    = Format 24
-  - Asynch Prediv  = Value according to source clock
-  - Synch Prediv   = Value according to source clock
-  - OutPut         = Output Disable
-  - OutPutPolarity = High Polarity
-  - OutPutType     = Open Drain */
-  RtcHandle.Instance = txTm;
-  RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
-  RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
-  RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
-  RtcHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
-  RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+	/*##-1- Configure the RTC peripheral #######################################*/
+	/* Configure RTC prescaler and RTC data registers */
+	/* RTC configured as follow:
+	- Hour Format    = Format 24
+	- Asynch Prediv  = Value according to source clock
+	- Synch Prediv   = Value according to source clock
+	- OutPut         = Output Disable
+	- OutPutPolarity = High Polarity
+	- OutPutType     = Open Drain */
+	RtcHandle.Instance = txTm;
+	RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
+	RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
+	RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
+	RtcHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
+	RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+	RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
 
-  if(HAL_RTC_Init(&RtcHandle) != HAL_OK)
-  {
-  }
+	if(HAL_RTC_Init(&RtcHandle) != HAL_OK) {
+	}
 }
 
 /**
@@ -58,29 +57,27 @@ void k_CalendarBkupInit(time_t txTm)
   */
 void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc)
 {
-  RCC_OscInitTypeDef        RCC_OscInitStruct;
-  RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
+	RCC_OscInitTypeDef        RCC_OscInitStruct;
+	RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
 
-  /*##-1- Configure LSE as RTC clock source ##################################*/
-  RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    return;
-  }
+	/*##-1- Configure LSE as RTC clock source ##################################*/
+	RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+	RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+	if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		return;
+	}
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    return;
-  }
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+		return;
+	}
 
   /*##-2- Enable RTC peripheral Clocks #######################################*/
   /* Enable RTC Clock */
-  __HAL_RCC_RTC_ENABLE();
+	__HAL_RCC_RTC_ENABLE();
 }
 
 /**
@@ -92,8 +89,8 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc)
   */
 void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
 {
-  /*##-1- Reset peripherals ##################################################*/
-   __HAL_RCC_RTC_DISABLE();
+	/*##-1- Reset peripherals ##################################################*/
+	__HAL_RCC_RTC_DISABLE();
 }
 
 
@@ -107,7 +104,7 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
   */
 void k_BkupSaveParameter(uint32_t address, uint32_t data)
 {
-  HAL_RTCEx_BKUPWrite(&RtcHandle,address,data);
+	HAL_RTCEx_BKUPWrite(&RtcHandle,address,data);
 }
 
 /**
@@ -119,7 +116,7 @@ void k_BkupSaveParameter(uint32_t address, uint32_t data)
   */
 uint32_t k_BkupRestoreParameter(uint32_t address)
 {
-   return HAL_RTCEx_BKUPRead(&RtcHandle,address);
+	return HAL_RTCEx_BKUPRead(&RtcHandle,address);
 }
 
 /**
@@ -127,9 +124,9 @@ uint32_t k_BkupRestoreParameter(uint32_t address)
   * @param  Time: Pointer to Time structure
   * @retval None
   */
-void k_GetTime(  RTC_TimeTypeDef *Time)
+void k_GetTime(RTC_TimeTypeDef *Time)
 {
-   HAL_RTC_GetTime(&RtcHandle, Time, FORMAT_BIN);
+	HAL_RTC_GetTime(&RtcHandle, Time, FORMAT_BIN);
 }
 
 /**
@@ -137,12 +134,12 @@ void k_GetTime(  RTC_TimeTypeDef *Time)
   * @param  Time: Pointer to Time structure
   * @retval None
   */
-void k_SetTime(  RTC_TimeTypeDef *Time)
+void k_SetTime(RTC_TimeTypeDef *Time)
 {
-   Time->StoreOperation = 0;
-   Time->SubSeconds = 0;
-   Time->DayLightSaving = 0;
-   HAL_RTC_SetTime(&RtcHandle, Time, FORMAT_BIN);
+	Time->StoreOperation = 0;
+	Time->SubSeconds = 0;
+	Time->DayLightSaving = 0;
+	HAL_RTC_SetTime(&RtcHandle, Time, FORMAT_BIN);
 }
 
 /**
@@ -150,14 +147,13 @@ void k_SetTime(  RTC_TimeTypeDef *Time)
   * @param  Date: Pointer to Date structure
   * @retval None
   */
-void k_GetDate(  RTC_DateTypeDef *Date)
+void k_GetDate(RTC_DateTypeDef *Date)
 {
-   HAL_RTC_GetDate(&RtcHandle, Date, FORMAT_BIN);
+	HAL_RTC_GetDate(&RtcHandle, Date, FORMAT_BIN);
 
-   if((Date->Date == 0) || (Date->Month == 0))
-   {
-     Date->Date = Date->Month = 1;
-   }
+	if((Date->Date == 0) || (Date->Month == 0)) {
+		Date->Date = Date->Month = 1;
+	}
 }
 
 /**
@@ -165,9 +161,9 @@ void k_GetDate(  RTC_DateTypeDef *Date)
   * @param  Date: Pointer to Date structure
   * @retval None
   */
-void k_SetDate(  RTC_DateTypeDef *Date)
+void k_SetDate(RTC_DateTypeDef *Date)
 {
-   HAL_RTC_SetDate(&RtcHandle, Date, FORMAT_BIN);
+	HAL_RTC_SetDate(&RtcHandle, Date, FORMAT_BIN);
 }
 
 /**

@@ -15,6 +15,17 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+
+ typedef struct
+ {
+	unsigned char second;
+	unsigned char minute;
+	unsigned char hour;
+	unsigned char day;
+	unsigned char month;
+	unsigned char year;
+ }rtc_data_t;
+
 void k_CalendarBkupInit(time_t txTm);
 void k_BkupSaveParameter(uint32_t address, uint32_t data);
 uint32_t k_BkupRestoreParameter(uint32_t address);
