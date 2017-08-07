@@ -84,7 +84,7 @@ void pwm_init(void)
 		pwm_oc_init[i].OCFastMode = TIM_OCFAST_DISABLE;
 		pwm_oc_init[i].OCIdleState = TIM_OCIDLESTATE_RESET;
 		pwm_oc_init[i].OCMode = TIM_OCMODE_PWM1;
-		pwm_oc_init[i].OCPolarity = TIM_OCPOLARITY_LOW;
+		pwm_oc_init[i].OCPolarity = TIM_OCPOLARITY_HIGH;
 		pwm_oc_init[i].Pulse = pwm_conf[i].pulse;
 		HAL_TIM_PWM_ConfigChannel(&pwm[i], &pwm_oc_init[i], TIM_CHANNEL_1);
 
