@@ -25,7 +25,7 @@ RTC_HandleTypeDef RtcHandle;
   * @param  None
   * @retval None
   */
-void k_CalendarBkupInit(void)
+void k_CalendarBkupInit(time_t txTm)
 {
   /*##-1- Configure the RTC peripheral #######################################*/
   /* Configure RTC prescaler and RTC data registers */

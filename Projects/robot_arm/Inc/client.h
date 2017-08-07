@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "cmsis_os.h"
-
+#include <time.h>
 
 int udp_client_ready;
 int udp_send_allowed;
