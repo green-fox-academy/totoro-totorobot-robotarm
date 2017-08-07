@@ -2,12 +2,28 @@
 #ifndef __RTC_H
 #define __RTC_H
 
-/* Includes ------------------------------------------------------------------*/
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "stm32f7xx_hal_rtc.h"
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */  
+/* Exported macros -----------------------------------------------------------*/
+/* Exported functions ------------------------------------------------------- */
+void k_CalendarBkupInit(void);
+void k_BkupSaveParameter(uint32_t address, uint32_t data);
+uint32_t k_BkupRestoreParameter(uint32_t address);
 
+void k_SetTime(RTC_TimeTypeDef *Time);
+void k_GetTime(RTC_TimeTypeDef *Time);
+void k_SetDate(RTC_DateTypeDef *Date);
+void k_GetDate(RTC_DateTypeDef *Date);
 
-#endif /* __EXAM_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /*__K_RTC_H */
