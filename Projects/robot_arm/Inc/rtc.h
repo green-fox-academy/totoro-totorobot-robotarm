@@ -9,11 +9,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f7xx_hal_rtc.h"
+#include "client.h"
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void k_CalendarBkupInit(void);
+void k_CalendarBkupInit(time_t txTm);
 void k_BkupSaveParameter(uint32_t address, uint32_t data);
 uint32_t k_BkupRestoreParameter(uint32_t address);
 

@@ -9,6 +9,8 @@
 int udp_client_ready;
 int udp_send_allowed;
 
+time_t txTm;
+
 void udp_client_thread(void const *argument);
 
 #endif // __CLIENT_H_

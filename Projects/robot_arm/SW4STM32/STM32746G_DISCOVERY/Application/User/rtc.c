@@ -2,6 +2,7 @@
 #include "rtc.h"
 #include "stm32f7xx_hal_rtc.h"
 #include "stm32f7xx_hal_rcc.h"
+#include "client.h"
 
 /** @addtogroup CORE
   * @{
@@ -11,7 +12,6 @@
   * @brief Kernel rtc routines
   * @{
   */
-//rtc hanle
 /* External variables --------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
@@ -37,7 +37,7 @@ void k_CalendarBkupInit(void)
   - OutPut         = Output Disable
   - OutPutPolarity = High Polarity
   - OutPutType     = Open Drain */
-  RtcHandle.Instance = RTC;
+  RtcHandle.Instance = &txTm;
   RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
   RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
   RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;

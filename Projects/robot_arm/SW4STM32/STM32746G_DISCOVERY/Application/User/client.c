@@ -123,7 +123,7 @@ typedef struct
 	// Subtract 70 years worth of seconds from the seconds since 1900.
 	// This leaves the seconds since the UNIX epoch of 1970.
 	// (1900)------------------(1970)**************************************(Time Packet Left the Server)
-	time_t   txTm = (time_t)(packet.txTm_s - NTP_TIMESTAMP_DELTA);
+	txTm = (time_t)(packet.txTm_s - NTP_TIMESTAMP_DELTA);
 
 	// Print the time we got from the server,accounting for local timezone and conversion from UTC time.
 	LCD_UsrLog("Time: %s",ctime((const time_t*)&txTm));
