@@ -55,11 +55,13 @@ void UART_send_help(void)
 	UART_send("get angle                    - Get servos' current angle\r\n");
 	UART_send("get pos                      - Get robot arm's current xyz coordinates\r\n");
 	UART_send("get manual                   - Get current manual control status\r\n");
+	UART_send("get display                  - Get current status of LCD data display\r\n");
 	UART_send("\r\n");
 	UART_send("set pulse <servo> <value>    - Set servo pulse width\r\n");
 	UART_send("set angle <servo> <value>    - Set servo angle\r\n");
 	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates\r\n");
 	UART_send("set manual <0|1>             - Turn on or off manual control\r\n");
+	UART_send("set display <0|1>            - Turn on data display on LCD\r\n");
 	UART_send("\r\n");
 	UART_send("Always terminate commands with LF!\r\n");
 	UART_send("\r\n");
@@ -132,7 +134,7 @@ void process_command(void)
 	char received[RXBUFFERSIZE];
 	strcpy(received, (char*) RX_buffer);
 
-	// Get command
+	// Command
 	char* s = strtok(received, " ");
 
 	if ((strcmp(s, "set") == 0) || (strcmp(s, "s") == 0)) {
@@ -147,7 +149,7 @@ void process_command(void)
 		return;
 	}
 
-	// Get command attribute
+	// Attribute
 	s = strtok(NULL, " ");
 
 	if ((strcmp(s, "pulse") == 0) || (strcmp(s, "pul") == 0)) {
@@ -158,12 +160,14 @@ void process_command(void)
 		c_params.attrib = ANGLE;
 	} else if ((strcmp(s, "manual") == 0) || (strcmp(s, "man") == 0)) {
 		c_params.attrib = MANUAL_CONTROL;
+	} else if ((strcmp(s, "display") == 0) || (strcmp(s, "dis") == 0)) {
+		c_params.attrib = DATA_DISP;
 	} else {
 		c_params.error = 1;
 		return;
 	}
 
-	// Get device id
+	// Device id
 	if ((c_params.command == SET_VALUE) &&
 		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE))) {
 		char* s = strtok(NULL, " ");
@@ -177,7 +181,7 @@ void process_command(void)
 		}
 	}
 
-	// Get value
+	// Value
 	if ((c_params.command == SET_VALUE) &&
 		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE) || (c_params.attrib == MANUAL_CONTROL))) {
 		char* s = strtok(NULL, " ");
@@ -186,7 +190,7 @@ void process_command(void)
 		c_params.value = atoi(s);
 	}
 
-	// Get xyz value
+	// XYZ value
 	if ((c_params.command == SET_VALUE) && (c_params.attrib == POSITION)) {
 		char* s = strtok(NULL, " ");
 
@@ -276,7 +280,11 @@ void UART_send_settings(void)
 		UART_send((char*) TX_buffer);
 		break;
 	case MANUAL_CONTROL:
-		sprintf(TX_buffer, "Current setting of manual control is %d\r\n", adc_on);
+		sprintf(TX_buffer, "Manual control is %s\r\n", adc_on ? "on" : "off");
+		UART_send((char*) TX_buffer);
+		break;
+	case DATA_DISP:
+		sprintf(TX_buffer, "LCD data display is %s\r\n", lcd_data_display_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 	case NO_ATTRIB:
@@ -315,6 +323,15 @@ void set_value(void)
 		} else {
 			stop_adc_thread();
 			UART_send("Manual control ended, ADC terminated.\r\n");
+		}
+		break;
+	case DATA_DISP:
+		if (c_params.value > 0) {
+			start_lcd_data_display();
+			UART_send("LCD data display turned on.\r\n");
+		} else {
+			stop_lcd_data_display();
+			UART_send("LCD data display turned off.\r\n");
 		}
 		break;
 	case NO_ATTRIB:

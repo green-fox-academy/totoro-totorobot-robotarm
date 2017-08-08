@@ -1,6 +1,6 @@
 #include "data_display.h"
 
-void lcd_data_display_start(void)
+void start_lcd_data_display(void)
 {
 	if (debug) {
 		LCD_UsrLog((char*) "Stopping LCD log utility\n");
@@ -24,7 +24,7 @@ void lcd_data_display_start(void)
 	return;
 }
 
-void lcd_data_display_stop(void)
+void stop_lcd_data_display(void)
 {
 	// Restart LCD logging
 	BSP_LCD_Clear(LCD_COLOR_WHITE);
