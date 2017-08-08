@@ -34,7 +34,12 @@ void UART_send(char* buffer)
 {
 	uint16_t buffer_len = strlen(buffer);
 	uint32_t timeout = 100;
+
+	// Send buffer content
 	HAL_UART_Transmit(&uart_handle, (uint8_t*) buffer, buffer_len, timeout);
+
+	// Send new line
+	HAL_UART_Transmit(&uart_handle, (uint8_t*) "\r\n", 2, timeout);
 
 	if (debug) {
 		LCD_UsrLog((char*) "UART TX: ");
@@ -47,24 +52,24 @@ void UART_send(char* buffer)
 
 void UART_send_help(void)
 {
-	UART_send("*** Greetings from TotoRobot! ***\r\n");
-	UART_send("\r\n");
-	UART_send("Commands:\r\n");
-	UART_send("\r\n");
-	UART_send("get pulse                    - Get servos' current pulse width\r\n");
-	UART_send("get angle                    - Get servos' current angle\r\n");
-	UART_send("get pos                      - Get robot arm's current xyz coordinates\r\n");
-	UART_send("get manual                   - Get current manual control status\r\n");
-	UART_send("get display                  - Get current status of LCD data display\r\n");
-	UART_send("\r\n");
-	UART_send("set pulse <servo> <value>    - Set servo pulse width\r\n");
-	UART_send("set angle <servo> <value>    - Set servo angle\r\n");
-	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates\r\n");
-	UART_send("set manual <0|1>             - Turn on or off manual control\r\n");
-	UART_send("set display <0|1>            - Turn on data display on LCD\r\n");
-	UART_send("\r\n");
-	UART_send("Always terminate commands with LF!\r\n");
-	UART_send("\r\n");
+	UART_send("*** Greetings from TotoRobot! ***");
+	UART_send("");
+	UART_send("Commands:");
+	UART_send("");
+	UART_send("get pulse                    - Get servos' current pulse width");
+	UART_send("get angle                    - Get servos' current angle");
+	UART_send("get pos                      - Get robot arm's current xyz coordinates");
+	UART_send("get manual                   - Get current manual control status");
+	UART_send("get display                  - Get current status of LCD data display");
+	UART_send("");
+	UART_send("set pulse <servo> <value>    - Set servo pulse width");
+	UART_send("set angle <servo> <value>    - Set servo angle");
+	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates");
+	UART_send("set manual <0|1>             - Turn on or off manual control");
+	UART_send("set display <0|1>            - Turn on data display on LCD");
+	UART_send("");
+	UART_send("Always terminate commands with LF!");
+	UART_send("");
 
 	return;
 }
@@ -212,7 +217,7 @@ void execute_command(void)
 {
 	// Send error message
 	if (c_params.error) {
-		UART_send("Unrecognized command or value\r\n");
+		UART_send("Unrecognized command or value");
 		return;
 	}
 
@@ -236,7 +241,7 @@ void execute_command(void)
 
 	// Error
 	default:
-		UART_send("Unrecognized command or value\r\n");
+		UART_send("Unrecognized command or value");
 		return;
 	}
 	return;
@@ -252,7 +257,7 @@ void UART_send_settings(void)
 			uint32_t pulse = servo_pos[i].pulse;
 			osMutexRelease(servo_pos_mutex);
 			// Send value
-			sprintf(TX_buffer, "servo%d pulse: %d\r\n", i, pulse);
+			sprintf(TX_buffer, "servo%d pulse: %d", i, pulse);
 			UART_send((char*) TX_buffer);
 		}
 		break;
@@ -263,7 +268,7 @@ void UART_send_settings(void)
 			uint8_t angle = servo_pos[i].angle;
 			osMutexRelease(servo_pos_mutex);
 			// Send value
-			sprintf(TX_buffer, "servo%d angle: %4d degrees\r\n", i, angle);
+			sprintf(TX_buffer, "servo%d angle: %4d degrees", i, angle);
 			UART_send((char*)TX_buffer);
 		}
 		break;
@@ -276,15 +281,15 @@ void UART_send_settings(void)
 		osMutexRelease(servo_pos_mutex);
 
 		// Send value
-		sprintf(TX_buffer, "arm position: x:%d y:%d z:%d\r\n", x, y, z);
+		sprintf(TX_buffer, "arm position: x:%d y:%d z:%d", x, y, z);
 		UART_send((char*) TX_buffer);
 		break;
 	case MANUAL_CONTROL:
-		sprintf(TX_buffer, "Manual control is %s\r\n", adc_on ? "on" : "off");
+		sprintf(TX_buffer, "Manual control is %s", adc_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 	case DATA_DISP:
-		sprintf(TX_buffer, "LCD data display is %s\r\n", lcd_data_display_on ? "on" : "off");
+		sprintf(TX_buffer, "LCD data display is %s", lcd_data_display_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 	case NO_ATTRIB:
@@ -300,13 +305,13 @@ void set_value(void)
 		osMutexWait(servo_pos_mutex, osWaitForever);
 		servo_pos[c_params.device_id].pulse = c_params.value;
 		osMutexRelease(servo_pos_mutex);
-		UART_send("Set pulse done.\r\n");
+		UART_send("Set pulse done.");
 		break;
 	case ANGLE:
 		osMutexWait(servo_pos_mutex, osWaitForever);
 		servo_pos[c_params.device_id].angle = c_params.value;
 		osMutexRelease(servo_pos_mutex);
-		UART_send("Set angle done.\r\n");
+		UART_send("Set angle done.");
 		break;
 	case POSITION:
 		osMutexWait(servo_pos_mutex, osWaitForever);
@@ -314,24 +319,24 @@ void set_value(void)
 		arm_position.y = c_params.value_y;
 		arm_position.z = c_params.value_z;
 		osMutexRelease(servo_pos_mutex);
-		UART_send("Set position done.\r\n");
+		UART_send("Set position done.");
 		break;
 	case MANUAL_CONTROL:
 		if (c_params.value > 0) {
 			start_adc_thread();
-			UART_send("Manual control started, ADC running.\r\n");
+			UART_send("Manual control started, ADC running.");
 		} else {
 			stop_adc_thread();
-			UART_send("Manual control ended, ADC terminated.\r\n");
+			UART_send("Manual control ended, ADC terminated.");
 		}
 		break;
 	case DATA_DISP:
 		if (c_params.value > 0) {
 			start_lcd_data_display();
-			UART_send("LCD data display turned on.\r\n");
+			UART_send("LCD data display turned on.");
 		} else {
 			stop_lcd_data_display();
-			UART_send("LCD data display turned off.\r\n");
+			UART_send("LCD data display turned off.");
 		}
 		break;
 	case NO_ATTRIB:
