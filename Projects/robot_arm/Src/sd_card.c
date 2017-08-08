@@ -19,103 +19,55 @@ void sd_card()
 	char wtext[] = "aa\n"; 								/* File write buffer */
 	char btext[] = "STM333.TXT";
 	char rtext[100];                                   	/* File read buffer */
+
 	/*##-1- Link the micro SD disk I/O driver ##################################*/
-	  if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
-	  {
-	    /*##-2- Register the file system object to the FatFs module ##############*/
+	if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
+	{
+		/*##-2- Register the file system object to the FatFs module ##############*/
 	    if(f_mount(&SDFatFs, (TCHAR const*)SDPath, 0) != FR_OK)
 	    {
-	      /* FatFs Initialization Error */
-	      Error_Handler();
+			/* FatFs Initialization Error */
+	    	Error_Handler();
 	    }
 	    else
 	    {
-	      /*##-3- Create a FAT file system (format) on the logical drive #########*/
-	      /* WARNING: Formatting the uSD card will delete all content on the device */
-	      /*if(f_mkfs((TCHAR const*)SDPath, 0, 0) != FR_OK)
-	      {
-	         FatFs Format Error
-	        Error_Handler();
-	      }*/
-	      //else
-	      {
-	        /*##-4- Create and Open a new text file object with write access #####*/
+	        /*##-3- Create and Open a new text file object with write access #####*/
 	        if(f_open(&MyFile, btext, FA_OPEN_ALWAYS | FA_WRITE) != FR_OK)
 	        {
-	          /* 'STM32.TXT' file Open for write Error */
-	          Error_Handler();
+				/* 'STM32.TXT' file Open for write Error */
+	        	Error_Handler();
 	        }
 	        else
 	        {
-	          /*##-5- Write data to the text file ################################*/
+	        	/*##-4- Write data to the text file ################################*/
+	        	sprintf((char*) wtext,"File%d.filscsíacdsvíds", 10);
+				res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+				LCD_UsrLog((char*) "Data has written to SD card2.\n");
+				f_putc ('a', &MyFile);
+				f_putc ('\n', &MyFile);
+				f_putc ('a', &MyFile);
+				f_putc ('b', &MyFile);
+				f_puts(wtext, &MyFile);
+				f_puts(wtext, &MyFile);
 
-	          //res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-	          LCD_UsrLog((char*) "Data has written to SD card2.\n");
-	          f_putc ('a', &MyFile);
-	          f_putc ('\n', &MyFile);
-	          f_putc ('a', &MyFile);
-	          f_putc ('b', &MyFile);
-	          f_puts(wtext, &MyFile);
-	          f_puts(wtext, &MyFile);
+				if (res != FR_OK)
+				{
+					/* 'STM32.TXT' file Write or EOF Error */
+					Error_Handler();
+				}
+				else
+				{
+					/*##-5- Close the open text file #################################*/
+					f_close(&MyFile);
+					LCD_UsrLog((char*) " Close the open text file\n");
 
-	          if (res != FR_OK)
-	          {
-	            /* 'STM32.TXT' file Write or EOF Error */
-	            Error_Handler();
-	          }
-	          else
-	          {
-	            /*##-6- Close the open text file #################################*/
-	            f_close(&MyFile);
 
-	            /*##-7- Open the text file object with read access ###############*/
-	            if(f_open(&MyFile, "STM321.TXT", FA_READ) != FR_OK)
-	            {
-
-	              /* 'STM32.TXT' file Open for read Error */
-	              Error_Handler();
-	            }
-	            else
-	            {
-	              /*##-8- Read data from the text file ###########################*/
-	              res = f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
-
-	              if((bytesread == 0) || (res != FR_OK))
-	              {
-	                /* 'STM32.TXT' file Read or EOF Error */
-	                Error_Handler();
-	              }
-	              else
-	              {
-	                /*##-9- Close the open text file #############################*/
-	                f_close(&MyFile);
-
-	                /*##-10- Compare read data with the expected data ############*/
-	                if((bytesread != byteswritten))
-	                {
-	                  /* Read data is different from the expected data */
-	                  Error_Handler();
-	                }
-	                else
-	                {
-	                  /* Success of the demo: no error occurrence */
-	                  BSP_LED_On(LED1);
-	                }
-	              }
-	            }
-	          }
+				}
 	        }
-	      }
 	    }
 	  }
-
 	  /*##-11- Unlink the micro SD disk I/O driver ###############################*/
 	  FATFS_UnLinkDriver(SDPath);
-	  LCD_UsrLog((char*) "TotoRobot started3.\n");
-	  /* Infinite loop */
-	  while (1)
-	  {
-	  }
 }
 
 static void Error_Handler(void)
