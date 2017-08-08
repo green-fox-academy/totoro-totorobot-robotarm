@@ -49,6 +49,8 @@ void set_value(void);
 void UART_send_settings(void);
 extern void start_adc_thread(void);
 extern void stop_adc_thread(void);
+void lcd_data_display_start(void);
+void lcd_data_display_stop(void);
 
 
 #endif /* __UART_H_ */

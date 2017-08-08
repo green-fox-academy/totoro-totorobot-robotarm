@@ -9,8 +9,11 @@
 #include <string.h>
 
 extern uint8_t debug;
+uint8_t lcd_data_display_on;
+char lcd_data_buff[70];
 
-
-void lcd_show_data_thread(void const * argument);
+void lcd_data_display_start(void);
+void lcd_data_display_stop(void);
+void lcd_data_display_thread(void const * argument);
 
 #endif /* __DATA_DISPLAY_H_ */
