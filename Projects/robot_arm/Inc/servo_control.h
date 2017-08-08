@@ -111,7 +111,9 @@ typedef struct {
 	uint8_t angle;
 } servo_pos_t;
 
-__IO uint32_t adc_values[SERVOS];
+uint16_t adc_values[SERVOS];
+uint16_t adc_pulse_values[SERVOS];
+
 uint32_t adc_channels[SERVOS];
 ADC_HandleTypeDef adc;
 ADC_ChannelConfTypeDef adc_ch[SERVOS];
@@ -143,5 +145,6 @@ void pwm_thread(void const * argument);
 void ttr_start_adc(void);
 void ttr_stop_adc(void);
 void adc_thread(void const * argument);
+uint16_t map(uint16_t value, uint16_t min1, uint16_t max1, uint16_t min2, uint16_t max2);
 
 #endif /* __SERVO_CONTROL_H_ */

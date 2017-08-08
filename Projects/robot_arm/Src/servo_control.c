@@ -7,22 +7,22 @@ void servo_config(void)
 	pwm_conf[0].instance = SERVO0_INST;
 	pwm_conf[0].period = SERVO0_PERIOD;
 	pwm_conf[0].prescaler = SERVO0_PRESCALER;
-	pwm_conf[0].pulse = SERVO0_MIN_PULSE;
+	pwm_conf[0].pulse = (SERVO0_MIN_PULSE + SERVO0_MAX_PULSE) / 2;
 
 	pwm_conf[1].instance = SERVO1_INST;
 	pwm_conf[1].period = SERVO1_PERIOD;
 	pwm_conf[1].prescaler = SERVO1_PRESCALER;
-	pwm_conf[1].pulse = SERVO1_MIN_PULSE;
+	pwm_conf[1].pulse = (SERVO1_MIN_PULSE + SERVO1_MAX_PULSE) / 2;
 
 	pwm_conf[2].instance = SERVO2_INST;
 	pwm_conf[2].period = SERVO2_PERIOD;
 	pwm_conf[2].prescaler = SERVO2_PRESCALER;
-	pwm_conf[2].pulse = SERVO2_MIN_PULSE;
+	pwm_conf[2].pulse = (SERVO2_MIN_PULSE + SERVO2_MAX_PULSE) / 2;
 
 	pwm_conf[3].instance = SERVO3_INST;
 	pwm_conf[3].period = SERVO3_PERIOD;
 	pwm_conf[3].prescaler = SERVO3_PRESCALER;
-	pwm_conf[3].pulse = SERVO3_MIN_PULSE;
+	pwm_conf[3].pulse = (SERVO3_MIN_PULSE + SERVO3_MAX_PULSE) / 2;
 
 	adc_channels[0] = SERVO0_ADC_CHANNEL;
 	adc_channels[1] = SERVO1_ADC_CHANNEL;
@@ -31,15 +31,25 @@ void servo_config(void)
 
 	servo_pos_conf[0].min_angle = SERVO0_MIN_ANGLE;
 	servo_pos_conf[0].max_angle = SERVO0_MAX_ANGLE;
+	servo_pos_conf[0].min_pulse = SERVO0_MIN_PULSE;
+	servo_pos_conf[0].max_pulse = SERVO0_MAX_PULSE;
 
 	servo_pos_conf[1].min_angle = SERVO1_MIN_ANGLE;
 	servo_pos_conf[1].max_angle = SERVO1_MAX_ANGLE;
+	servo_pos_conf[1].min_pulse = SERVO1_MIN_PULSE;
+	servo_pos_conf[1].max_pulse = SERVO1_MAX_PULSE;
 
 	servo_pos_conf[2].min_angle = SERVO2_MIN_ANGLE;
 	servo_pos_conf[2].max_angle = SERVO2_MAX_ANGLE;
+	servo_pos_conf[2].min_pulse = SERVO2_MIN_PULSE;
+	servo_pos_conf[2].max_pulse = SERVO2_MAX_PULSE;
+
 
 	servo_pos_conf[3].min_angle = SERVO3_MIN_ANGLE;
 	servo_pos_conf[3].max_angle = SERVO3_MAX_ANGLE;
+	servo_pos_conf[3].min_pulse = SERVO3_MIN_PULSE;
+	servo_pos_conf[3].max_pulse = SERVO3_MAX_PULSE;
+
 
 	for (int i = 0; i < SERVOS; i++) {
 		servo_pos_conf[i].adc_to_angle_const = (servo_pos_conf[i].max_angle - servo_pos_conf[i].min_angle) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
@@ -192,6 +202,9 @@ void adc_measure(void)
 		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
 		adc_values[i] = HAL_ADC_GetValue(&adc);
 		HAL_ADC_Stop(&adc);
+
+		adc_pulse_values[i] = map(adc_values[i], MIN_ADC_VALUE, MAX_ADC_VALUE, servo_pos_conf[i].min_pulse, servo_pos_conf[i].max_pulse);
+
 		osDelay(5);
 	}
 
@@ -290,8 +303,9 @@ void pwm_thread(void const * argument)
 			// Set position
 			pwm_set_pulse(i, servo_pulse);
 
-			osDelay(1000);
+
 		}
+		osDelay(10);
 	}
 
     while (1) {
@@ -316,9 +330,26 @@ void adc_thread(void const * argument)
 		if (debug) {
 			sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
 			LCD_UsrLog(lcd_log);
-			osDelay(500);
+			osDelay(10);
 		}
+
+		for (int i = 0; i < SERVOS; i++) {
+
+
+
+			// Lock mutex
+			osMutexWait(servo_pos_mutex, osWaitForever);
+
+			// Get pulse value
+			servo_pos[i].pulse = adc_pulse_values[i];
+
+			// Release mutex
+			osMutexRelease(servo_pos_mutex);
+		}
+
+		osDelay(10);
 	}
+
 
 	while (1) {
 		// Terminate thread
@@ -327,4 +358,11 @@ void adc_thread(void const * argument)
 		}
 		osThreadTerminate(NULL);
 	}
+}
+
+uint16_t map(uint16_t value, uint16_t min1, uint16_t max1, uint16_t min2, uint16_t max2)
+{
+	double ratio =  (double) value / (double) (max1 - min1);
+	double result = ((double) (max2 - min2)) * ratio + min2;
+	return result;
 }
