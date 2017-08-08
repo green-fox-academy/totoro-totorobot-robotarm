@@ -141,9 +141,8 @@ static void StartThread(void const * argument)
     //osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     //osThreadCreate (osThread(SERVO_CONTROL), NULL);
 
-    LCD_UsrLog((char*) "TotoRobot started.\n");
-    sd_card();
     LCD_UsrLog((char*) "TotoRobot started2.\n");
+    sd_card();
 
     while (1) {
         /* Delete the Init Thread */
@@ -204,8 +203,8 @@ static void BSP_Config(void)
     LCD_LOG_Init();
   
     /* Show Header and Footer texts */
-    LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm3");
-    LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy3");
+    LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
+    LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
     // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 

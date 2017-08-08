@@ -14,10 +14,10 @@ char SDPath[4]; /* SD card logical drive path */
 
 void sd_card()
 {
-	FRESULT res;                                          /* FatFs function common result code */
-	uint32_t byteswritten, bytesread;                     /* File write/read counts */
-	char wtext[] = "a"; /* File write buffer */
-	char rtext[100];                                   /* File read buffer */
+	FRESULT res;                                        /* FatFs function common result code */
+	uint32_t byteswritten, bytesread;                   /* File write/read counts */
+	char wtext[] = "aa"; 								/* File write buffer */
+	char rtext[100];                                   	/* File read buffer */
 	/*##-1- Link the micro SD disk I/O driver ##################################*/
 	  if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
 	  {
@@ -31,15 +31,15 @@ void sd_card()
 	    {
 	      /*##-3- Create a FAT file system (format) on the logical drive #########*/
 	      /* WARNING: Formatting the uSD card will delete all content on the device */
-	      if(f_mkfs((TCHAR const*)SDPath, 0, 0) != FR_OK)
+	      /*if(f_mkfs((TCHAR const*)SDPath, 0, 0) != FR_OK)
 	      {
-	        /* FatFs Format Error */
+	         FatFs Format Error
 	        Error_Handler();
-	      }
-	      else
+	      }*/
+	      //else
 	      {
 	        /*##-4- Create and Open a new text file object with write access #####*/
-	        if(f_open(&MyFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
+	        if(f_open(&MyFile, "STM321.TXT", FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
 	        {
 	          /* 'STM32.TXT' file Open for write Error */
 	          Error_Handler();
@@ -47,9 +47,19 @@ void sd_card()
 	        else
 	        {
 	          /*##-5- Write data to the text file ################################*/
-	          res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+	          /* Format string */
+	          //sprintf(wtext, "Total card size:\n");
 
-	          if((byteswritten == 0) || (res != FR_OK))
+	          //res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+	          LCD_UsrLog((char*) "Data has written to SD card3.\n");
+	          f_putc ('a', &MyFile);
+	          f_putc ('\n', &MyFile);
+	          f_putc ('a', &MyFile);
+	          f_putc ('b', &MyFile);
+	          f_puts('asdfdg\n'&MyFile);
+	          f_puts('asdfdg\n'&MyFile);
+
+	          if (res != FR_OK)
 	          {
 	            /* 'STM32.TXT' file Write or EOF Error */
 	            Error_Handler();
@@ -60,8 +70,9 @@ void sd_card()
 	            f_close(&MyFile);
 
 	            /*##-7- Open the text file object with read access ###############*/
-	            if(f_open(&MyFile, "STM32.TXT", FA_READ) != FR_OK)
+	            if(f_open(&MyFile, "STM321.TXT", FA_READ) != FR_OK)
 	            {
+
 	              /* 'STM32.TXT' file Open for read Error */
 	              Error_Handler();
 	            }
