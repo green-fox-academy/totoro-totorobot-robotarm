@@ -40,7 +40,7 @@ void sd_card()
 	      //else
 	      {
 	        /*##-4- Create and Open a new text file object with write access #####*/
-	        if(f_open(&MyFile, btext, FA_OPEN_EXISTING | FA_WRITE) != FR_OK)
+	        if(f_open(&MyFile, btext, FA_OPEN_ALWAYS | FA_WRITE) != FR_OK)
 	        {
 	          /* 'STM32.TXT' file Open for write Error */
 	          Error_Handler();
@@ -50,7 +50,7 @@ void sd_card()
 	          /*##-5- Write data to the text file ################################*/
 
 	          //res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-	          LCD_UsrLog((char*) "Data has written to SD card1.\n");
+	          LCD_UsrLog((char*) "Data has written to SD card2.\n");
 	          f_putc ('a', &MyFile);
 	          f_putc ('\n', &MyFile);
 	          f_putc ('a', &MyFile);
