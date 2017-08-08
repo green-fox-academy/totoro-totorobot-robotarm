@@ -33,7 +33,7 @@ void UART_Error_Handler(void)
 void UART_send(char* buffer)
 {
 	uint16_t buffer_len = strlen(buffer);
-	uint32_t timeout = 100;
+	uint32_t timeout = 500;
 
 	// Send buffer content
 	HAL_UART_Transmit(&uart_handle, (uint8_t*) buffer, buffer_len, timeout);
@@ -188,7 +188,8 @@ void process_command(void)
 
 	// Value
 	if ((c_params.command == SET_VALUE) &&
-		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE) || (c_params.attrib == MANUAL_CONTROL))) {
+		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE)
+		|| (c_params.attrib == MANUAL_CONTROL) || (c_params.attrib == DATA_DISP))) {
 		char* s = strtok(NULL, " ");
 
 		// Convert ASCII to integer
@@ -257,7 +258,7 @@ void UART_send_settings(void)
 			uint32_t pulse = servo_pos[i].pulse;
 			osMutexRelease(servo_pos_mutex);
 			// Send value
-			sprintf(TX_buffer, "servo%d pulse: %d", i, pulse);
+			sprintf((char*) TX_buffer, "servo%d pulse: %d", i, pulse);
 			UART_send((char*) TX_buffer);
 		}
 		break;
@@ -268,28 +269,28 @@ void UART_send_settings(void)
 			uint8_t angle = servo_pos[i].angle;
 			osMutexRelease(servo_pos_mutex);
 			// Send value
-			sprintf(TX_buffer, "servo%d angle: %4d degrees", i, angle);
+			sprintf((char*) TX_buffer, "servo%d angle: %4d degrees", i, angle);
 			UART_send((char*)TX_buffer);
 		}
 		break;
 	case POSITION:
 		// Get value
 		osMutexWait(servo_pos_mutex, osWaitForever);
-		uint32_t x = arm_position.x;
-		uint32_t y = arm_position.y;
-		uint32_t z = arm_position.z;
+		uint32_t x = arm_pos_c.x;
+		uint32_t y = arm_pos_c.y;
+		uint32_t z = arm_pos_c.z;
 		osMutexRelease(servo_pos_mutex);
 
 		// Send value
-		sprintf(TX_buffer, "arm position: x:%d y:%d z:%d", x, y, z);
+		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", x, y, z);
 		UART_send((char*) TX_buffer);
 		break;
 	case MANUAL_CONTROL:
-		sprintf(TX_buffer, "Manual control is %s", adc_on ? "on" : "off");
+		sprintf((char*) TX_buffer, "Manual control is %s", adc_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 	case DATA_DISP:
-		sprintf(TX_buffer, "LCD data display is %s", lcd_data_display_on ? "on" : "off");
+		sprintf((char*) TX_buffer, "LCD data display is %s", lcd_data_display_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 	case NO_ATTRIB:
@@ -315,9 +316,9 @@ void set_value(void)
 		break;
 	case POSITION:
 		osMutexWait(servo_pos_mutex, osWaitForever);
-		arm_position.x = c_params.value_x;
-		arm_position.y = c_params.value_y;
-		arm_position.z = c_params.value_z;
+		arm_pos_c.x = c_params.value_x;
+		arm_pos_c.y = c_params.value_y;
+		arm_pos_c.z = c_params.value_z;
 		osMutexRelease(servo_pos_mutex);
 		UART_send("Set position done.");
 		break;

@@ -5,6 +5,7 @@
 #include "cmsis_os.h"
 #include "lcd_log.h"
 #include "robot_arm_conf.h"
+#include "kinematics.h"
 #include <string.h>
 
 #define SERVOS				4
@@ -101,12 +102,6 @@ typedef struct {
 } servo_pos_conf_t;
 
 typedef struct {
-	uint32_t x;
-	uint32_t y;
-	uint32_t z;
-} arm_pos_t;
-
-typedef struct {
 	uint32_t pulse;
 	uint8_t angle;
 } servo_pos_t;
@@ -124,7 +119,10 @@ TIM_OC_InitTypeDef pwm_oc_init[SERVOS];
 
 servo_pos_conf_t servo_pos_conf[SERVOS];
 servo_pos_t servo_pos[SERVOS];
-arm_pos_t arm_position;
+
+coord_polar_t arm_pos_p;
+coord_cart_t arm_pos_c;
+
 uint8_t debug;
 uint8_t adc_on;
 uint8_t pwm_ready;
