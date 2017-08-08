@@ -56,6 +56,7 @@
 #include "app_ethernet.h"
 #include "lcd_log.h"
 #include "robot_arm.h"
+#include "rtc.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -142,6 +143,10 @@ static void StartThread(void const * argument)
     osDelay(1000);
     osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(udp_client), NULL);
+    osDelay(1000);
+    LCD_UsrLog("eddig meg jo");
+    osThreadDef(time_on_board, time_on_board_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(time_on_board), NULL);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 

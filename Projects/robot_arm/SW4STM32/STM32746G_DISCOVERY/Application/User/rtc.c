@@ -3,6 +3,16 @@
 #include "stm32f7xx_hal_rtc.h"
 #include "stm32f7xx_hal_rcc.h"
 #include "client.h"
+#include "lcd_log.h"
+#include "cmsis_os.h"
+#include "ethernetif.h"
+#include "lwip/netif.h"
+#include "lwip/tcpip.h"
+#include "app_ethernet.h"
+#include "lcd_log.h"
+#include "main.h"
+#include "stm32f7xx_hal_i2c_ex.h"
+#include "stm32f7xx_hal_i2c.h"
 
 /** @addtogroup CORE
   * @{
@@ -17,15 +27,33 @@
 /* Private defines -----------------------------------------------------------*/
 #define RTC_ASYNCH_PREDIV  0x7F   /* LSE as RTC clock */
 #define RTC_SYNCH_PREDIV   0x00FF /* LSE as RTC clock */
+
+#define SENSOR_ADDRESS 0xD0 // set this according to HW configuration
+
+#define HEX_2_DEC(val) (((val)/16)*10+((val)%16))
+#define DEC_2_HEX(val) (((val)/10)*16+((val)%10))
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+
 RTC_HandleTypeDef RtcHandle;
+
+typedef struct
+{
+	unsigned char second;
+	unsigned char minute;
+	unsigned char hour;
+	unsigned char weekday;
+	unsigned char day;
+	unsigned char month;
+	unsigned char year;
+}raw_data_t;
+
 /**
   * @brief  Configure the current time and date.
   * @param  None
   * @retval None
   */
-void k_CalendarBkupInit(time_t txTm)
+void k_CalendarBkupInit(void)
 {
 	/*##-1- Configure the RTC peripheral #######################################*/
 	/* Configure RTC prescaler and RTC data registers */
@@ -165,11 +193,45 @@ void k_SetDate(RTC_DateTypeDef *Date)
 {
 	HAL_RTC_SetDate(&RtcHandle, Date, FORMAT_BIN);
 }
-
 /**
   * @}
   */
 
+void rtc_get(rtc_data_t* rtc_data)
+{
+    raw_data_t raw_data;
+    //i2c_polling_read(SENSOR_ADDRESS,0x00,sizeof(raw_data),(char*)&raw_data);
+
+    rtc_data->second = HEX_2_DEC(raw_data.second);
+    rtc_data->minute = HEX_2_DEC(raw_data.minute);
+    rtc_data->hour   = HEX_2_DEC(raw_data.hour  );
+    rtc_data->day    = HEX_2_DEC(raw_data.day   );
+    rtc_data->month  = HEX_2_DEC(raw_data.month );
+    rtc_data->year   = HEX_2_DEC(raw_data.year  );
+    rtc_data->second = ntohl(rtc_data->second); // Time-stamp seconds.
+}
+
+void rtc_set(rtc_data_t* rtc_data)
+{
+    raw_data_t raw_data;
+    raw_data.second = DEC_2_HEX(rtc_data->second);
+    raw_data.minute = DEC_2_HEX(rtc_data->minute);
+    raw_data.hour   = DEC_2_HEX(rtc_data->hour  );
+    raw_data.day    = DEC_2_HEX(rtc_data->day   );
+    raw_data.month  = DEC_2_HEX(rtc_data->month );
+    raw_data.year   = DEC_2_HEX(rtc_data->year  );
+    //raw_data.weekday = RTC_Weekday_Monday; // or calculate the exact day
+    //i2c_polling_write(SENSOR_ADDRESS,0x00,sizeof(raw_data),(char*)&raw_data);
+    raw_data.second = ntohl(raw_data.second); // Time-stamp seconds.
+}
+
+void time_on_board_thread(void* parameter)
+{
+	rtc_data_t* rtc_data = (rtc_data_t*)parameter;
+	char text[16] = {0};
+	sprintf(text,"%.2u:%.2u:%.2u",rtc_data->hour,rtc_data->minute,rtc_data->second);
+	LCD_UsrLog("Time: %s", text);
+}
 /**
   * @}
   */
