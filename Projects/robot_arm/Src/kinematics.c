@@ -80,7 +80,7 @@ void calc_forward_kinematics(angles_t* joint_angles, coord_polar_t* pos_polar)
 
 	// Correct gripper displacement and joint0 elevation, save values
 	pos_polar->r = r + r3;
-	pos_polar->z = pos_polar->z + z0 - z3;
+	pos_polar->z = z + z0 - z3;
 
 	return;
 }

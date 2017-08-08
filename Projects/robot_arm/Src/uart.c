@@ -100,9 +100,7 @@ void UART_rx_thread(void const * argument)
 
 			// Process command
 			process_command();
-			LCD_UsrLog("after process command()\n");
 			execute_command();
-			LCD_UsrLog("after execute command()\n");
 
 			// Clear buffer
 			RX_buffer[0] = '\0';
@@ -277,6 +275,10 @@ void UART_send_settings(void)
 		sprintf(TX_buffer, "arm position: x:%d y:%d z:%d\r\n", x, y, z);
 		UART_send((char*) TX_buffer);
 		break;
+	case MANUAL_CONTROL:
+		sprintf(TX_buffer, "Current setting of manual control is %d\r\n", adc_on);
+		UART_send((char*) TX_buffer);
+		break;
 	case NO_ATTRIB:
 		break;
 	}
@@ -308,10 +310,10 @@ void set_value(void)
 		break;
 	case MANUAL_CONTROL:
 		if (c_params.value > 0) {
-			ttr_start_adc();
+			start_adc_thread();
 			UART_send("Manual control started, ADC running.\r\n");
 		} else {
-			ttr_stop_adc();
+			stop_adc_thread();
 			UART_send("Manual control ended, ADC terminated.\r\n");
 		}
 		break;

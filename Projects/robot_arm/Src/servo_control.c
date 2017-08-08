@@ -24,10 +24,10 @@ void servo_config(void)
 	pwm_conf[3].prescaler = SERVO3_PRESCALER;
 	pwm_conf[3].pulse = (SERVO3_MIN_PULSE + SERVO3_MAX_PULSE) / 2;
 
-	adc_channels[0] = SERVO0_ADC_CHANNEL;
-	adc_channels[1] = SERVO1_ADC_CHANNEL;
-	adc_channels[2] = SERVO2_ADC_CHANNEL;
-	adc_channels[3] = SERVO3_ADC_CHANNEL;
+	adc_ch_conf[0] = SERVO0_ADC_CHANNEL;
+	adc_ch_conf[1] = SERVO1_ADC_CHANNEL;
+	adc_ch_conf[2] = SERVO2_ADC_CHANNEL;
+	adc_ch_conf[3] = SERVO3_ADC_CHANNEL;
 
 	servo_pos_conf[0].min_angle = SERVO0_MIN_ANGLE;
 	servo_pos_conf[0].max_angle = SERVO0_MAX_ANGLE;
@@ -135,11 +135,7 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 
 void adc_init(void)
 {
-	LCD_UsrLog("inside adc_init()\n");
-	// Zero out adc_values array
-	// memset(adc_values, 0, sizeof(adc_values));
-
-	// General init
+	// General ADC init
 	adc.State = HAL_ADC_STATE_RESET;
 	adc.Instance = ADC3;
 	adc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -153,67 +149,45 @@ void adc_init(void)
 	adc.Init.NbrOfConversion = 4;
 	HAL_ADC_Init(&adc);
 
-	LCD_UsrLog("after general adc init\n");
+	// ADC channel general init
+	// Channel selection will be set in adc_measure
+	adc_ch.Channel = adc_ch_conf[0];
+	adc_ch.Offset = 0;
+	adc_ch.Rank = 1;
+	adc_ch.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+	HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
-	/* Init channels
-	for (int i = 0; i < SERVOS; i++) {
-		adc_ch[i].Channel = adc_channels[i];
-		adc_ch[i].Offset = 0;
-		adc_ch[i].Rank = i + 1;
-		adc_ch[i].SamplingTime = ADC_SAMPLETIME_480CYCLES;
-		HAL_ADC_ConfigChannel(&adc, &adc_ch[i]);
-	}
-
-	LCD_UsrLog("after init adc channels\n");
-	// Start continuous conversion with DMA
-	HAL_ADC_Start_DMA(&adc, (uint32_t*) &adc_values, sizeof(adc_values));
-
-	LCD_UsrLog("after dma init\n");
-	*/
 	return;
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
-{
-	// This function runs each time when the DMA finished moving
-	// all ADC values to the memory
 }
 
 void adc_deinit(void)
 {
-	HAL_ADC_Stop_DMA(&adc);
+	HAL_ADC_Stop(&adc);
 	return;
 }
 
 void adc_measure(void)
 {
-	// Init channels
+
+
 	for (int i = 0; i < SERVOS; i++) {
 
-		ADC_ChannelConfTypeDef adc_chan;
-		adc_chan.Channel = adc_channels[i];
-		adc_chan.Offset = 0;
-		adc_chan.Rank = 1;
-		adc_chan.SamplingTime = ADC_SAMPLETIME_480CYCLES;
-		HAL_ADC_ConfigChannel(&adc, &adc_chan);
+		// Select channel
+		adc_ch.Channel = adc_ch_conf[i];
+		HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
+		// Measure
 		HAL_ADC_Start(&adc);
-
 		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
 		adc_values[i] = HAL_ADC_GetValue(&adc);
-		HAL_ADC_Stop(&adc);
 
+		// Calculate PMW pulse width
 		adc_pulse_values[i] = map(adc_values[i], MIN_ADC_VALUE, MAX_ADC_VALUE, servo_pos_conf[i].min_pulse, servo_pos_conf[i].max_pulse);
 
 		osDelay(5);
 	}
 
-	if (debug) {
-		// sprintf(lcd_log, "ADC%d value: %d\n", servo, adc_value);
-		// LCD_UsrLog(lcd_log);
-	}
-
-	// return adc_value;
+	return;
 }
 
 uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value)
@@ -241,29 +215,26 @@ uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value)
 	return pulse;
 }
 
-void ttr_start_adc(void)
+void start_adc_thread(void)
 {
 	adc_init();
 	adc_on = 1;
 
 	if (debug) {
-		LCD_UsrLog((char*) "ADC started\n");
+		LCD_UsrLog((char*) "ADC thread started\n");
 	}
 
-    osThreadDef(ADC_MEASURE, adc_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadDef(ADC_MEASURE, adc_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(ADC_MEASURE), NULL);
 
 	return;
 }
 
-void ttr_stop_adc(void)
+void stop_adc_thread(void)
 {
-	adc_deinit();
 	adc_on = 0;
-
-	if (debug) {
-		LCD_UsrLog((char*) "ADC terminated\n");
-	}
+	osDelay(100);
+	adc_deinit();
 
 	return;
 }
@@ -354,7 +325,7 @@ void adc_thread(void const * argument)
 	while (1) {
 		// Terminate thread
 		if (debug) {
-			LCD_ErrLog((char*) "ADC printer thread terminated\n");
+			LCD_UsrLog((char*) "ADC thread terminated\n");
 		}
 		osThreadTerminate(NULL);
 	}

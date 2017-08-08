@@ -28,6 +28,7 @@ typedef struct {
 
 uart_command_struct_t c_params;
 UART_HandleTypeDef uart_handle;
+extern uint8_t adc_on;
 
 uint8_t TX_buffer[TXBUFFERSIZE];
 uint8_t RX_buffer[RXBUFFERSIZE];
@@ -46,8 +47,8 @@ uint8_t verify_pulse(uint32_t pulse);
 uint8_t verify_angle(uint32_t angle);
 void set_value(void);
 void UART_send_settings(void);
-extern void start_adc(void);
-extern void stop_adc(void);
+extern void start_adc_thread(void);
+extern void stop_adc_thread(void);
 
 
 #endif /* __UART_H_ */
