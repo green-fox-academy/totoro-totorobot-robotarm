@@ -145,9 +145,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 	// Enable ADC clock
 	__HAL_RCC_ADC3_CLK_ENABLE();
 
-	// Enable DMA clock
-	__HAL_RCC_DMA2_CLK_ENABLE();
-
 	/*
 	 *  Set up pins
 	 */
@@ -182,35 +179,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 	//4 A3 PF8 ADC3_IN6
 	GPIO_Init.Pin = GPIO_PIN_8;
 	HAL_GPIO_Init(GPIOF, &GPIO_Init);
-
-
-	// Configure the DMA streams
-
-	static DMA_HandleTypeDef hdma_adc;
-
-	hdma_adc.Instance = DMA2_Stream0;
-	hdma_adc.Init.Channel  = DMA_CHANNEL_2;
-	hdma_adc.Init.Direction = DMA_PERIPH_TO_MEMORY;
-	hdma_adc.Init.PeriphInc = DMA_PINC_DISABLE;
-	hdma_adc.Init.MemInc = DMA_MINC_ENABLE;
-	hdma_adc.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-	hdma_adc.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
-	hdma_adc.Init.Mode = DMA_CIRCULAR;
-	hdma_adc.Init.Priority = DMA_PRIORITY_HIGH;
-	hdma_adc.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-	hdma_adc.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_HALFFULL;
-	hdma_adc.Init.MemBurst = DMA_MBURST_SINGLE;
-	hdma_adc.Init.PeriphBurst = DMA_PBURST_SINGLE;
-
-	HAL_DMA_Init(&hdma_adc);
-
-	// Associate the initialized DMA handle to the ADC handle
-	__HAL_LINKDMA(hadc, DMA_Handle, hdma_adc);
-
-	// Configure the NVIC for DMA
-	// NVIC configuration for DMA transfer complete interrupt
-	HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 }
 
 /**
