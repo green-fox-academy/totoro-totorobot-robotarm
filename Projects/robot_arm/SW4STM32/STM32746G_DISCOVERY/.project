@@ -46,6 +46,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/app_ethernet.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/data_display.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/data_display.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/ethernetif.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Src/ethernetif.c</locationURI>

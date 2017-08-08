@@ -301,7 +301,6 @@ void adc_thread(void const * argument)
 		if (debug) {
 			sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
 			LCD_UsrLog(lcd_log);
-			osDelay(10);
 		}
 
 		for (int i = 0; i < SERVOS; i++) {
