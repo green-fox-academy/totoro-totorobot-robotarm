@@ -60,8 +60,16 @@
 #include "stm32746g_discovery_ts.h"
 #include "stm32746g_discovery_sd.h"
 #include "client.h"
+#include "rtc.h"
 
 /* Exported types ------------------------------------------------------------*/
+#include "stm32f7xx_hal.h"
+/* Include my libraries here */
+#include "defines.h"
+#include "tm_stm32_disco.h"
+#include "tm_stm32_delay.h"
+#include "tm_stm32_rtc.h"
+#include "tm_stm32_lcd.h"
 /* Exported constants --------------------------------------------------------*/
 
 #define USE_DHCP       /* enable DHCP, if disabled static address is used*/

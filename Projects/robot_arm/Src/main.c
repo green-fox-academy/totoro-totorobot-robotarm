@@ -59,6 +59,13 @@
 #include "rtc.h"
 
 /* Private typedef -----------------------------------------------------------*/
+#include "stm32f7xx_hal.h"
+/* Include my libraries here */
+#include "defines.h"
+#include "tm_stm32_disco.h"
+#include "tm_stm32_delay.h"
+#include "tm_stm32_rtc.h"
+#include "tm_stm32_lcd.h"
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -144,6 +151,7 @@ static void StartThread(void const * argument)
     osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(udp_client), NULL);
     osDelay(1000);
+
     LCD_UsrLog("eddig meg jo");
     osThreadDef(time_on_board, time_on_board_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(time_on_board), NULL);

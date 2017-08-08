@@ -13,6 +13,13 @@
 #include <time.h>
 
 /* Exported types ------------------------------------------------------------*/
+#include "stm32f7xx_hal.h"
+/* Include my libraries here */
+#include "defines.h"
+#include "tm_stm32_disco.h"
+#include "tm_stm32_delay.h"
+#include "tm_stm32_rtc.h"
+#include "tm_stm32_lcd.h"
 /* Exported constants --------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -39,7 +46,7 @@ void k_GetTime(RTC_TimeTypeDef *Time);
 void k_SetDate(RTC_DateTypeDef *Date);
 void k_GetDate(RTC_DateTypeDef *Date);
 
-void time_on_board_thread(rtc_data_t* rtc_data);
+void time_on_board_thread(void* parameter);
 
 #ifdef __cplusplus
 }
