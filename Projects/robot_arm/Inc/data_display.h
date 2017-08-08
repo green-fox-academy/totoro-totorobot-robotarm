@@ -5,7 +5,11 @@
 #include "cmsis_os.h"
 #include "lcd_log.h"
 #include "robot_arm_conf.h"
+#include "servo_control.h"
 #include <string.h>
+
+extern uint8_t debug;
+
 
 void lcd_show_data_thread(void const * argument);
 
