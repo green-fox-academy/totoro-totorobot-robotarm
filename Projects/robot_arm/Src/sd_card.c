@@ -8,15 +8,49 @@ FIL MyFile;     /* File object */
 char SDPath[4]; /* SD card logical drive path */
 
 /* Private function prototypes -----------------------------------------------*/
-//static void SystemClock_Config(void);
-//static void Error_Handler(void);
-//static void CPU_CACHE_Enable(void);
+void read_sd_card()
+{
+	FRESULT res;                                       	/* FatFs function common result code */
+	uint32_t bytesread;      				            /* File write/read counts */
+	char btext[] = "STM333.TXT";						/* Name of the file */
+	char rtext[100];                                   	/* File read buffer */
 
-void sd_card()
+	/*##-1- Link the micro SD disk I/O driver ##################################*/
+	if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
+		{
+	    /*##-2- Register the file system object to the FatFs module ##############*/
+	    if(f_mount(&SDFatFs, (TCHAR const*)SDPath, 0) != FR_OK)
+	    	{
+	    	/* FatFs Initialization Error */
+	    	Error_Handler();
+	    	}
+	    	else
+	    	{
+				/*##-7- Open the text file object with read access ###############*/
+				if(f_open(&MyFile, "STM32.TXT", FA_READ) != FR_OK)
+				{
+					/* 'STM32.TXT' file Open for read Error */
+					Error_Handler();
+				}
+				else
+				{
+					/*##-8- Read data from the text file ###########################*/
+					f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
+
+					/*##-9- Close the open text file #############################*/
+					f_close(&MyFile);
+				}
+	        }
+		}
+	  /*##-11- Unlink the micro SD disk I/O driver ###############################*/
+	  FATFS_UnLinkDriver(SDPath);
+}
+
+void write_sd_card()
 {
 	FRESULT res;                                        /* FatFs function common result code */
 	uint32_t byteswritten, bytesread;                   /* File write/read counts */
-	char wtext[] = "a"; 								/* File write buffer */
+	char wtext[] = "bb"; 								/* File write buffer */
 	char btext[] = "STM333.TXT";						/* Name of the file */
 	char rtext[100];                                   	/* File read buffer */
 
@@ -50,15 +84,14 @@ void sd_card()
 			size = (&MyFile)->fsize;
 			res = f_lseek(&MyFile, size);
 			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+			res = f_write(&MyFile, "\n", sizeof("\n"), (void *)&byteswritten);
 
+			LCD_UsrLog((char*) wtext);
 			LCD_UsrLog((char*) "Data has written to SD card2.\n");
 
 			/*##-5- Close the open text file #################################*/
 			f_close(&MyFile);
 			LCD_UsrLog((char*) " Close the open text file\n");
-
-
-
 		}
 	}
 	  /*##-11- Unlink the micro SD disk I/O driver ###############################*/
