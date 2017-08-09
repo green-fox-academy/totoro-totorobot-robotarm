@@ -47,14 +47,13 @@ typedef struct
 	uint8_t	 	 Minutes;
 	uint8_t	 	 Seconds;
 	uint32_t	 SubSeconds;
-	/*uint32_t	 SecondFraction;
+	uint32_t	 SecondFraction;
 	uint8_t	     TimeFormat;
 	uint32_t	 DayLightSaving;
-	uint32_t	 StoreOperation;*/
+	uint32_t	 StoreOperation;
 
 }time_data_t;
 
-	time_data_t time_out;
 
 /**
   * @brief  Configure the current time and date.
@@ -160,25 +159,12 @@ uint32_t k_BkupRestoreParameter(uint32_t address)
   * @param  Time: Pointer to Time structure
   * @retval None
   */
-void k_GetTime(RTC_TimeTypeDef *Time)
-{
-	HAL_RTC_GetTime(&RtcHandle, Time, FORMAT_BIN);
-}
 
 /**
   * @brief  RTC Set time.
   * @param  Time: Pointer to Time structure
   * @retval None
   */
-void k_SetTime(RTC_TimeTypeDef *Time)
-{
-
-	Time->StoreOperation = 0;
-	Time->SubSeconds = 0;
-	Time->DayLightSaving = 0;
-	HAL_RTC_SetTime(&RtcHandle, Time, FORMAT_BIN);
-
-}
 
 /**
   * @brief  RTC Get date
@@ -207,26 +193,30 @@ void k_SetDate(RTC_DateTypeDef *Date)
   */
 void time_on_board_thread(void* parameter)
 {
+	//rtc_data_t* input_time = (rtc_data_t*)parameter;
+
 	// time_t t = time(NULL);
 	// struct tm tm = *localtime(&t);
 
-	// printf("now: %d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
 	struct tm input_time = &txTm;
 
-	ntp_time.Hours = input_time.tm_hour;
+	ntp_time.Seconds = input_time.tm_sec;
 	ntp_time.Minutes = input_time.tm_min;
+	ntp_time.Hours = input_time.tm_hour;
+	HAL_RTC_SetTime(RtcHandle, *ntp_time, RTC_HOURFORMAT_24);
 
-	HAL_RTC_SetTime(RtcHandle, ntp_time, RTC_HOURFORMAT_24);
+	LCD_UsrLog("Time now:  %d:%d:%d\n", input_time.tm_hour, input_time.tm_min, input_time.tm_sec);
 
-	HAL_RTC_GetTime();
 
-	LCD_UsrLog("Time: %s", time_out);
+	HAL_RTC_GetTime(RtcHandle, *input_time, RTC_FORMAT_BIN);
+	//HAL_RTC_GetTime();
+	//LCD_UsrLog("Time: %s", time_out);
 	/*LCD_UsrLog("loooooooooooooooolllll");
-	rtc_data_t* rtc_data = (rtc_data_t*)parameter;
 	char text[16] = {0};
 	sprintf(text,"%.2u:%.2u:%.2u",rtc_data->hour,rtc_data->minute,rtc_data->second);
 	LCD_UsrLog("Time: %s", text);*/
+
+	//printf("now: %d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 /**
   * @}
