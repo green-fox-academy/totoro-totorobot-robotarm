@@ -125,6 +125,9 @@ static void StartThread(void const * argument)
 	osMutexDef(SERVO_PULSE);
 	servo_pulse_mutex = osMutexCreate(osMutex(SERVO_PULSE));
 
+	osMutexDef(SERVO_ADC);
+	servo_adc_mutex = osMutexCreate(osMutex(SERVO_ADC));
+
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
   

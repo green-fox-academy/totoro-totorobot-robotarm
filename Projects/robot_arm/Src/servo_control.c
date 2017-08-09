@@ -171,7 +171,13 @@ void adc_measure(void)
 		// Measure
 		HAL_ADC_Start(&adc);
 		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
-		adc_values[i] = HAL_ADC_GetValue(&adc);
+
+		uint32_t adc_measurement = HAL_ADC_GetValue(&adc);
+
+		// Update global storage of ADC data
+		osMutexWait(servo_adc_mutex, osWaitForever);
+		adc_values[i] = adc_measurement;
+		osMutexRelease(servo_adc_mutex);
 
 		// Calculate PMW pulse width
 		adc_pulse_values[i] = (uint32_t) map((double) adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
@@ -335,9 +341,18 @@ void xyz_to_pulse(coord_cart_t* pos_cart)
 
 void pulse_to_xyz(coord_cart_t* pos_cart)
 {
+	angles_t joint_angles;
+
+	pulse_to_ang(&joint_angles);
+	ang_to_xyz(&joint_angles, pos_cart);
+
+	return;
+}
+
+void pulse_to_ang(angles_t* joint_angles)
+{
 	uint32_t pulse_width[SERVOS - 1];
 	double ang_rad[SERVOS - 1];
-	angles_t joint_angles;
 	coord_polar_t pos_polar;
 
 	// Get actual pulse values
@@ -354,12 +369,19 @@ void pulse_to_xyz(coord_cart_t* pos_cart)
 	}
 
 	// TODO correct for joint2
-	joint_angles.theta0 = ang_rad[0];
-	joint_angles.theta1 = ang_rad[1];
-	joint_angles.theta2 = ang_rad[2];
+	joint_angles->theta0 = ang_rad[0];
+	joint_angles->theta1 = ang_rad[1];
+	joint_angles->theta2 = ang_rad[2];
+
+	return;
+}
+
+void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
+{
+	coord_polar_t pos_polar;
 
 	// Calculate position in polar coordinates
-	calc_forward_kinematics(&joint_angles, &pos_polar);
+	calc_forward_kinematics(joint_angles, &pos_polar);
 
 	// Convert polar coordinated to xyz
 	polar_to_cart(&pos_polar, pos_cart);

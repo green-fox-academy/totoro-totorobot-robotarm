@@ -22,7 +22,6 @@ void start_lcd_data_display(void)
 	BSP_LCD_DisplayStringAtLine(5, (uint8_t*) "   X:      Y:      Z:");
 	BSP_LCD_DisplayStringAtLine(7, (uint8_t*) "       Serv0  Serv1  Serv2  Serv3");
 	BSP_LCD_DisplayStringAtLine(9, (uint8_t*) "angle:");
-	BSP_LCD_DisplayStringAtLine(10, (uint8_t*) "pulse:");
 	BSP_LCD_DisplayStringAtLine(11, (uint8_t*) "ADC:");
 
 	// Start continuously updating data on display
@@ -61,23 +60,50 @@ void lcd_data_display_thread(void const * argument)
 {
 	while (lcd_data_display_on) {
 
-		/* Lines to print:
-		 *  Title
-		 *  Coordinates
-		 *  XYZ coord
-		 *  Ang RZ coord
-		 *  J0-3
-		 *  Angle degree
-		 *  S0-4
-		 *  ADC
-		 *  Angle deg
-		 *  PWM pulse
-		 */
+		uint32_t pulse[SERVOS];
+		angles_t servo_angles;
+		uint32_t adc[SERVOS];
+		coord_cart_t arm_position;
 
-	//	sprintf(lcd_data_buff, "   X: %4d  Y: %4d  Z: %4d", arm_pos_c.x, arm_pos_c.y, arm_pos_c.z);
-	//	BSP_LCD_DisplayStringAtLine(2, (uint8_t*) lcd_data_buff);
+		// Get PWM values
+		osMutexWait(servo_pulse_mutex, osWaitForever);
+		for (int i = 0; i < SERVOS; i++) {
+				pulse[i] = servo_pulse[i];
+		}
+		osMutexRelease(servo_pulse_mutex);
 
-		osDelay(10);
+		// Calculate angles
+		pulse_to_ang(&servo_angles);
+
+		// Calculate XYZ
+		ang_to_xyz(&servo_angles, &arm_position);
+
+		// Get ADC data
+		osMutexWait(servo_adc_mutex, osWaitForever);
+		for (int i = 0; i < SERVOS; i++) {
+			adc[i] = adc_values[i];
+		}
+		osMutexRelease(servo_adc_mutex);
+
+
+		// Print coordinates
+		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", arm_position.x, arm_position.y, arm_position.z);
+		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
+
+		// Print servo angles
+		sprintf(lcd_data_buff, "angle:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
+				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
+		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
+
+		// Print pulse values
+		sprintf(lcd_data_buff, "pulse:  %4d   %4d   %4d   %4d", pulse[0], pulse[1], pulse[2], pulse[3]);
+		BSP_LCD_DisplayStringAtLine(10, (uint8_t*) lcd_data_buff);
+
+		// print ADC values
+		sprintf(lcd_data_buff, "ADC:    %4d   %4d   %4d   %4d", adc[0], adc[1], adc[2], adc[3]);
+		BSP_LCD_DisplayStringAtLine(11, (uint8_t*) lcd_data_buff);
+
+		osDelay(50);
 	}
 
 	while(1) {

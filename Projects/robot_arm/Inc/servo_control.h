@@ -100,8 +100,8 @@ typedef struct {
 	uint32_t max_pulse;
 } servo_conf_t;
 
-uint16_t adc_values[SERVOS];
-uint16_t adc_pulse_values[SERVOS];
+uint32_t adc_values[SERVOS];
+uint32_t adc_pulse_values[SERVOS];
 uint32_t adc_ch_conf[SERVOS];
 
 ADC_HandleTypeDef adc;
@@ -123,6 +123,7 @@ uint8_t pwm_ready;
 char lcd_log[100];
 
 osMutexId servo_pulse_mutex;
+osMutexId servo_adc_mutex;
 
 void servo_config(void);
 void pwm_init(void);
@@ -139,6 +140,8 @@ void stop_adc_thread(void);
 void adc_thread(void const * argument);
 double map(double input, double min_in, double max_in, double min_out, double max_out);
 void xyz_to_pulse(coord_cart_t* pos_cart);
+void pulse_to_ang(angles_t* joint_angles);
+void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 void pulse_to_xyz(coord_cart_t* pos_cart);
 
 #endif /* __SERVO_CONTROL_H_ */
