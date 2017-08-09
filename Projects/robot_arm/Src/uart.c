@@ -53,23 +53,25 @@ void UART_send(char* buffer)
 void UART_send_help(void)
 {
 	UART_send("*** Greetings from TotoRobot! ***");
-	UART_send("");
+	UART_send(" ");
 	UART_send("Commands:");
-	UART_send("");
+	UART_send(" ");
 	UART_send("get pulse                    - Get servos' current pulse width");
 	UART_send("get angle                    - Get servos' current angle");
 	UART_send("get pos                      - Get robot arm's current xyz coordinates");
 	UART_send("get manual                   - Get current manual control status");
 	UART_send("get display                  - Get current status of LCD data display");
-	UART_send("");
+	UART_send("get demo                     - Get current status of the demo");
+	UART_send(" ");
 	UART_send("set pulse <servo> <value>    - Set servo pulse width");
 	UART_send("set angle <servo> <value>    - Set servo angle");
 	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates");
 	UART_send("set manual <0|1>             - Turn on or off manual control");
-	UART_send("set display <0|1>            - Turn on data display on LCD");
-	UART_send("");
+	UART_send("set display <0|1>            - Turn on or off data display on LCD");
+	UART_send("set demo <0|1>               - Start/stop demo");
+	UART_send(" ");
 	UART_send("Always terminate commands with LF!");
-	UART_send("");
+	UART_send(" ");
 
 	return;
 }
@@ -167,6 +169,8 @@ void process_command(void)
 		c_params.attrib = MANUAL_CONTROL;
 	} else if ((strcmp(s, "display") == 0) || (strcmp(s, "dis") == 0)) {
 		c_params.attrib = DATA_DISP;
+	} else if ((strcmp(s, "demo") == 0) || (strcmp(s, "dem") == 0)) {
+		c_params.attrib = DEMO;
 	} else {
 		c_params.error = 1;
 		return;
@@ -187,9 +191,7 @@ void process_command(void)
 	}
 
 	// Value
-	if ((c_params.command == SET_VALUE) &&
-		((c_params.attrib == PULSE) || (c_params.attrib == ANGLE)
-		|| (c_params.attrib == MANUAL_CONTROL) || (c_params.attrib == DATA_DISP))) {
+	if ((c_params.command != HELP) && (c_params.command != GET_VALUE)) {
 		char* s = strtok(NULL, " ");
 
 		// Convert ASCII to integer
@@ -293,6 +295,10 @@ void UART_send_settings(void)
 		sprintf((char*) TX_buffer, "LCD data display is %s", lcd_data_display_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
+	case DEMO:
+		sprintf((char*) TX_buffer, "Demo is %s", demo_on ? "running" : "off");
+		UART_send((char*) TX_buffer);
+		break;
 	case NO_ATTRIB:
 		break;
 	}
@@ -338,6 +344,15 @@ void set_value(void)
 		} else {
 			stop_lcd_data_display();
 			UART_send("LCD data display turned off.");
+		}
+		break;
+	case DEMO:
+		if (c_params.value > 0) {
+			start_demo();
+			UART_send("Demo is on.");
+		} else {
+			stop_demo();
+			UART_send("Demo is turned off.");
 		}
 		break;
 	case NO_ATTRIB:

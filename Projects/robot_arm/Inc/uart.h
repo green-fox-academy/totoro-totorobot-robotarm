@@ -13,7 +13,7 @@
 #define RXBUFFERSIZE        TXBUFFERSIZE	// receive
 
 typedef enum {NO_COMMAND, HELP, GET_VALUE, SET_VALUE} uart_command_t;
-typedef enum {NO_ATTRIB, PULSE, ANGLE, POSITION, MANUAL_CONTROL, DATA_DISP} uart_attrib_t;
+typedef enum {NO_ATTRIB, PULSE, ANGLE, POSITION, MANUAL_CONTROL, DATA_DISP, DEMO} uart_attrib_t;
 
 typedef struct {
 	uart_command_t command;
@@ -30,6 +30,8 @@ uart_command_struct_t c_params;
 UART_HandleTypeDef uart_handle;
 extern uint8_t adc_on;
 extern uint8_t lcd_data_display_on;
+extern uint8_t demo_on;
+
 
 uint8_t TX_buffer[TXBUFFERSIZE];
 uint8_t RX_buffer[RXBUFFERSIZE];
@@ -48,10 +50,11 @@ uint8_t verify_pulse(uint32_t pulse);
 uint8_t verify_angle(uint32_t angle);
 void set_value(void);
 void UART_send_settings(void);
-extern void start_adc_thread(void);
-extern void stop_adc_thread(void);
 void start_lcd_data_display(void);
 void stop_lcd_data_display(void);
-
+extern void start_adc_thread(void);
+extern void stop_adc_thread(void);
+extern void start_demo(void);
+extern void stop_demo(void);
 
 #endif /* __UART_H_ */

@@ -2,6 +2,7 @@
 
 void servo_control_thread(void const * argument)
 {
+
 	if (debug) {
 		LCD_UsrLog((char*) "Servo control thread started\n");
 	}
@@ -22,6 +23,41 @@ void servo_control_thread(void const * argument)
 			LCD_ErrLog((char*) "Servo control thread terminated\n");
 		}
 		osThreadTerminate(NULL);
-    }
+
 }
 
+void start_demo(void) {
+
+	demo_on = 1;
+
+    osThreadDef(DEMO, demo_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadCreate (osThread(DEMO), NULL);
+
+    return;
+}
+
+
+void stop_demo(void);
+void demo_thread(void const * argument) {
+
+	if (debug) {
+		LCD_UsrLog((char*) "Demo thread started\n");
+	}
+
+	while (demo_on) {
+
+		// Implement demo here
+
+	}
+
+
+	while (1) {
+		if (debug) {
+			LCD_ErrLog((char*) "Demo thread terminated\n");
+		}
+		osThreadTerminate(NULL);
+    }
+
+
+
+}
