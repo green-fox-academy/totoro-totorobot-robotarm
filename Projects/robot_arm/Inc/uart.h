@@ -56,5 +56,6 @@ extern void start_adc_thread(void);
 extern void stop_adc_thread(void);
 extern void start_demo(void);
 extern void stop_demo(void);
+extern void xyz_to_pulse(coord_polar_t* coord);
 
 #endif /* __UART_H_ */

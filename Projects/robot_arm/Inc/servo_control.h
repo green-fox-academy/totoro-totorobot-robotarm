@@ -127,6 +127,7 @@ osMutexId servo_pulse_mutex;
 void servo_config(void);
 void pwm_init(void);
 void pwm_set_pulse(uint8_t servo, uint32_t pulse);
+void xyz_to_pulse(coord_polar_t* coord);
 void adc_init(void);
 void adc_deinit(void);
 void adc_measure(void);

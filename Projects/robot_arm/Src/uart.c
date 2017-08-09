@@ -253,6 +253,7 @@ void execute_command(void)
 void UART_send_settings(void)
 {
 	switch (c_params.attrib) {
+
 	case PULSE:
 		for (int i = 0; i < SERVOS; i++) {
 			// Get value
@@ -264,6 +265,7 @@ void UART_send_settings(void)
 			UART_send((char*) TX_buffer);
 		}
 		break;
+
 	case ANGLE:
 		for (int i = 0; i < SERVOS; i++) {
 			// Get pulse value
@@ -272,7 +274,7 @@ void UART_send_settings(void)
 			osMutexRelease(servo_pulse_mutex);
 
 			// Calculate angle
-			uint8_t angle = (uint8_t) map(pulse, (double) servo_conf[i].min_pulse,
+			uint8_t angle = (uint8_t) map((double) pulse, (double) servo_conf[i].min_pulse,
 					(double) servo_conf[i].max_pulse, (double) servo_conf[i].min_angle_deg,
 					(double) servo_conf[i].max_angle_deg);
 
@@ -281,6 +283,7 @@ void UART_send_settings(void)
 			UART_send((char*)TX_buffer);
 		}
 		break;
+
 	case POSITION:
 		// Get value
 		osMutexWait(servo_pulse_mutex, osWaitForever);
@@ -293,18 +296,22 @@ void UART_send_settings(void)
 		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", x, y, z);
 		UART_send((char*) TX_buffer);
 		break;
+
 	case MANUAL_CONTROL:
 		sprintf((char*) TX_buffer, "Manual control is %s", adc_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
+
 	case DATA_DISP:
 		sprintf((char*) TX_buffer, "LCD data display is %s", lcd_data_display_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
+
 	case DEMO:
 		sprintf((char*) TX_buffer, "Demo is %s", demo_on ? "running" : "off");
 		UART_send((char*) TX_buffer);
 		break;
+
 	case NO_ATTRIB:
 		break;
 	}
@@ -314,12 +321,15 @@ void UART_send_settings(void)
 void set_value(void)
 {
 	switch (c_params.attrib) {
+
 	case PULSE:
+
 		osMutexWait(servo_pulse_mutex, osWaitForever);
 		servo_pulse[c_params.device_id] = c_params.value;
 		osMutexRelease(servo_pulse_mutex);
 		UART_send("Set pulse done.");
 		break;
+
 	case ANGLE:
 
 		// TODO calculate angle->pulse -> correct 2nd joint angle
@@ -331,12 +341,21 @@ void set_value(void)
 		osMutexRelease(servo_pulse_mutex);
 		UART_send("Set angle done.");
 		break;
+
 	case POSITION:
 
-		// TODO write + use set position function
+		// Read in xyz values
+		coord_cart_t coord;
+		coord.x = (double) c_params.value_x;
+		coord.y = (double) c_params.value_y;
+		coord.z = (double) c_params.value_z;
+
+		// Set pwm pulse
+		xyz_to_pulse(&coord);
 
 		UART_send("Set position done.");
 		break;
+
 	case MANUAL_CONTROL:
 		if (c_params.value > 0) {
 			start_adc_thread();
@@ -346,6 +365,7 @@ void set_value(void)
 			UART_send("Manual control ended, ADC terminated.");
 		}
 		break;
+
 	case DATA_DISP:
 		if (c_params.value > 0) {
 			start_lcd_data_display();
@@ -355,6 +375,7 @@ void set_value(void)
 			UART_send("LCD data display turned off.");
 		}
 		break;
+
 	case DEMO:
 		if (c_params.value > 0) {
 			start_demo();
@@ -364,6 +385,7 @@ void set_value(void)
 			UART_send("Demo is turned off.");
 		}
 		break;
+
 	case NO_ATTRIB:
 		break;
 	}

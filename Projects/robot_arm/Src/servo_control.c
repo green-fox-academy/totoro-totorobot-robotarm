@@ -175,7 +175,7 @@ void adc_measure(void)
 		adc_values[i] = HAL_ADC_GetValue(&adc);
 
 		// Calculate PMW pulse width
-		adc_pulse_values[i] = (uint32_t) map(adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
+		adc_pulse_values[i] = (uint32_t) map((double) adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
 				                             (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
 
 		osDelay(5);
@@ -303,4 +303,38 @@ double map(double input, double min_in, double max_in, double min_out, double ma
 	double output = (max_out - min_out) * ratio + min_out;
 
 	return output;
+}
+
+void xyz_to_pulse(coord_polar_t* coord)
+{
+	coord_polar_t pos_polar;
+	angles_t joint_angles;
+	double angles[SERVOS - 1];
+	uint32_t pulse_width[SERVOS - 1];
+
+	// Convert xyz to polar coordinates
+	cart_to_polar(&coord, &pos_polar);
+
+	// Calculate servo angles
+	calc_inverse_kinematics(&pos_polar, &joint_angles);
+
+	// TODO: correct for joint 2
+	angles[0] = joint_angles->theta0;
+	angles[1] = joint_angles->theta1;
+	angles[2] = joint_angles->theta2;
+
+	// Calculate pulse width values
+	for (int i = 0; i < SERVOS - 1; i++) {
+		pulse_width[i] = (uint32_t) map(angles[i], servo_conf[i].min_angle_rad, servo_conf[i].max_angle_rad,
+										(double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
+	}
+
+	// Update servo pulse values
+	osMutexWait(servo_pulse_mutex, osWaitForever);
+	for (int i = 0; i < SERVOS - 1; i++) {
+		servo_pulse[i] = pulse_width[i];
+	}
+	osMutexRelease(servo_pulse_mutex);
+
+	return;
 }
