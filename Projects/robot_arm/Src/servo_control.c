@@ -369,9 +369,14 @@ void pulse_to_ang(angles_t* joint_angles)
 	}
 
 	// TODO correct for joint2
+
+	// When calculating angle from pulse values, it is always measured
+	// to the xy plane. Fot positioning Theta2 should be the angle of difference
+	// between link1 anf link2.
 	joint_angles->theta0 = ang_rad[0];
 	joint_angles->theta1 = ang_rad[1];
 	joint_angles->theta2 = ang_rad[2];
+	joint_angles->theta2 -= joint_angles->theta1;
 
 	return;
 }

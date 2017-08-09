@@ -95,8 +95,14 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 	// Calculate theta2
 	double cos_theta2 = (pow(r, 2.0) + pow(z, 2.0) - pow(l1, 2.0) - pow(l2, 2.0)) / (2.0 * l1 * l2);
 
-	// TODO: check if we can do elbow up at all -> yes
-	uint8_t elbow_dir = -1; // elbow down, +1 for elbow up
+	// TODO: check if elbow up/down correct
+	uint8_t elbow_dir;		// elbow down: -1, elbow up +1
+	if (joint_angles->theta2 > 0) {
+		elbow_dir = 1;	// Elbow up
+	} else {
+		elbow_dir = -1;	// Elbow down
+	}
+
 	joint_angles->theta2 = atan2(elbow_dir * sqrt(1.0 - pow(cos_theta2, 2.0)), cos_theta2);
 
 	// Calculate theta1

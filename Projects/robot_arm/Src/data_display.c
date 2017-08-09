@@ -13,16 +13,12 @@ void start_lcd_data_display(void)
 	LCD_LOG_DeInit();
 
 	BSP_LCD_Clear(LCD_COLOR_WHITE);
-	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_SetFont(&Font20);
-
 	BSP_LCD_DisplayStringAtLine(1, (uint8_t*) "  TotoRobot runtime parameters   ");
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_DisplayStringAtLine(3, (uint8_t*) "Coordinates");
-	BSP_LCD_DisplayStringAtLine(5, (uint8_t*) "   X:      Y:      Z:");
 	BSP_LCD_DisplayStringAtLine(7, (uint8_t*) "       Serv0  Serv1  Serv2  Serv3");
-	BSP_LCD_DisplayStringAtLine(9, (uint8_t*) "angle:");
-	BSP_LCD_DisplayStringAtLine(11, (uint8_t*) "ADC:");
 
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
@@ -75,6 +71,10 @@ void lcd_data_display_thread(void const * argument)
 		// Calculate angles
 		pulse_to_ang(&servo_angles);
 
+		// Theta2 is the angle between link1 and link2.
+		// We need to adjust the value, to get the angle compared to the XY-plane
+		servo_angles.theta2 += servo_angles.theta1;
+
 		// Calculate XYZ
 		ang_to_xyz(&servo_angles, &arm_position);
 
@@ -87,8 +87,10 @@ void lcd_data_display_thread(void const * argument)
 
 
 		// Print coordinates
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", arm_position.x, arm_position.y, arm_position.z);
 		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
 		// Print servo angles
 		sprintf(lcd_data_buff, "angle:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
