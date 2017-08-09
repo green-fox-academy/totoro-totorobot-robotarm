@@ -32,7 +32,7 @@
 
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-RTC_TimeTypeDef ntp_time;
+
 
 
 
@@ -40,6 +40,9 @@ RTC_TimeTypeDef ntp_time;
 
 
 RTC_HandleTypeDef RtcHandle;
+RTC_InitTypeDef rtcInit;
+RTC_TimeTypeDef ntp_time;
+RTC_DateTypeDef rtcDate;
 
 typedef struct
 {
@@ -196,19 +199,16 @@ void time_on_board_thread(void* parameter)
 	//rtc_data_t* input_time = (rtc_data_t*)parameter;
 
 	// time_t t = time(NULL);
-	// struct tm tm = *localtime(&t);
-
-	struct tm input_time = &txTm;
+	struct tm input_time = *localtime(&txTm);
 
 	ntp_time.Seconds = input_time.tm_sec;
 	ntp_time.Minutes = input_time.tm_min;
 	ntp_time.Hours = input_time.tm_hour;
-	HAL_RTC_SetTime(RtcHandle, *ntp_time, RTC_HOURFORMAT_24);
+	HAL_RTC_SetTime(&RtcHandle, &ntp_time, RTC_FORMAT_BCD);
 
 	LCD_UsrLog("Time now:  %d:%d:%d\n", input_time.tm_hour, input_time.tm_min, input_time.tm_sec);
 
-
-	HAL_RTC_GetTime(RtcHandle, *input_time, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(&RtcHandle, &input_time, RTC_FORMAT_BCD);
 	//HAL_RTC_GetTime();
 	//LCD_UsrLog("Time: %s", time_out);
 	/*LCD_UsrLog("loooooooooooooooolllll");
