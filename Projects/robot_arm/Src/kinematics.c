@@ -1,7 +1,7 @@
 #include "kinematics.h"
 
 // Set up basic parameters
-void kinmatics_conf(void)
+void kinematics_conf(void)
 {
 	l1 = (double) VERTICAL_ARM_SIZE;
 	l2 = (double) HORIZONTAL_ARM_SIZE;

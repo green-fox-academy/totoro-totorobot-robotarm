@@ -62,6 +62,9 @@ void servo_config(void)
 		servo_pulse[i] = pwm_conf[i].pulse;
 	}
 
+	// Load data for kinematics calculation
+	kinematics_conf();
+
 	return;
 }
 
@@ -388,7 +391,7 @@ void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 	// Calculate position in polar coordinates
 	calc_forward_kinematics(joint_angles, &pos_polar);
 
-	// Convert polar coordinated to xyz
+	// Convert polar coordinates to xyz
 	polar_to_cart(&pos_polar, pos_cart);
 
 	return;

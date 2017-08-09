@@ -18,12 +18,12 @@
 #define GRIPPER_R_DIST			96	// mm
 
 /* Allowed work area */
-#define WORK_AREA_MIN_X	0
-#define	WORK_AREA_MAX_X	1000
-#define WORK_AREA_MIN_Y	0
-#define	WORK_AREA_MAX_Y	1000
-#define WORK_AREA_MIN_Z	0
-#define	WORK_AREA_MAX_Z	1000
+#define WORK_AREA_MIN_X	-100
+#define	WORK_AREA_MAX_X	300
+#define WORK_AREA_MIN_Y	-100
+#define	WORK_AREA_MAX_Y	300
+#define WORK_AREA_MIN_Z	-100
+#define	WORK_AREA_MAX_Z	300
 
 typedef struct {
 	double x;		// mm
@@ -49,7 +49,7 @@ double z0;	// Elevation of joint1 from reference plane
 double z3;	// Distance between joint3 and base Z point of gripper
 double r3;	// Distance between joint3 and base R point of gripper
 
-void kinmatics_conf(void);
+void kinematics_conf(void);
 double deg_to_rad(int16_t deg);
 int16_t rad_to_deg(double rad);
 double abs_to_rel_angle(double angle);
