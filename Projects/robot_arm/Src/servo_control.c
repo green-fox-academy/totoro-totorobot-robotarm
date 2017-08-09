@@ -2,8 +2,7 @@
 
 void servo_config(void)
 {
-	// Configure up servo related data
-
+	// Load PWM configuration data
 	pwm_conf[0].instance = SERVO0_INST;
 	pwm_conf[0].period = SERVO0_PERIOD;
 	pwm_conf[0].prescaler = SERVO0_PRESCALER;
@@ -29,44 +28,38 @@ void servo_config(void)
 	adc_ch_conf[2] = SERVO2_ADC_CHANNEL;
 	adc_ch_conf[3] = SERVO3_ADC_CHANNEL;
 
-	servo_pos_conf[0].min_angle = SERVO0_MIN_ANGLE;
-	servo_pos_conf[0].max_angle = SERVO0_MAX_ANGLE;
-	servo_pos_conf[0].min_pulse = SERVO0_MIN_PULSE;
-	servo_pos_conf[0].max_pulse = SERVO0_MAX_PULSE;
+	// Load servo configuration data
+	servo_conf[0].min_angle_deg = SERVO0_MIN_ANGLE;
+	servo_conf[0].max_angle_deg = SERVO0_MAX_ANGLE;
+	servo_conf[0].min_angle_rad = deg_to_rad(SERVO0_MIN_ANGLE);
+	servo_conf[0].max_angle_rad = deg_to_rad(SERVO0_MAX_ANGLE);
+	servo_conf[0].min_pulse = SERVO0_MIN_PULSE;
+	servo_conf[0].max_pulse = SERVO0_MAX_PULSE;
 
-	servo_pos_conf[1].min_angle = SERVO1_MIN_ANGLE;
-	servo_pos_conf[1].max_angle = SERVO1_MAX_ANGLE;
-	servo_pos_conf[1].min_pulse = SERVO1_MIN_PULSE;
-	servo_pos_conf[1].max_pulse = SERVO1_MAX_PULSE;
+	servo_conf[1].min_angle_deg = SERVO1_MIN_ANGLE;
+	servo_conf[1].max_angle_deg = SERVO1_MAX_ANGLE;
+	servo_conf[1].min_angle_rad = deg_to_rad(SERVO1_MIN_ANGLE);
+	servo_conf[1].max_angle_rad = deg_to_rad(SERVO1_MAX_ANGLE);
+	servo_conf[1].min_pulse = SERVO1_MIN_PULSE;
+	servo_conf[1].max_pulse = SERVO1_MAX_PULSE;
 
-	servo_pos_conf[2].min_angle = SERVO2_MIN_ANGLE;
-	servo_pos_conf[2].max_angle = SERVO2_MAX_ANGLE;
-	servo_pos_conf[2].min_pulse = SERVO2_MIN_PULSE;
-	servo_pos_conf[2].max_pulse = SERVO2_MAX_PULSE;
+	servo_conf[2].min_angle_deg = SERVO2_MIN_ANGLE;
+	servo_conf[2].max_angle_deg = SERVO2_MAX_ANGLE;
+	servo_conf[2].min_angle_rad = deg_to_rad(SERVO2_MIN_ANGLE);
+	servo_conf[2].max_angle_rad = deg_to_rad(SERVO2_MAX_ANGLE);
+	servo_conf[2].min_pulse = SERVO2_MIN_PULSE;
+	servo_conf[2].max_pulse = SERVO2_MAX_PULSE;
 
+	servo_conf[3].min_angle_deg = SERVO3_MIN_ANGLE;
+	servo_conf[3].max_angle_deg = SERVO3_MAX_ANGLE;
+	servo_conf[3].min_angle_rad = deg_to_rad(SERVO3_MIN_ANGLE);
+	servo_conf[3].max_angle_rad = deg_to_rad(SERVO3_MAX_ANGLE);
+	servo_conf[3].min_pulse = SERVO3_MIN_PULSE;
+	servo_conf[3].max_pulse = SERVO3_MAX_PULSE;
 
-	servo_pos_conf[3].min_angle = SERVO3_MIN_ANGLE;
-	servo_pos_conf[3].max_angle = SERVO3_MAX_ANGLE;
-	servo_pos_conf[3].min_pulse = SERVO3_MIN_PULSE;
-	servo_pos_conf[3].max_pulse = SERVO3_MAX_PULSE;
-
-
+	// Position arm to middle position
 	for (int i = 0; i < SERVOS; i++) {
-		servo_pos_conf[i].adc_to_angle_const = (servo_pos_conf[i].max_angle - servo_pos_conf[i].min_angle) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
-	}
-
-	for (int i = 0; i < SERVOS; i++) {
-		servo_pos_conf[i].angle_to_pulse = (servo_pos_conf[i].max_pulse - servo_pos_conf[i].min_pulse) / (servo_pos_conf[i].max_angle - servo_pos_conf[i].min_angle);
-	}
-
-	for (int i = 0; i < SERVOS; i++) {
-		servo_pos_conf[i].adc_to_pulse = (servo_pos_conf[i].max_pulse - servo_pos_conf[i].min_pulse) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
-	}
-
-	// Set arm to origo
-	for (int i = 0; i < SERVOS; i++) {
-		servo_pos[i].angle = servo_pos_conf[i].min_angle;
-		servo_pos[i].pulse = pwm_conf[i].pulse;
+		servo_pulse[i] = pwm_conf[i].pulse;
 	}
 
 	return;
@@ -182,37 +175,13 @@ void adc_measure(void)
 		adc_values[i] = HAL_ADC_GetValue(&adc);
 
 		// Calculate PMW pulse width
-		adc_pulse_values[i] = map(adc_values[i], MIN_ADC_VALUE, MAX_ADC_VALUE, servo_pos_conf[i].min_pulse, servo_pos_conf[i].max_pulse);
+		adc_pulse_values[i] = (uint32_t) map(adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
+				                             (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
 
 		osDelay(5);
 	}
 
 	return;
-}
-
-uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value)
-{
-	uint8_t degrees = (float) adc_value * servo_pos_conf[servo].adc_to_angle_const;
-
-	return degrees;
-}
-
-uint32_t angle_to_pulse(uint8_t servo, uint8_t degree)
-{
-
-	// Calculate pulse width
-	uint32_t pulse = (float) degree * servo_pos_conf[servo].angle_to_pulse;
-
-	return pulse;
-}
-
-uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value)
-{
-
-	// Calculate pulse width
-	uint32_t pulse = (float) adc_value * servo_pos_conf[servo].adc_to_pulse;
-
-	return pulse;
 }
 
 void start_adc_thread(void)
@@ -266,15 +235,13 @@ void pwm_thread(void const * argument)
 			osMutexWait(servo_pulse_mutex, osWaitForever);
 
 			// Get pulse value
-			uint32_t servo_pulse = servo_pos[i].pulse;
+			uint32_t pulse = servo_pulse[i];
 
 			// Release mutex
 			osMutexRelease(servo_pulse_mutex);
 
-			// Set position
-			pwm_set_pulse(i, servo_pulse);
-
-
+			// Set PWM pulse width
+			pwm_set_pulse(i, pulse);
 		}
 		osDelay(10);
 	}
