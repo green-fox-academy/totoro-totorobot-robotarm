@@ -305,7 +305,7 @@ double map(double input, double min_in, double max_in, double min_out, double ma
 	return output;
 }
 
-void xyz_to_pulse(coord_polar_t* coord)
+void xyz_to_pulse(coord_cart_t* pos_cart)
 {
 	coord_polar_t pos_polar;
 	angles_t joint_angles;
@@ -313,7 +313,7 @@ void xyz_to_pulse(coord_polar_t* coord)
 	uint32_t pulse_width[SERVOS - 1];
 
 	// Convert xyz to polar coordinates
-	cart_to_polar(&coord, &pos_polar);
+	cart_to_polar(&pos_cart, &pos_polar);
 
 	// Calculate servo angles
 	calc_inverse_kinematics(&pos_polar, &joint_angles);
@@ -335,6 +335,40 @@ void xyz_to_pulse(coord_polar_t* coord)
 		servo_pulse[i] = pulse_width[i];
 	}
 	osMutexRelease(servo_pulse_mutex);
+
+	return;
+}
+
+void pulse_to_xyz(coord_cart_t* pos_cart)
+{
+	uint32_t pulse_width[SERVOS - 1];
+	double ang_rad[SERVOS - 1];
+	angles_t joint_angles;
+	coord_polar_t pos_polar;
+
+	// Get actual pulse values
+	osMutexWait(servo_pulse_mutex, osWaitForever);
+	for (int i = 0; i < SERVOS - 1; i++) {
+		pulse_width[i] = servo_pulse[i];
+	}
+	osMutexRelease(servo_pulse_mutex);
+
+	// Calculate angles in radian from pulse width
+	for (int i = 0; i < SERVOS - 1; i++) {
+		ang_rad[i] = map(pulse_width[i], (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse,
+						 servo_conf[i].min_angle_rad, servo_conf[i].max_angle_rad);
+	}
+
+	// TODO correct for joint2
+	joint_angles.theta0 = ang_rad[0];
+	joint_angles.theta1 = ang_rad[1];
+	joint_angles.theta2 = ang_rad[2];
+
+	// Calculate position in polar coordinates
+	calc_forward_kinematics(&joint_angles, &pos_polar);
+
+	// Convert polar coordinated to xyz
+	polar_to_cart(&pos_polar, &pos_cart);
 
 	return;
 }

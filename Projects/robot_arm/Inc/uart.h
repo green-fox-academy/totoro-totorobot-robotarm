@@ -20,9 +20,9 @@ typedef struct {
 	uart_attrib_t attrib;
 	uint8_t device_id;
 	uint16_t value;
-	uint16_t value_x;
-	uint16_t value_y;
-	uint16_t value_z;
+	int16_t value_x;
+	int16_t value_y;
+	int16_t value_z;
 	uint8_t error;
 } uart_command_struct_t;
 
@@ -56,6 +56,8 @@ extern void start_adc_thread(void);
 extern void stop_adc_thread(void);
 extern void start_demo(void);
 extern void stop_demo(void);
-extern void xyz_to_pulse(coord_polar_t* coord);
+extern void xyz_to_pulse(coord_cart_t* pos_cart);
+extern void pulse_to_xyz(coord_cart_t* pos_cart);
+
 
 #endif /* __UART_H_ */

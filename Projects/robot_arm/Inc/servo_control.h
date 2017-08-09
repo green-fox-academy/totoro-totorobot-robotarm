@@ -127,7 +127,6 @@ osMutexId servo_pulse_mutex;
 void servo_config(void);
 void pwm_init(void);
 void pwm_set_pulse(uint8_t servo, uint32_t pulse);
-void xyz_to_pulse(coord_polar_t* coord);
 void adc_init(void);
 void adc_deinit(void);
 void adc_measure(void);
@@ -139,6 +138,7 @@ void start_adc_thread(void);
 void stop_adc_thread(void);
 void adc_thread(void const * argument);
 double map(double input, double min_in, double max_in, double min_out, double max_out);
-
+void xyz_to_pulse(coord_cart_t* pos_cart);
+void pulse_to_xyz(coord_cart_t* pos_cart);
 
 #endif /* __SERVO_CONTROL_H_ */

@@ -285,15 +285,14 @@ void UART_send_settings(void)
 		break;
 
 	case POSITION:
-		// Get value
-		osMutexWait(servo_pulse_mutex, osWaitForever);
-		uint32_t x = arm_pos_c.x;
-		uint32_t y = arm_pos_c.y;
-		uint32_t z = arm_pos_c.z;
-		osMutexRelease(servo_pulse_mutex);
+
+		coord_cart_t xyz;
+
+		// Get xyz values
+		pulse_to_xyz(&xyz)
 
 		// Send value
-		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", x, y, z);
+		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", (int16_t) xyz->x, (int16_t) xyz->y, (int16_t) xyz->z);
 		UART_send((char*) TX_buffer);
 		break;
 
