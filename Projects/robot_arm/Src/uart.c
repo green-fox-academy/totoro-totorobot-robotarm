@@ -294,14 +294,17 @@ void UART_send_settings(void)
 
 	case POSITION:
 
-		coord_cart_t xyz;
+		// A block statement is needed for the declaration
+		{
+			coord_cart_t xyz;
 
-		// Get xyz values
-		pulse_to_xyz(&xyz);
+			// Get xyz values
+			pulse_to_xyz(&xyz);
 
-		// Send value
-		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", (int16_t) xyz->x, (int16_t) xyz->y, (int16_t) xyz->z);
-		UART_send((char*) TX_buffer);
+			// Send value
+			sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", (int16_t) xyz.x, (int16_t) xyz.y, (int16_t) xyz.z);
+			UART_send((char*) TX_buffer);
+		}
 		break;
 
 	case MANUAL_CONTROL:
@@ -341,34 +344,40 @@ void set_value(void)
 
 		// TODO correct 2nd joint angle
 
-		// Convert degree to radians
-		double ang_rad = deg_to_rad(c_params.value);
+		// A block statement is needed for the declaration
+		{
+			// Convert degree to radians
+			double ang_rad = deg_to_rad(c_params.value);
 
-		// Calculate pulse
-		uint32_t pulse = (uint32_t) map(ang_rad, servo_conf[c_params.device_id].min_angle_rad,
-									  servo_conf[c_params.device_id].max_angle_rad,
-									  (double) servo_conf[c_params.device_id].min_pulse,
-									  (double) servo_conf[c_params.device_id].max_pulse);
+			// Calculate pulse
+			uint32_t pulse = (uint32_t) map(ang_rad, servo_conf[c_params.device_id].min_angle_rad,
+										  servo_conf[c_params.device_id].max_angle_rad,
+										  (double) servo_conf[c_params.device_id].min_pulse,
+										  (double) servo_conf[c_params.device_id].max_pulse);
 
-		// Set pulse
-		osMutexWait(servo_pulse_mutex, osWaitForever);
-		servo_pulse[c_params.device_id] = pulse;
-		osMutexRelease(servo_pulse_mutex);
-		UART_send("Set angle done.");
+			// Set pulse
+			osMutexWait(servo_pulse_mutex, osWaitForever);
+			servo_pulse[c_params.device_id] = pulse;
+			osMutexRelease(servo_pulse_mutex);
+			UART_send("Set angle done.");
+		}
 		break;
 
 	case POSITION:
 
-		// Read in xyz values
-		coord_cart_t coord;
-		coord.x = (double) c_params.value_x;
-		coord.y = (double) c_params.value_y;
-		coord.z = (double) c_params.value_z;
+		// A block statement is needed for the declaration
+		{
+			// Read in xyz values
+			coord_cart_t coord;
+			coord.x = (double) c_params.value_x;
+			coord.y = (double) c_params.value_y;
+			coord.z = (double) c_params.value_z;
 
-		// Set pwm pulse
-		xyz_to_pulse(&coord);
+			// Set pwm pulse
+			xyz_to_pulse(&coord);
 
-		UART_send("Set position done.");
+			UART_send("Set position done.");
+		}
 		break;
 
 	case MANUAL_CONTROL:
