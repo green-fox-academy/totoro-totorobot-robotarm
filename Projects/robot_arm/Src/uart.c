@@ -283,11 +283,11 @@ void UART_send_settings(void)
 		break;
 	case POSITION:
 		// Get value
-		osMutexWait(servo_pos_mutex, osWaitForever);
+		osMutexWait(servo_pulse_mutex, osWaitForever);
 		uint32_t x = arm_pos_c.x;
 		uint32_t y = arm_pos_c.y;
 		uint32_t z = arm_pos_c.z;
-		osMutexRelease(servo_pos_mutex);
+		osMutexRelease(servo_pulse_mutex);
 
 		// Send value
 		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", x, y, z);
@@ -315,23 +315,26 @@ void set_value(void)
 {
 	switch (c_params.attrib) {
 	case PULSE:
-		osMutexWait(servo_pos_mutex, osWaitForever);
-		servo_pos[c_params.device_id].pulse = c_params.value;
-		osMutexRelease(servo_pos_mutex);
+		osMutexWait(servo_pulse_mutex, osWaitForever);
+		servo_pulse[c_params.device_id] = c_params.value;
+		osMutexRelease(servo_pulse_mutex);
 		UART_send("Set pulse done.");
 		break;
 	case ANGLE:
-		osMutexWait(servo_pos_mutex, osWaitForever);
-		servo_pos[c_params.device_id].angle = c_params.value;
-		osMutexRelease(servo_pos_mutex);
+
+		// TODO calculate angle->pulse -> correct 2nd joint angle
+		uint32_t pulse = 0;
+
+		// Set pulse
+		osMutexWait(servo_pulse_mutex, osWaitForever);
+		servo_pulse[c_params.device_id] = pulse;
+		osMutexRelease(servo_pulse_mutex);
 		UART_send("Set angle done.");
 		break;
 	case POSITION:
-		osMutexWait(servo_pos_mutex, osWaitForever);
-		arm_pos_c.x = c_params.value_x;
-		arm_pos_c.y = c_params.value_y;
-		arm_pos_c.z = c_params.value_z;
-		osMutexRelease(servo_pos_mutex);
+
+		// TODO write + use set position function
+
 		UART_send("Set position done.");
 		break;
 	case MANUAL_CONTROL:
