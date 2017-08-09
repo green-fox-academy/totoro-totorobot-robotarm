@@ -263,13 +263,13 @@ void pwm_thread(void const * argument)
 			// if (adc_on) { .... }
 
 			// Lock mutex
-			osMutexWait(servo_pos_mutex, osWaitForever);
+			osMutexWait(servo_pulse_mutex, osWaitForever);
 
 			// Get pulse value
 			uint32_t servo_pulse = servo_pos[i].pulse;
 
 			// Release mutex
-			osMutexRelease(servo_pos_mutex);
+			osMutexRelease(servo_pulse_mutex);
 
 			// Set position
 			pwm_set_pulse(i, servo_pulse);
