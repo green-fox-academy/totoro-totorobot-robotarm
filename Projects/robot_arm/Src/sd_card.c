@@ -16,7 +16,7 @@ void sd_card()
 {
 	FRESULT res;                                        /* FatFs function common result code */
 	uint32_t byteswritten, bytesread;                   /* File write/read counts */
-	char wtext[] = "aa\n"; 								/* File write buffer */
+	char wtext[] = "a"; 								/* File write buffer */
 	char btext[] = "STM333.TXT";						/* Name of the file */
 	char rtext[100];                                   	/* File read buffer */
 
@@ -29,27 +29,36 @@ void sd_card()
 	    {
 			/* FatFs Initialization Error */
 	    	Error_Handler();
-	    	LCD_ErrLog("Register the file system object to the FatFs module is failed\n");
+	    	LCD_ErrLog("Register the file system object to the FatFs module is failed");
 	    }
 	    else
 	    {
 	        /*##-3- Create and Open a new text file object with write access #####*/
 	        f_open(&MyFile, btext, FA_OPEN_EXISTING | FA_WRITE);
-	        LCD_UsrLog((char*) "Create and Open a new text file object with write access.\n");
 
 			/*##-4- Write data to the text file ################################*/
-			f_lseek(&MyFile, sizeof(MyFile));
-			sprintf((char*) wtext,"File.filscsíacdsvíds");
-			f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-			LCD_UsrLog((char*) "Data has written to SD card1.\n");
+			uint32_t size = (&MyFile)->fsize;
+			res = f_lseek(&MyFile, size);
+			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+			res = f_write(&MyFile, "\n", sizeof("\n"), (void *)&byteswritten);
 
-			f_lseek(&MyFile, sizeof(MyFile));
+			size = (&MyFile)->fsize;
+			res = f_lseek(&MyFile, size);
+			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+			res = f_write(&MyFile, "\n", sizeof("\n"), (void *)&byteswritten);
+
+			size = (&MyFile)->fsize;
+			res = f_lseek(&MyFile, size);
+			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
 
 			LCD_UsrLog((char*) "Data has written to SD card2.\n");
 
 			/*##-5- Close the open text file #################################*/
 			f_close(&MyFile);
 			LCD_UsrLog((char*) " Close the open text file\n");
+
+
+
 		}
 	}
 	  /*##-11- Unlink the micro SD disk I/O driver ###############################*/
