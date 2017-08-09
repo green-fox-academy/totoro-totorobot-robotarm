@@ -256,22 +256,28 @@ void UART_send_settings(void)
 	case PULSE:
 		for (int i = 0; i < SERVOS; i++) {
 			// Get value
-			osMutexWait(servo_pos_mutex, osWaitForever);
-			uint32_t pulse = servo_pos[i].pulse;
-			osMutexRelease(servo_pos_mutex);
+			osMutexWait(servo_pulse_mutex, osWaitForever);
+			uint32_t pulse = servo_pulse[i];
+			osMutexRelease(servo_pulse_mutex);
 			// Send value
-			sprintf((char*) TX_buffer, "servo%d pulse: %d", i, pulse);
+			sprintf((char*) TX_buffer, "Servo%d pulse: %d", i, pulse);
 			UART_send((char*) TX_buffer);
 		}
 		break;
 	case ANGLE:
 		for (int i = 0; i < SERVOS; i++) {
-			// Get value
-			osMutexWait(servo_pos_mutex, osWaitForever);
-			uint8_t angle = servo_pos[i].angle;
-			osMutexRelease(servo_pos_mutex);
+			// Get pulse value
+			osMutexWait(servo_pulse_mutex, osWaitForever);
+			uint32_t pulse = servo_pulse[i];
+			osMutexRelease(servo_pulse_mutex);
+
+			// Calculate angle
+			uint8_t angle = (uint8_t) map(pulse, (double) servo_conf[i].min_pulse,
+					(double) servo_conf[i].max_pulse, (double) servo_conf[i].min_angle_deg,
+					(double) servo_conf[i].max_angle_deg);
+
 			// Send value
-			sprintf((char*) TX_buffer, "servo%d angle: %4d degrees", i, angle);
+			sprintf((char*) TX_buffer, "Servo%d angle: %4d degrees", i, angle);
 			UART_send((char*)TX_buffer);
 		}
 		break;

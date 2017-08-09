@@ -308,13 +308,13 @@ void adc_thread(void const * argument)
 
 
 			// Lock mutex
-			osMutexWait(servo_pos_mutex, osWaitForever);
+			osMutexWait(servo_pulse_mutex, osWaitForever);
 
 			// Get pulse value
-			servo_pos[i].pulse = adc_pulse_values[i];
+			servo_pulse[i] = adc_pulse_values[i];
 
 			// Release mutex
-			osMutexRelease(servo_pos_mutex);
+			osMutexRelease(servo_pulse_mutex);
 		}
 
 		osDelay(10);
@@ -330,9 +330,10 @@ void adc_thread(void const * argument)
 	}
 }
 
-uint16_t map(uint16_t value, uint16_t min1, uint16_t max1, uint16_t min2, uint16_t max2)
+double map(double input, double min_in, double max_in, double min_out, double max_out)
 {
-	double ratio =  (double) value / (double) (max1 - min1);
-	double result = ((double) (max2 - min2)) * ratio + min2;
-	return result;
+	double ratio =  input / (max_in - min_in);
+	double output = (max_out - min_out) * ratio + min_out;
+
+	return output;
 }

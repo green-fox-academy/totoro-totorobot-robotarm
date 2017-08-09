@@ -92,19 +92,13 @@ typedef struct {
 } pwm_conf_t;
 
 typedef struct {
-	uint8_t min_angle;
-	uint8_t max_angle;
+	uint8_t min_angle_deg;
+	uint8_t max_angle_deg;
+	double min_angle_rad;
+	double max_angle_rad;
 	uint32_t min_pulse;
 	uint32_t max_pulse;
-	float adc_to_angle_const;
-	float angle_to_pulse;
-	float adc_to_pulse;
-} servo_pos_conf_t;
-
-typedef struct {
-	uint32_t pulse;
-	uint8_t angle;
-} servo_pos_t;
+} servo_conf_t;
 
 uint16_t adc_values[SERVOS];
 uint16_t adc_pulse_values[SERVOS];
@@ -117,8 +111,8 @@ pwm_conf_t pwm_conf[SERVOS];
 TIM_HandleTypeDef pwm[SERVOS];
 TIM_OC_InitTypeDef pwm_oc_init[SERVOS];
 
-servo_pos_conf_t servo_pos_conf[SERVOS];
-servo_pos_t servo_pos[SERVOS];
+servo_conf_t servo_conf[SERVOS];
+uint32_t servo_pulse[SERVOS];
 
 coord_polar_t arm_pos_p;
 coord_cart_t arm_pos_c;
@@ -128,7 +122,7 @@ uint8_t adc_on;
 uint8_t pwm_ready;
 char lcd_log[100];
 
-osMutexId servo_pos_mutex;
+osMutexId servo_pulse_mutex;
 
 void servo_config(void);
 void pwm_init(void);
@@ -143,6 +137,7 @@ void pwm_thread(void const * argument);
 void start_adc_thread(void);
 void stop_adc_thread(void);
 void adc_thread(void const * argument);
-uint16_t map(uint16_t value, uint16_t min1, uint16_t max1, uint16_t min2, uint16_t max2);
+double map(double input, double min_in, double max_in, double min_out, double max_out);
+
 
 #endif /* __SERVO_CONTROL_H_ */
