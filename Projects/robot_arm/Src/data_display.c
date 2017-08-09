@@ -88,7 +88,7 @@ void lcd_data_display_thread(void const * argument)
 
 		// Print coordinates
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", arm_position.x, arm_position.y, arm_position.z);
+		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
 		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 

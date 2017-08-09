@@ -19,7 +19,7 @@ typedef struct {
 	uart_command_t command;
 	uart_attrib_t attrib;
 	uint8_t device_id;
-	uint16_t value;
+	int16_t value;
 	int16_t value_x;
 	int16_t value_y;
 	int16_t value_z;
@@ -47,7 +47,7 @@ void process_command(void);
 void execute_command(void);
 uint8_t verify_coordinates(int16_t x, int16_t y, int16_t z);
 uint8_t verify_pulse(uint8_t servo, uint32_t pulse);
-uint8_t verify_angle(uint8_t servo, uint32_t angle);
+uint8_t verify_angle(uint8_t servo, int16_t angle);
 void set_value(void);
 void UART_send_settings(void);
 void start_lcd_data_display(void);

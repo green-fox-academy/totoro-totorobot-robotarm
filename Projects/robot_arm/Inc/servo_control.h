@@ -16,13 +16,14 @@
 
 // PWM D3 PB4 TIM3_CH1
 // ADC A0 PA0 ADC3_IN0
+// 0 degre @ 5165
 #define SERVO0_INST			TIM3
 #define SERVO0_PERIOD		0xffff
 #define SERVO0_PRESCALER	30
-#define SERVO0_MIN_PULSE	2250
-#define SERVO0_MAX_PULSE	7500
-#define SERVO0_MIN_ANGLE	0
-#define SERVO0_MAX_ANGLE	174
+#define SERVO0_MIN_PULSE	2150
+#define SERVO0_MAX_PULSE	7800
+#define SERVO0_MIN_ANGLE	-40
+#define SERVO0_MAX_ANGLE	36
 #define SERVO0_PWM_PORT		GPIOB
 #define SERVO0_PWM_PIN		GPIO_PIN_4
 #define SERVO0_PWM_AF		GPIO_AF2_TIM3
@@ -34,13 +35,14 @@
 
 // PWM D6 PH6 TIM12_CH1
 // ADC A1 PF10 ADC3_IN8
+// 90 degree @ 5063
 #define SERVO1_INST			TIM12
 #define SERVO1_PERIOD		0xffff
 #define SERVO1_PRESCALER	30
-#define SERVO1_MIN_PULSE	2150
-#define SERVO1_MAX_PULSE	7800
-#define SERVO1_MIN_ANGLE	0
-#define SERVO1_MAX_ANGLE	150
+#define SERVO1_MIN_PULSE	4075
+#define SERVO1_MAX_PULSE	6200
+#define SERVO1_MIN_ANGLE	55
+#define SERVO1_MAX_ANGLE	142
 #define SERVO1_PWM_PORT		GPIOH
 #define SERVO1_PWM_PIN		GPIO_PIN_6
 #define SERVO1_PWM_AF		GPIO_AF9_TIM12
@@ -52,13 +54,14 @@
 
 // PWM D9 PA15 TIM2_CH1
 // ADC A2 PF9 ADC3_IN7
+// 0 degree @ 5490
 #define SERVO2_INST			TIM2
 #define SERVO2_PERIOD		0xffff
 #define SERVO2_PRESCALER	30
-#define SERVO2_MIN_PULSE	2250
-#define SERVO2_MAX_PULSE	7600
-#define SERVO2_MIN_ANGLE	0
-#define SERVO2_MAX_ANGLE	160
+#define SERVO2_MIN_PULSE	3900
+#define SERVO2_MAX_PULSE	6520
+#define SERVO2_MIN_ANGLE	-57
+#define SERVO2_MAX_ANGLE	20
 #define SERVO2_PWM_PORT		GPIOA
 #define SERVO2_PWM_PIN		GPIO_PIN_15
 #define SERVO2_PWM_AF		GPIO_AF1_TIM2
@@ -92,8 +95,8 @@ typedef struct {
 } pwm_conf_t;
 
 typedef struct {
-	uint8_t min_angle_deg;
-	uint8_t max_angle_deg;
+	int16_t min_angle_deg;
+	int16_t max_angle_deg;
 	double min_angle_rad;
 	double max_angle_rad;
 	uint32_t min_pulse;
@@ -131,9 +134,6 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse);
 void adc_init(void);
 void adc_deinit(void);
 void adc_measure(void);
-uint8_t adc_to_angle(uint8_t servo, uint16_t adc_value);
-uint32_t angle_to_pulse(uint8_t servo, uint8_t degree);
-uint32_t adc_to_pulse(uint8_t servo, uint16_t adc_value);
 void pwm_thread(void const * argument);
 void start_adc_thread(void);
 void stop_adc_thread(void);

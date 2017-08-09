@@ -152,7 +152,7 @@ void process_command(void)
 		c_params.command = HELP;
 		return;
 	} else {
-		c_params.error = 1;
+		c_params.error = 4;
 		return;
 	}
 
@@ -172,7 +172,7 @@ void process_command(void)
 	} else if ((strcmp(s, "demo") == 0) || (strcmp(s, "dem") == 0)) {
 		c_params.attrib = DEMO;
 	} else {
-		c_params.error = 1;
+		c_params.error = 2;
 		return;
 	}
 
@@ -186,7 +186,7 @@ void process_command(void)
 
 		// Check if we are in the accepted range
 		if (c_params.device_id >= SERVOS) {
-			c_params.error = 1;
+			c_params.error = 3;
 		}
 	}
 
@@ -221,6 +221,14 @@ void process_command(void)
 
 		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
 	}
+
+	if (debug) {
+		sprintf(lcd_log, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
+				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
+				c_params.value_x, c_params.value_y, c_params.value_z, c_params.error);
+		LCD_UsrLog((char*) lcd_log);
+	}
+
 	return;
 }
 
@@ -228,7 +236,8 @@ void execute_command(void)
 {
 	// Send error message
 	if (c_params.error) {
-		UART_send("Unrecognized command or value");
+		sprintf(TX_buffer, "Unrecognized command or value: %s", RX_buffer);
+		UART_send(TX_buffer);
 		return;
 	}
 
@@ -442,7 +451,7 @@ uint8_t verify_pulse(uint8_t servo, uint32_t pulse) {
 	return 0;
 }
 
-uint8_t verify_angle(uint8_t servo, uint32_t angle) {
+uint8_t verify_angle(uint8_t servo, int16_t angle) {
 
 	if ((angle > servo_conf[servo].max_angle_deg) || (angle < servo_conf[servo].min_angle_deg)) {
 		return 1;  // Flag error

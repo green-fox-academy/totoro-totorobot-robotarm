@@ -299,7 +299,7 @@ void adc_thread(void const * argument)
 
 double map(double input, double min_in, double max_in, double min_out, double max_out)
 {
-	double ratio =  input / (max_in - min_in);
+	double ratio =  (input - min_in) / (max_in - min_in);
 	double output = (max_out - min_out) * ratio + min_out;
 
 	return output;
