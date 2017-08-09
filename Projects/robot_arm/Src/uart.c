@@ -191,7 +191,8 @@ void process_command(void)
 	}
 
 	// Value
-	if ((c_params.command != HELP) && (c_params.command != GET_VALUE)) {
+	if ((c_params.command != HELP) && (c_params.command != GET_VALUE)
+		&& (c_params.attrib != POSITION)) {
 		char* s = strtok(NULL, " ");
 
 		// Convert ASCII to integer
@@ -217,7 +218,7 @@ void process_command(void)
 		c_params.value_y = atoi(coord);
 
 		coord = strtok(NULL, ",");
-		c_params.value_y = atoi(coord);
+		c_params.value_z = atoi(coord);
 
 		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
 	}
