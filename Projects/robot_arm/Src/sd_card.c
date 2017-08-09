@@ -17,57 +17,44 @@ void sd_card()
 	FRESULT res;                                        /* FatFs function common result code */
 	uint32_t byteswritten, bytesread;                   /* File write/read counts */
 	char wtext[] = "aa\n"; 								/* File write buffer */
-	char btext[] = "STM333.TXT";
+	char btext[] = "STM333.TXT";						/* Name of the file */
 	char rtext[100];                                   	/* File read buffer */
 
 	/*##-1- Link the micro SD disk I/O driver ##################################*/
 	if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
 	{
+		LCD_UsrLog((char*) "Link the micro SD disk I/O driver is successful.\n");
 		/*##-2- Register the file system object to the FatFs module ##############*/
 	    if(f_mount(&SDFatFs, (TCHAR const*)SDPath, 0) != FR_OK)
 	    {
 			/* FatFs Initialization Error */
 	    	Error_Handler();
+	    	LCD_ErrLog("Register the file system object to the FatFs module is failed\n");
 	    }
 	    else
 	    {
 	        /*##-3- Create and Open a new text file object with write access #####*/
-	        if(f_open(&MyFile, btext, FA_OPEN_ALWAYS | FA_WRITE) != FR_OK)
-	        {
-				/* 'STM32.TXT' file Open for write Error */
-	        	Error_Handler();
-	        }
-	        else
-	        {
-	        	/*##-4- Write data to the text file ################################*/
-	        	sprintf((char*) wtext,"File%d.filscsíacdsvíds", 10);
-				res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-				LCD_UsrLog((char*) "Data has written to SD card2.\n");
-				f_putc ('a', &MyFile);
-				f_putc ('\n', &MyFile);
-				f_putc ('a', &MyFile);
-				f_putc ('b', &MyFile);
-				f_puts(wtext, &MyFile);
-				f_puts(wtext, &MyFile);
+	        f_open(&MyFile, btext, FA_OPEN_EXISTING | FA_WRITE);
+	        LCD_UsrLog((char*) "Create and Open a new text file object with write access.\n");
 
-				if (res != FR_OK)
-				{
-					/* 'STM32.TXT' file Write or EOF Error */
-					Error_Handler();
-				}
-				else
-				{
-					/*##-5- Close the open text file #################################*/
-					f_close(&MyFile);
-					LCD_UsrLog((char*) " Close the open text file\n");
+			/*##-4- Write data to the text file ################################*/
+			f_lseek(&MyFile, sizeof(MyFile));
+			sprintf((char*) wtext,"File.filscsíacdsvíds");
+			f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+			LCD_UsrLog((char*) "Data has written to SD card1.\n");
 
+			f_lseek(&MyFile, sizeof(MyFile));
 
-				}
-	        }
-	    }
-	  }
+			LCD_UsrLog((char*) "Data has written to SD card2.\n");
+
+			/*##-5- Close the open text file #################################*/
+			f_close(&MyFile);
+			LCD_UsrLog((char*) " Close the open text file\n");
+		}
+	}
 	  /*##-11- Unlink the micro SD disk I/O driver ###############################*/
 	  FATFS_UnLinkDriver(SDPath);
+	  LCD_ErrLog("Link the micro SD disk I/O driver has failed");
 }
 
 static void Error_Handler(void)

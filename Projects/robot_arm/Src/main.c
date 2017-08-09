@@ -82,6 +82,7 @@ static void CPU_CACHE_Enable(void);
   */
 int main(void)
 {
+
     /* Configure the MPU attributes as Device memory for ETH DMA descriptors */
     MPU_Config();
 
@@ -95,6 +96,7 @@ int main(void)
        - Global MSP (MCU Support Package) initialization
      */
     HAL_Init();
+
   
     /* Configure the system clock to 200 MHz */
     SystemClock_Config();
