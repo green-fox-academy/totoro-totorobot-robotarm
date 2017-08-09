@@ -208,7 +208,8 @@ void time_on_board_thread(void* parameter)
 
 	LCD_UsrLog("Time now:  %d:%d:%d\n", input_time.tm_hour, input_time.tm_min, input_time.tm_sec);
 
-	HAL_RTC_GetTime(&RtcHandle, &input_time, RTC_FORMAT_BCD);
+	HAL_RTC_GetTime(&RtcHandle, &ntp_time, RTC_FORMAT_BCD);
+
 	//HAL_RTC_GetTime();
 	//LCD_UsrLog("Time: %s", time_out);
 	/*LCD_UsrLog("loooooooooooooooolllll");
