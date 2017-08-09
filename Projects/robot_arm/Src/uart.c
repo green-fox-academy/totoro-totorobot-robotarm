@@ -196,6 +196,14 @@ void process_command(void)
 
 		// Convert ASCII to integer
 		c_params.value = atoi(s);
+
+		if ((c_params.command == SET_VALUE) && (c_params.attrib == PULSE)) {
+			c_params.error = verify_pulse(c_params.device_id, c_params.value);
+		}
+
+		if ((c_params.command == SET_VALUE) && (c_params.attrib == ANGLE)) {
+			c_params.error = verify_angle(c_params.device_id, c_params.value);
+		}
 	}
 
 	// XYZ value
@@ -289,7 +297,7 @@ void UART_send_settings(void)
 		coord_cart_t xyz;
 
 		// Get xyz values
-		pulse_to_xyz(&xyz)
+		pulse_to_xyz(&xyz);
 
 		// Send value
 		sprintf((char*) TX_buffer, "arm position: x:%d y:%d z:%d", (int16_t) xyz->x, (int16_t) xyz->y, (int16_t) xyz->z);
@@ -399,15 +407,38 @@ void set_value(void)
 	return;
 }
 
-uint8_t verify_coordinates(uint16_t x, uint16_t y, uint16_t z) {
+uint8_t verify_coordinates(int16_t x, int16_t y, int16_t z) {
+
+	if ((x > WORK_AREA_MAX_X) || (x < WORK_AREA_MIN_X)) {
+		return 1;	// Flag error
+	}
+
+	if ((y > WORK_AREA_MAX_Y) || (y < WORK_AREA_MIN_Y)) {
+		return 1;	// Flag error
+	}
+
+	if ((z > WORK_AREA_MAX_Z) || (z < WORK_AREA_MIN_Z)) {
+		return 1;	// Flag error
+	}
+
 	return 0;
 }
 
-uint8_t verify_pulse(uint32_t pulse) {
+uint8_t verify_pulse(uint8_t servo, uint32_t pulse) {
+
+	if ((pulse > servo_conf[servo].max_pulse) || (pulse < servo_conf[servo].min_pulse)) {
+		return 1; // Flag error
+	}
+
 	return 0;
 }
 
-uint8_t verify_angle(uint32_t angle) {
+uint8_t verify_angle(uint8_t servo, uint32_t angle) {
+
+	if ((angle > servo_conf[servo].max_angle_deg) || (angle < servo_conf[servo].min_angle_deg)) {
+		return 1;  // Flag error
+	}
+
 	return 0;
 }
 

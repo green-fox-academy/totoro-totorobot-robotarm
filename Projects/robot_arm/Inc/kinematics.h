@@ -17,6 +17,14 @@
 #define GRIPPER_Z_DIST			17	// mm
 #define GRIPPER_R_DIST			96	// mm
 
+/* Allowed work area */
+#define WORK_AREA_MIN_X	0
+#define	WORK_AREA_MAX_X	1000
+#define WORK_AREA_MIN_Y	0
+#define	WORK_AREA_MAX_Y	1000
+#define WORK_AREA_MIN_Z	0
+#define	WORK_AREA_MAX_Z	1000
+
 typedef struct {
 	double x;		// mm
 	double y;		// mm

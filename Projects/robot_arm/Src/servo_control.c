@@ -162,7 +162,6 @@ void adc_deinit(void)
 void adc_measure(void)
 {
 
-
 	for (int i = 0; i < SERVOS; i++) {
 
 		// Select channel
@@ -264,29 +263,24 @@ void adc_thread(void const * argument)
 	}
 
 	while(adc_on) {
+
+		// Get ADC values and convert to pulse width
 		adc_measure();
+
 		if (debug) {
 			sprintf(lcd_log, "ADC0: %4d  ADC1: %4d  ADC2: %4d  ADC3: %4d\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
 			LCD_UsrLog(lcd_log);
 		}
 
+		// Update servo PWM pulse widths
 		for (int i = 0; i < SERVOS; i++) {
-
-
-
-			// Lock mutex
 			osMutexWait(servo_pulse_mutex, osWaitForever);
-
-			// Get pulse value
 			servo_pulse[i] = adc_pulse_values[i];
-
-			// Release mutex
 			osMutexRelease(servo_pulse_mutex);
 		}
 
 		osDelay(10);
 	}
-
 
 	while (1) {
 		// Terminate thread
@@ -313,15 +307,15 @@ void xyz_to_pulse(coord_cart_t* pos_cart)
 	uint32_t pulse_width[SERVOS - 1];
 
 	// Convert xyz to polar coordinates
-	cart_to_polar(&pos_cart, &pos_polar);
+	cart_to_polar(pos_cart, &pos_polar);
 
 	// Calculate servo angles
 	calc_inverse_kinematics(&pos_polar, &joint_angles);
 
 	// TODO: correct for joint 2
-	angles[0] = joint_angles->theta0;
-	angles[1] = joint_angles->theta1;
-	angles[2] = joint_angles->theta2;
+	angles[0] = joint_angles.theta0;
+	angles[1] = joint_angles.theta1;
+	angles[2] = joint_angles.theta2;
 
 	// Calculate pulse width values
 	for (int i = 0; i < SERVOS - 1; i++) {
@@ -368,7 +362,7 @@ void pulse_to_xyz(coord_cart_t* pos_cart)
 	calc_forward_kinematics(&joint_angles, &pos_polar);
 
 	// Convert polar coordinated to xyz
-	polar_to_cart(&pos_polar, &pos_cart);
+	polar_to_cart(&pos_polar, pos_cart);
 
 	return;
 }
