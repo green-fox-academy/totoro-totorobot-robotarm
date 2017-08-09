@@ -332,8 +332,16 @@ void set_value(void)
 
 	case ANGLE:
 
-		// TODO calculate angle->pulse -> correct 2nd joint angle
-		uint32_t pulse = 0;
+		// TODO correct 2nd joint angle
+
+		// Convert degree to radians
+		double ang_rad = deg_to_rad(c_params.value);
+
+		// Calculate pulse
+		uint32_t pulse = (uint32_t) map(ang_rad, servo_conf[c_params.device_id].min_angle_rad,
+									  servo_conf[c_params.device_id].max_angle_rad,
+									  (double) servo_conf[c_params.device_id].min_pulse,
+									  (double) servo_conf[c_params.device_id].max_pulse);
 
 		// Set pulse
 		osMutexWait(servo_pulse_mutex, osWaitForever);
