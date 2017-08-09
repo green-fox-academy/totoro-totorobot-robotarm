@@ -23,6 +23,7 @@ void servo_control_thread(void const * argument)
 			LCD_ErrLog((char*) "Servo control thread terminated\n");
 		}
 		osThreadTerminate(NULL);
+	}
 
 }
 
