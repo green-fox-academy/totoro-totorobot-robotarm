@@ -36,8 +36,13 @@ void start_demo(void) {
     return;
 }
 
+void stop_demo(void) {
 
-void stop_demo(void);
+	demo_on = 0;
+
+	return;
+}
+
 void demo_thread(void const * argument) {
 
 	if (debug) {
@@ -57,7 +62,4 @@ void demo_thread(void const * argument) {
 		}
 		osThreadTerminate(NULL);
     }
-
-
-
 }
