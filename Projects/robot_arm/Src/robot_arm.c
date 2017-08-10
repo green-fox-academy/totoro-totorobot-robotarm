@@ -31,7 +31,7 @@ void start_demo(void) {
 
 	demo_on = 1;
 
-    osThreadDef(DEMO, demo_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadDef(DEMO, demo_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(DEMO), NULL);
 
     return;
