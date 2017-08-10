@@ -122,8 +122,8 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 	HAL_TIM_PWM_Start(&pwm[servo], TIM_CHANNEL_1);
 
 	if (debug) {
-		// sprintf(lcd_log, "Servo%d pulse: %5d\n", servo, pulse);
-		// LCD_UsrLog(lcd_log);
+		sprintf(lcd_log, "Servo%d pulse: %5d\n", servo, pulse);
+		LCD_UsrLog(lcd_log);
 	}
 
 	return;
