@@ -201,7 +201,7 @@ void start_adc_thread(void)
 		LCD_UsrLog((char*) "ADC thread started\n");
 	}
 
-    osThreadDef(ADC_MEASURE, adc_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadDef(ADC_MEASURE, adc_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(ADC_MEASURE), NULL);
 
 	return;
@@ -251,7 +251,7 @@ void pwm_thread(void const * argument)
 			// Set PWM pulse width
 			pwm_set_pulse(i, pulse);
 		}
-		osDelay(10);
+		osDelay(100);
 	}
 
     while (1) {
@@ -288,7 +288,7 @@ void adc_thread(void const * argument)
 			osMutexRelease(servo_pulse_mutex);
 		}
 
-		osDelay(10);
+		osDelay(100);
 	}
 
 	while (1) {

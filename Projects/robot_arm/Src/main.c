@@ -147,7 +147,7 @@ static void StartThread(void const * argument)
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(UART_RX), NULL);
 
-    osThreadDef(PWM, pwm_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(PWM), NULL);
 
     if(debug) {

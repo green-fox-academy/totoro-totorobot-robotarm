@@ -23,7 +23,7 @@ void start_lcd_data_display(void)
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
 
-    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(LCD_DATA_DISPLAY), NULL);
 
 	return;
@@ -85,7 +85,6 @@ void lcd_data_display_thread(void const * argument)
 		}
 		osMutexRelease(servo_adc_mutex);
 
-
 		// Print coordinates
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
@@ -105,7 +104,7 @@ void lcd_data_display_thread(void const * argument)
 		sprintf(lcd_data_buff, "ADC:    %4d   %4d   %4d   %4d", adc[0], adc[1], adc[2], adc[3]);
 		BSP_LCD_DisplayStringAtLine(11, (uint8_t*) lcd_data_buff);
 
-		osDelay(50);
+		osDelay(500);
 	}
 
 	while(1) {
