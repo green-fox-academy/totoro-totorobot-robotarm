@@ -48,11 +48,10 @@ void read_sd_card()
 
 void write_sd_card()
 {
-	FRESULT res;                                        /* FatFs function common result code */
-	uint32_t byteswritten, bytesread;                   /* File write/read counts */
-	char wtext[] = "bb"; 								/* File write buffer */
-	char btext[] = "STM333.TXT";						/* Name of the file */
-	char rtext[100];                                   	/* File read buffer */
+	FRESULT res;                                        						/* FatFs function common result code */
+	uint32_t size;                   											/* File write/read counts */
+	char wtext[] = "Link the micro SD disk I/O driver is successful\n"; 		/* File write buffer */
+	char btext[] = "STM333.TXT";												/* Name of the file */
 
 	/*##-1- Link the micro SD disk I/O driver ##################################*/
 	if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
@@ -67,24 +66,13 @@ void write_sd_card()
 	    }
 	    else
 	    {
-	        /*##-3- Create and Open a new text file object with write access #####*/
+	        /*##-3- Open a new an existing text file object with write access #####*/
 	        f_open(&MyFile, btext, FA_OPEN_EXISTING | FA_WRITE);
 
 			/*##-4- Write data to the text file ################################*/
-			uint32_t size = (&MyFile)->fsize;
-			res = f_lseek(&MyFile, size);
-			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-			res = f_write(&MyFile, "\n", sizeof("\n"), (void *)&byteswritten);
-
 			size = (&MyFile)->fsize;
 			res = f_lseek(&MyFile, size);
-			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-			res = f_write(&MyFile, "\n", sizeof("\n"), (void *)&byteswritten);
-
-			size = (&MyFile)->fsize;
-			res = f_lseek(&MyFile, size);
-			res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
-			res = f_write(&MyFile, "\n", sizeof("\n"), (void *)&byteswritten);
+			f_printf(&MyFile, wtext);
 
 			LCD_UsrLog((char*) wtext);
 			LCD_UsrLog((char*) "Data has written to SD card2.\n");
