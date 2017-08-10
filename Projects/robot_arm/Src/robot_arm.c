@@ -86,10 +86,3 @@ void demo_thread(void const * argument) {
 		osThreadTerminate(NULL);
     }
 }
-
-
-
-
-		}
-	}
-}
