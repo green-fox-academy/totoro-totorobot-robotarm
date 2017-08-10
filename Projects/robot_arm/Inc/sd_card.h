@@ -10,6 +10,7 @@
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
 
+void FatFs_Init();
 void write_sd_card();
 void read_sd_card();
 static void Error_Handler(void);

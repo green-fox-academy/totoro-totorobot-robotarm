@@ -145,7 +145,6 @@ static void StartThread(void const * argument)
 
     LCD_UsrLog((char*) "TotoRobot started2.\n");
     write_sd_card();
-    read_sd_card();
 
     while (1) {
         /* Delete the Init Thread */
