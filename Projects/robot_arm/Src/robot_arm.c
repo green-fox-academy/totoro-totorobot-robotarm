@@ -51,11 +51,33 @@ void demo_thread(void const * argument) {
 	}
 
 	while (demo_on) {
+		//servo0 PWM; servo1 PWM; servo2 PWM; servo3 PWM; TIME: ms
+		uint32_t demo_pulse[12][5] = {
+			 {5360, 4070, 5870, 2000, 1000},
+			 {5360, 5920, 5870, 2000, 1000},
+			 {5360,	4070, 5870, 2000, 1000},
+			 {5360, 6190, 3900, 2000, 1000},
+			 {2180,	6190, 3900, 2000, 1000},
+			 {7780, 6190, 3900,	2000, 1000},
+			 {7780, 4070, 6520, 2000, 1000},
+			 {2160,	4070, 6520,	2000, 1000},
+			 {2160,	6190, 6520,	2000, 1000},
+			 {2160,	6190, 6520, 2000, 1000},
+			 {7420,	6190, 6520,	2000, 1000},
+			 {5360,	4070, 5870,	2000, 1000}
+		};
 
-		// Implement demo here
+
+		for (int i = 0; i < 12; i++) {
+				osMutexWait(servo_pulse_mutex, osWaitForever);
+				for (int servo = 0; servo < SERVOS; servo++) {
+					servo_pulse[i] = demo_pulse[i][servo];
+				}
+				osMutexRelease(servo_pulse_mutex);
+				osDelay(demo_pulse[i][4]);
+		}
 
 	}
-
 
 	while (1) {
 		if (debug) {
@@ -63,4 +85,11 @@ void demo_thread(void const * argument) {
 		}
 		osThreadTerminate(NULL);
     }
+}
+
+
+
+
+		}
+	}
 }
