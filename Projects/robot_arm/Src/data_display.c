@@ -97,11 +97,11 @@ void lcd_data_display_thread(void const * argument)
 		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
 
 		// Print pulse values
-		sprintf(lcd_data_buff, "pulse:  %4d   %4d   %4d   %4d", pulse[0], pulse[1], pulse[2], pulse[3]);
+		sprintf(lcd_data_buff, "pulse:  %4lu   %4lu   %4lu   %4lu", pulse[0], pulse[1], pulse[2], pulse[3]);
 		BSP_LCD_DisplayStringAtLine(10, (uint8_t*) lcd_data_buff);
 
 		// print ADC values
-		sprintf(lcd_data_buff, "ADC:    %4d   %4d   %4d   %4d", adc[0], adc[1], adc[2], adc[3]);
+		sprintf(lcd_data_buff, "ADC:    %4lu   %4lu   %4lu   %4lu", adc[0], adc[1], adc[2], adc[3]);
 		BSP_LCD_DisplayStringAtLine(11, (uint8_t*) lcd_data_buff);
 
 		osDelay(500);
@@ -114,4 +114,3 @@ void lcd_data_display_thread(void const * argument)
 		osThreadTerminate(NULL);
     }
 }
-

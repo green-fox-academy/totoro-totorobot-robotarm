@@ -102,7 +102,7 @@ void UART_rx_thread(void const * argument)
 
 			// Log to screen
 			if (debug) {
-				LCD_UsrLog((char*) "UART RX:");
+				LCD_UsrLog((char*) "UART RX: ");
 				LCD_UsrLog((char*) RX_buffer);
 				LCD_UsrLog((char*) "\n");
 			}
@@ -114,10 +114,9 @@ void UART_rx_thread(void const * argument)
 			// Clear buffer
 			RX_buffer[0] = '\0';
 		}
-
 	}
 
-	while (1) {
+	while(1) {
 		if (debug) {
 			LCD_ErrLog((char*) "UART RX thread terminating\n");
 		}
@@ -237,8 +236,8 @@ void execute_command(void)
 {
 	// Send error message
 	if (c_params.error) {
-		sprintf(TX_buffer, "Unrecognized command or value: %s", RX_buffer);
-		UART_send(TX_buffer);
+		sprintf((char*)TX_buffer, "Unrecognized command or value: %s", RX_buffer);
+		UART_send((char*)TX_buffer);
 		return;
 	}
 
@@ -279,7 +278,7 @@ void UART_send_settings(void)
 			uint32_t pulse = servo_pulse[i];
 			osMutexRelease(servo_pulse_mutex);
 			// Send value
-			sprintf((char*) TX_buffer, "Servo%d pulse: %d", i, pulse);
+			sprintf((char*) TX_buffer, "Servo%d pulse: %lu", i, pulse);
 			UART_send((char*) TX_buffer);
 		}
 		break;
