@@ -12,7 +12,7 @@ void uart_init(void)
 {
 	// Configure UART instance
 	uart_handle.Instance        = USARTx;
-	uart_handle.Init.BaudRate   = 115200;
+	uart_handle.Init.BaudRate   = 9600;
 	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
 	uart_handle.Init.StopBits   = UART_STOPBITS_1;
 	uart_handle.Init.Parity     = UART_PARITY_NONE;
