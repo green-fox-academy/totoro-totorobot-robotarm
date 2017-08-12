@@ -172,7 +172,6 @@ void adc_measure(void)
 		// Measure
 		HAL_ADC_Start(&adc);
 		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
-
 		uint32_t adc_measurement = HAL_ADC_GetValue(&adc);
 
 		// Update global storage of ADC data
@@ -180,11 +179,14 @@ void adc_measure(void)
 		adc_values[i] = adc_measurement;
 		osMutexRelease(servo_adc_mutex);
 
-		// Calculate PMW pulse width
-		adc_pulse_values[i] = (uint32_t) map((double) adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
-				                             (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
-
 		osDelay(5);
+	}
+
+	if (debug) {
+		osMutexWait(servo_adc_mutex, osWaitForever);
+		sprintf(lcd_log, "ADC0: %4lu  ADC1: %4lu  ADC2: %4lu  ADC3: %4lu\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
+		LCD_UsrLog(lcd_log);
+		osMutexRelease(servo_adc_mutex);
 	}
 
 	return;
@@ -234,9 +236,6 @@ void pwm_thread(void const * argument)
 	while (1) {
 		for (int i = 0; i < SERVOS; i++) {
 
-			// TODO : check if ADC is running. If so, convert ADC values to pulse here
-			// if (adc_on) { .... }
-
 			// Lock mutex
 			osMutexWait(servo_pulse_mutex, osWaitForever);
 
@@ -274,15 +273,18 @@ void adc_thread(void const * argument)
 		// Get ADC values and convert to pulse width
 		adc_measure();
 
-		if (debug) {
-			sprintf(lcd_log, "ADC0: %4lu  ADC1: %4lu  ADC2: %4lu  ADC3: %4lu\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
-			LCD_UsrLog(lcd_log);
-		}
-
 		// Update servo PWM pulse widths
 		for (int i = 0; i < SERVOS; i++) {
+
+			// Calculate PMW pulse width
+			osMutexWait(servo_adc_mutex, osWaitForever);
+			uint32_t adc_pulse = (uint32_t) map((double) adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
+							                    (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
+			osMutexRelease(servo_adc_mutex);
+
+			// Write pulse values to global storage
 			osMutexWait(servo_pulse_mutex, osWaitForever);
-			servo_pulse[i] = adc_pulse_values[i];
+			servo_pulse[i] = adc_pulse;
 			osMutexRelease(servo_pulse_mutex);
 		}
 
@@ -354,7 +356,6 @@ void pulse_to_ang(angles_t* joint_angles)
 {
 	uint32_t pulse_width[SERVOS - 1];
 	double ang_rad[SERVOS - 1];
-	coord_polar_t pos_polar;
 
 	// Get actual pulse values
 	osMutexWait(servo_pulse_mutex, osWaitForever);

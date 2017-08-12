@@ -104,7 +104,6 @@ typedef struct {
 } servo_conf_t;
 
 uint32_t adc_values[SERVOS];
-uint32_t adc_pulse_values[SERVOS];
 uint32_t adc_ch_conf[SERVOS];
 
 ADC_HandleTypeDef adc;
