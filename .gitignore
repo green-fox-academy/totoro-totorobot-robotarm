@@ -11,3 +11,4 @@ Projects/*/*/SW4STM32/*/*
 !.project
 !*.ld
 !*.s
+/Projects/robot_arm/Src/main.c.orig
