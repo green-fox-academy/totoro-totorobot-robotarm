@@ -26,9 +26,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Doc/readme.txt</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/readme.txt</locationURI>
+			<name>Middlewares/FatFs</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
 			<name>Application/SW4STM32/startup_stm32f746xx.s</name>
@@ -72,8 +72,13 @@
 		</link>
 		<link>
 			<name>Application/User/servo_control.c</name>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/servo_control.c</locationURI>			
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Src/servo_control.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/sd_card.c</name>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/sd_card.c</locationURI>			
+			<type>1</type>
 		</link>
 		<link>
 			<name>Application/User/stm32f7xx_hal_msp.c</name>
@@ -134,6 +139,11 @@
 			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_hal_dma2d.c</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_hal_dma_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-8-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_hal_eth.c</name>
@@ -231,6 +241,16 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32F7xx_HAL_Driver/stm32f7xx_ll_sdmmc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/FatFs/src</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/FreeRTOS/croutine.c</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Middlewares/Third_Party/FreeRTOS/Source/croutine.c</locationURI>
@@ -289,6 +309,26 @@
 			<name>Drivers/BSP/STM32746G_Discovery/stm32746g_discovery_ts.h</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_ts.h</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/FatFs/src/diskio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Middlewares/Third_Party/FatFs/src/diskio.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/FatFs/src/drivers</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/FatFs/src/ff.c</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Middlewares/Third_Party/FatFs/src/ff.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/FatFs/src/ff_gen_drv.c</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Middlewares/Third_Party/FatFs/src/ff_gen_drv.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/FreeRTOS/portable/cmsis_os.c</name>
@@ -444,6 +484,11 @@
 			<name>Drivers/BSP/Components/ft5336/ft5336.c</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Drivers/BSP/Components/ft5336/ft5336.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/FatFs/src/drivers/sd_diskio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/LwIP/Core/IPv4/autoip.c</name>
