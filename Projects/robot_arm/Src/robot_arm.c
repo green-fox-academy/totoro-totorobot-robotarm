@@ -12,12 +12,12 @@ void servo_control_thread(void const * argument)
 	BSP_LED_Init(LED_GREEN);
 	BSP_LED_Off(LED_GREEN);
 
-	while(1) {
+	while (1) {
 		BSP_LED_Toggle(LED_GREEN);
 		osDelay(1000);
 	}
 
-	while(1) {
+	while (1) {
 		if (debug) {
 			LCD_ErrLog((char*) "Servo control thread terminated\n");
 		}
@@ -48,7 +48,7 @@ void demo_thread(void const * argument) {
 		LCD_UsrLog((char*) "Demo thread started\n");
 	}
 
-	while(demo_on) {
+	while (demo_on) {
 		//servo0 PWM; servo1 PWM; servo2 PWM; servo3 PWM; TIME: ms
 		uint32_t demo_pulse[12][5] = {
 			 {5000, 4000, 5000, 2000, 1000},
@@ -75,7 +75,7 @@ void demo_thread(void const * argument) {
 		}
 	}
 
-	while(1) {
+	while (1) {
 		if (debug) {
 			LCD_ErrLog((char*) "Demo thread terminated\n");
 		}

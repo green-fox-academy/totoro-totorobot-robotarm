@@ -83,10 +83,10 @@ void UART_rx_thread(void const * argument)
 	uart_init();
 	UART_send_help();
 
-	while(1) {
+	while (1) {
 
 		// UART RX polling mode
-		if(HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
+		if (HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
 			UART_Error_Handler();
 		}
 
@@ -116,7 +116,7 @@ void UART_rx_thread(void const * argument)
 		}
 	}
 
-	while(1) {
+	while (1) {
 		if (debug) {
 			LCD_ErrLog((char*) "UART RX thread terminating\n");
 		}

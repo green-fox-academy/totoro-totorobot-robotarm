@@ -107,7 +107,7 @@ void lcd_data_display_thread(void const * argument)
 		osDelay(500);
 	}
 
-	while(1) {
+	while (1) {
 		if (debug) {
 			LCD_UsrLog((char*) "LCD data display thread terminated\n");
 		}

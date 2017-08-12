@@ -147,7 +147,7 @@ static void StartThread(void const * argument)
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(PWM), NULL);
 
-    if(debug) {
+    if (debug) {
     	LCD_UsrLog((char*) "TotoRobot started.\n");
     }
 
@@ -251,11 +251,11 @@ static void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLN = 400;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 9;
-    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     	Error_Handler();
 
     /* activate the OverDrive */
-    if(HAL_PWREx_EnableOverDrive() != HAL_OK)
+    if (HAL_PWREx_EnableOverDrive() != HAL_OK)
     	Error_Handler();
 
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
@@ -265,7 +265,7 @@ static void SystemClock_Config(void)
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-    if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
     	Error_Handler();
 }
 
@@ -277,7 +277,7 @@ static void SystemClock_Config(void)
 static void Error_Handler(void)
 {
     /* User may add here some code to deal with this error */
-    while(1);
+    while (1);
 }
 
 /**

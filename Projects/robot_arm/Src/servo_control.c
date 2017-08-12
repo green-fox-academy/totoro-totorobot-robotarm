@@ -81,7 +81,7 @@ void pwm_init(void)
 		pwm[i].Init.Prescaler = pwm_conf[i].prescaler;
 		HAL_TIM_PWM_Init(&pwm[i]);
 
-		if(debug) {
+		if (debug) {
 			sprintf(lcd_log, "Servo%d init done\n", i);
 			LCD_UsrLog(lcd_log);
 		}
@@ -94,7 +94,7 @@ void pwm_init(void)
 		pwm_oc_init[i].Pulse = pwm_conf[i].pulse;
 		HAL_TIM_PWM_ConfigChannel(&pwm[i], &pwm_oc_init[i], TIM_CHANNEL_1);
 
-		if(debug) {
+		if (debug) {
 
 			sprintf(lcd_log, "Servo%d config channel done\n", i);
 			LCD_UsrLog(lcd_log);
@@ -103,7 +103,7 @@ void pwm_init(void)
 
 		HAL_TIM_PWM_Start(&pwm[i], TIM_CHANNEL_1);
 
-		if(debug) {
+		if (debug) {
 
 			sprintf(lcd_log, "Servo%d started\n", i);
 			LCD_UsrLog(lcd_log);
@@ -120,7 +120,7 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 	HAL_TIM_PWM_ConfigChannel(&pwm[servo], &pwm_oc_init[servo], TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&pwm[servo], TIM_CHANNEL_1);
 
-	if(debug) {
+	if (debug) {
 		sprintf(lcd_log, "Servo: %d pulse: %5lu\n", servo, pulse);
 		LCD_UsrLog(lcd_log);
 	}
@@ -195,7 +195,7 @@ void start_adc_thread(void)
 	adc_init();
 	adc_on = 1;
 
-	if(debug) {
+	if (debug) {
 		LCD_UsrLog((char*) "ADC thread started\n");
 	}
 
@@ -218,7 +218,7 @@ void pwm_thread(void const * argument)
 {
 	pwm_ready = 0;
 
-	if(debug) {
+	if (debug) {
 		LCD_UsrLog((char*) "PWM thread started\n");
 	}
 
@@ -226,12 +226,12 @@ void pwm_thread(void const * argument)
 	pwm_init();
 	pwm_ready = 1;
 
-	if(debug) {
+	if (debug) {
 		LCD_UsrLog((char*) "PWM ready\n");
 	}
 
 	// Set servo positions
-	while(1) {
+	while (1) {
 		for (int i = 0; i < SERVOS; i++) {
 
 			// TODO : check if ADC is running. If so, convert ADC values to pulse here
@@ -252,9 +252,9 @@ void pwm_thread(void const * argument)
 		osDelay(100);
 	}
 
-    while(1) {
+    while (1) {
         // Terminate thread
-        if(debug) {
+        if (debug) {
         	LCD_ErrLog((char*) "PWM thread terminated\n");
         }
     	pwm_ready = 0;
@@ -265,16 +265,16 @@ void pwm_thread(void const * argument)
 void adc_thread(void const * argument)
 {
 
-	if(debug) {
+	if (debug) {
 		LCD_UsrLog((char*) "ADC thread started\n");
 	}
 
-	while(adc_on) {
+	while (adc_on) {
 
 		// Get ADC values and convert to pulse width
 		adc_measure();
 
-		if(debug) {
+		if (debug) {
 			sprintf(lcd_log, "ADC0: %4lu  ADC1: %4lu  ADC2: %4lu  ADC3: %4lu\n", adc_values[0], adc_values[1], adc_values[2], adc_values[3]);
 			LCD_UsrLog(lcd_log);
 		}
@@ -289,9 +289,9 @@ void adc_thread(void const * argument)
 		osDelay(100);
 	}
 
-	while(1) {
+	while (1) {
 		// Terminate thread
-		if(debug) {
+		if (debug) {
 			LCD_UsrLog((char*) "ADC thread terminated\n");
 		}
 		osThreadTerminate(NULL);
