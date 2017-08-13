@@ -116,6 +116,3 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 
 	return;
 }
-
-
-

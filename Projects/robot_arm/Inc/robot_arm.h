@@ -3,7 +3,7 @@
 
 #include "stm32f7xx_hal.h"
 #include "cmsis_os.h"
-#include "lcd_log.h"
+#include "sd_card.h"
 #include "uart.h"
 #include "servo_control.h"
 

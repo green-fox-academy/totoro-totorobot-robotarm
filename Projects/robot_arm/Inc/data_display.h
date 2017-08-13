@@ -3,7 +3,7 @@
 
 #include "stm32f7xx_hal.h"
 #include "cmsis_os.h"
-#include "lcd_log.h"
+#include "sd_card.h"
 #include "robot_arm_conf.h"
 #include "servo_control.h"
 #include <string.h>

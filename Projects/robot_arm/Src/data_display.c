@@ -2,12 +2,11 @@
 
 void start_lcd_data_display(void)
 {
-	if (debug) {
-		LCD_UsrLog((char*) "Stopping LCD log utility\n");
-		LCD_UsrLog((char*) "Starting LCD data display thread\n");
-	}
-	// Disable debug
-	debug = 0;
+	log_msg(USER, "Stopping LCD log utility\n");
+	log_msg(USER, "Starting LCD data display thread\n");
+
+	// Disable logging to LCD screen
+	lcd_logger_on = 0;
 
 	// Disable LCD debug utility
 	LCD_LOG_DeInit();
@@ -43,12 +42,11 @@ void stop_lcd_data_display(void)
 	LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
 	LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
 
-	// Enable debug
-	debug = 1;
+	// Enable debug to LCD screen
+	lcd_logger_on = 1;
 
-	if (debug) {
-		LCD_UsrLog((char*) "LCD logging utility started\n");
-	}
+	log_msg(USER, "LCD logging utility started\n");
+
 	return;
 }
 
@@ -85,32 +83,34 @@ void lcd_data_display_thread(void const * argument)
 		}
 		osMutexRelease(servo_adc_mutex);
 
-		// Print coordinates
+		// Print and log coordinates
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
 		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
+		log_msg(DEBUG, lcd_data_buff);
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
-		// Print servo angles
+		// Print and log servo angles
 		sprintf(lcd_data_buff, "angle:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
 				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
 		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
+		log_msg(DEBUG, lcd_data_buff);
 
-		// Print pulse values
+		// Print and log pulse values
 		sprintf(lcd_data_buff, "pulse:  %4lu   %4lu   %4lu   %4lu", pulse[0], pulse[1], pulse[2], pulse[3]);
 		BSP_LCD_DisplayStringAtLine(10, (uint8_t*) lcd_data_buff);
+		log_msg(DEBUG, lcd_data_buff);
 
-		// print ADC values
+		// Print and log ADC values
 		sprintf(lcd_data_buff, "ADC:    %4lu   %4lu   %4lu   %4lu", adc[0], adc[1], adc[2], adc[3]);
 		BSP_LCD_DisplayStringAtLine(11, (uint8_t*) lcd_data_buff);
+		log_msg(DEBUG, lcd_data_buff);
 
 		osDelay(500);
 	}
 
 	while (1) {
-		if (debug) {
-			LCD_UsrLog((char*) "LCD data display thread terminated\n");
-		}
+		log_msg(USER, "LCD data display thread terminated\n");
 		osThreadTerminate(NULL);
     }
 }

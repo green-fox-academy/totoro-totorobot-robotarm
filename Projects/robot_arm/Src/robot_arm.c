@@ -2,9 +2,7 @@
 
 void servo_control_thread(void const * argument)
 {
-	if (debug) {
-		LCD_UsrLog((char*) "Servo control thread started\n");
-	}
+	log_msg(USER, "Servo control thread started\n");
 
 	// Implement code here
 
@@ -18,9 +16,7 @@ void servo_control_thread(void const * argument)
 	}
 
 	while (1) {
-		if (debug) {
-			LCD_ErrLog((char*) "Servo control thread terminated\n");
-		}
+		log_msg(USER, "Servo control thread terminated\n");
 		osThreadTerminate(NULL);
 	}
 }
@@ -28,6 +24,7 @@ void servo_control_thread(void const * argument)
 void start_demo(void) {
 
 	demo_on = 1;
+	log_msg(DEBUG, "demo_on = 1\n");
 
     osThreadDef(DEMO, demo_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(DEMO), NULL);
@@ -38,15 +35,14 @@ void start_demo(void) {
 void stop_demo(void) {
 
 	demo_on = 0;
+	log_msg(DEBUG, "demo_on = 0\n");
 
 	return;
 }
 
 void demo_thread(void const * argument) {
 
-	if (debug) {
-		LCD_UsrLog((char*) "Demo thread started\n");
-	}
+	log_msg(USER, "Demo thread started\n");
 
 	while (demo_on) {
 		//servo0 PWM; servo1 PWM; servo2 PWM; servo3 PWM; TIME: ms
@@ -76,9 +72,7 @@ void demo_thread(void const * argument) {
 	}
 
 	while (1) {
-		if (debug) {
-			LCD_ErrLog((char*) "Demo thread terminated\n");
-		}
+		log_msg(USER, "Demo thread terminated\n");
 		osThreadTerminate(NULL);
     }
 }

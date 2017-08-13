@@ -127,6 +127,12 @@ static void StartThread(void const * argument)
 	osMutexDef(SERVO_ADC);
 	servo_adc_mutex = osMutexCreate(osMutex(SERVO_ADC));
 
+	osMailQDef(LOG_Q, 10, msg_log_t);  // Declare mail queue
+	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
+
+    osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadCreate (osThread(SD_LOGGER), NULL);
+
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
   
@@ -149,9 +155,7 @@ static void StartThread(void const * argument)
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(PWM), NULL);
 
-    if (debug) {
-    	LCD_UsrLog((char*) "TotoRobot started.\n");
-    }
+    log_msg(USER, "TotoRobot started.\n");
 
     while (1) {
         /* Delete the Init Thread */

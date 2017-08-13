@@ -41,11 +41,10 @@ void UART_send(char* buffer)
 	// Send new line
 	HAL_UART_Transmit(&uart_handle, (uint8_t*) "\r\n", 2, timeout);
 
-	if (debug) {
-		LCD_UsrLog((char*) "UART TX: ");
-		LCD_UsrLog((char*) buffer);
-		LCD_UsrLog((char*) "\n");
-	}
+	// Log buffer content
+	char tmp[100];
+	sprintf(tmp, "UART TX: %s\n", buffer);
+	log_msg(DEBUG, tmp);
 
 	return;
 }
@@ -100,12 +99,10 @@ void UART_rx_thread(void const * argument)
 		// Process command
 		if (RX_buffer[0] != '\0') {
 
-			// Log to screen
-			if (debug) {
-				LCD_UsrLog((char*) "UART RX: ");
-				LCD_UsrLog((char*) RX_buffer);
-				LCD_UsrLog((char*) "\n");
-			}
+			// Log buffer content
+			char tmp[100];
+			sprintf(tmp, "UART RX: %s\n", RX_buffer);
+			log_msg(DEBUG, tmp);
 
 			// Process command
 			process_command();
@@ -117,9 +114,7 @@ void UART_rx_thread(void const * argument)
 	}
 
 	while (1) {
-		if (debug) {
-			LCD_ErrLog((char*) "UART RX thread terminating\n");
-		}
+		log_msg(USER, "UART RX thread terminating\n");
 		osThreadTerminate(NULL);
 	}
 }
@@ -222,12 +217,12 @@ void process_command(void)
 		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
 	}
 
-	if (debug) {
-		sprintf(lcd_log, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
+	// Log command parameters
+	char tmp[100];
+	sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
 				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
 				c_params.value_x, c_params.value_y, c_params.value_z, c_params.error);
-		LCD_UsrLog((char*) lcd_log);
-	}
+	log_msg(DEBUG, tmp);
 
 	return;
 }
