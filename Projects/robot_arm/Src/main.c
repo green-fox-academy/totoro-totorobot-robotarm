@@ -130,6 +130,8 @@ static void StartThread(void const * argument)
 	osMailQDef(LOG_Q, 10, msg_log_t);  // Declare mail queue
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
+	lcd_logger_on = 1;
+
     osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(SD_LOGGER), NULL);
 
