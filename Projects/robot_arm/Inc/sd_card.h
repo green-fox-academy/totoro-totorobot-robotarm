@@ -36,7 +36,7 @@ uint8_t sd_logger_on;
 uint8_t lcd_logger_on;
 
 static FATFS SDFatFs;  /* File system object for SD card logical drive */
-static FIL MyFile;     /* File object */
+static FIL file;     /* File object */
 static char sd_path[4]; /* SD card logical drive path */
 static FRESULT res;    /* FatFs function common result code */
 static uint32_t bytesread;      				            /* File write/read counts */

@@ -229,13 +229,20 @@ void pwm_thread(void const * argument)
 			// Get pulse value
 			uint32_t pulse = servo_pulse[i];
 
+			// Set the speed of the servo motor
+			while (pulse != 1000) {
+				pulse += MOVEMENT;
+				if (pulse > 1000)
+					pulse = 1000;
+				// Set PWM pulse width
+				pwm_set_pulse(i, pulse);
+				osDelay(SET_TIME1);
+			}
+
 			// Release mutex
 			osMutexRelease(servo_pulse_mutex);
-
-			// Set PWM pulse width
-			pwm_set_pulse(i, pulse);
 		}
-		osDelay(100);
+		osDelay(SET_TIME2);
 	}
 
     while (1) {

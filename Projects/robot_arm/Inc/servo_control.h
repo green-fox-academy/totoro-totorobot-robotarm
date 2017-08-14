@@ -11,6 +11,9 @@
 #define SERVOS				4
 #define MIN_ADC_VALUE		0
 #define MAX_ADC_VALUE		4095
+#define MOVEMENT			100
+#define SET_TIME1			100
+#define SET_TIME2			100
 
 /* SERVO 0 Configuration */
 

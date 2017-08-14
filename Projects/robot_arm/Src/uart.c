@@ -371,8 +371,27 @@ void set_value(void)
 
 		// A block statement is needed for the declaration
 		{
-			// Read in xyz values
 			coord_cart_t coord;
+			coord_cart_t xyz;
+
+			coord.x = (double) xyz.x;
+			coord.y = (double) xyz.y;
+			coord.z = (double) xyz.z;
+
+			if (coord.x < c_params.value_x) {
+				while (coord.x < c_params.value_x) {
+					coord.x ++;
+				}
+			} else (coord.x > c_params.value_x) {
+				while (coord.x > c_params.value_x) {
+					coord.x --;
+				}
+			} else {
+				coord.x = xyz.x;
+			}
+
+			// Read in xyz values to go
+
 			coord.x = (double) c_params.value_x;
 			coord.y = (double) c_params.value_y;
 			coord.z = (double) c_params.value_z;
