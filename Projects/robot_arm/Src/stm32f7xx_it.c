@@ -49,6 +49,7 @@
 extern ETH_HandleTypeDef EthHandle;
 extern TIM_HandleTypeDef TimHandle;
 extern ADC_HandleTypeDef adc;
+extern UART_HandleTypeDef uart_handle;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -196,6 +197,11 @@ void EXTI15_10_IRQHandler(void)
 void DMA2_Stream0_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(adc.DMA_Handle);
+}
+
+void USART1_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&uart_handle);
 }
 
 /**
