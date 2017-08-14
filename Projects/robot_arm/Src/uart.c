@@ -8,12 +8,24 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-uint8_t buff;
-
 void uart_init(void)
 {
+	// Initialize circular buffer pointers
+	RX_buffer.head_p = &(RX_buffer.buffer[0]);
+	RX_buffer.tail_p = &(RX_buffer.buffer[RXBUFFERSIZE - 1]);
+	RX_buffer.read_p = RX_buffer.head_p;
+	RX_buffer.write_p = RX_buffer.head_p;
+
+	// Zero out circular buffer
+	for (int i = 0; i < RXBUFFERSIZE; i++) {
+		RX_buffer.buffer[i] = 0;
+	}
+
+	// Init flags
+	command_in = 0;
+
 	// Configure UART instance
-	uart_handle.Instance        = USARTx;
+	uart_handle.Instance        = USART1;
 	uart_handle.Init.BaudRate   = 9600;
 	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
 	uart_handle.Init.StopBits   = UART_STOPBITS_1;
@@ -24,10 +36,12 @@ void uart_init(void)
 	// Configure COM1 as UART
 	BSP_COM_Init(COM1, &uart_handle);
 
+	//Setup interrupts for UART
 	HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 
-	HAL_UART_Receive_IT(&uart_handle, &buff, 1);
+	// Start UART receiver in interrupt mode
+	HAL_UART_Receive_IT(&uart_handle, &char_buff, 1);
 
 	log_msg(DEBUG, "UART init done\n");
 
@@ -144,7 +158,7 @@ void process_command(void)
 
 	// Copy command from UART RX buffer
 	char received[RXBUFFERSIZE];
-	strcpy(received, (char*) RX_buffer);
+	//strcpy(received, (char*) RX_buffer);
 
 	// Command
 	char* s = strtok(received, " ");
@@ -466,12 +480,22 @@ uint8_t verify_angle(uint8_t servo, int16_t angle) {
 	return 0;
 }
 
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	while(1) {
+	// This interrupt is fired when we receive a single character via USART1
+	// Copy character into the circular buffer
+	*(RX_buffer.write_p) = char_buff;
 
-	}
+	// Increase write pointer value;
+	RX_buffer.write_p++;
+
+	// Loop if write pointer is out of bounds
+	if (RX_buffer.write_p > RX_buffer.tail_p)
+		RX_buffer.write_p = RX_buffer.head_p;
+
+	// Raise flag if we received LF character
+	if (char_buff == '\n')
+		command_in = 1;
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

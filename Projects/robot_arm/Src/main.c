@@ -131,7 +131,7 @@ static void StartThread(void const * argument)
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
 	lcd_logger_on = 1;
-	sd_logger_on = 1;
+	sd_logger_on = 0;
 
 	lcd_log_level = DEBUG;
 	file_log_level = DEBUG;
