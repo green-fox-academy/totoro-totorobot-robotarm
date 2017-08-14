@@ -48,11 +48,6 @@ void uart_init(void)
 	return;
 }
 
-void UART_Error_Handler(void)
-{
-
-}
-
 void UART_send(char* buffer)
 {
 	uint16_t buffer_len = strlen(buffer);
@@ -100,14 +95,54 @@ void UART_send_help(void)
 
 void UART_rx_thread(void const * argument)
 {
-	uint32_t timeout = 100;
+	uint8_t command_buffer[RXBUFFERSIZE];
+	uint8_t char_to_copy;
+	command_buffer[0] = 0;
 
 	uart_init();
 	UART_send_help();
 
-	log_msg(DEBUG, "Inside UART thread, before while\n");
-
 	while (1) {
+
+		if (command_in) {
+
+			// TODO do a chek on the circ buffer state
+			// if nearly full, send alert -> Command buffer full
+
+
+			int i = 0;
+
+			// Copy data from circular buffer to command buffer
+			// between the last read pointer and the next LF
+			do {
+				uint8_t char_to_copy = *(RX_buffer.read_p++);
+
+				// Loop read pointer
+				if (RX_buffer.read_p > RX_buffer.tail_p) {
+					RX_buffer.read_p = RX_buffer.head_p;
+				}
+
+				command_buffer[i++]= char_to_copy;
+
+			} while (char_to_copy != '\n');
+
+			// Reset flag
+			command_in = 0;
+
+			// Remove CR/LF char
+			command_buffer[i - 1] = 0;
+			if (command_buffer[i - 2] == '\r') {
+				command_buffer[i - 2] = 0;
+			}
+
+			// Process command
+
+			// Decrease counter
+			// TODO use mutex
+			command_in--;
+
+		}
+
 
 //		// UART RX polling mode
 //		if (HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
@@ -490,12 +525,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	RX_buffer.write_p++;
 
 	// Loop if write pointer is out of bounds
-	if (RX_buffer.write_p > RX_buffer.tail_p)
+	if (RX_buffer.write_p > RX_buffer.tail_p) {
 		RX_buffer.write_p = RX_buffer.head_p;
+	}
 
 	// Raise flag if we received LF character
-	if (char_buff == '\n')
-		command_in = 1;
+	if (char_buff == '\n') {
+		// TODO use mutex
+		command_in++;
+	}
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
