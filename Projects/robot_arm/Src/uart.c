@@ -8,6 +8,8 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+uint8_t buff;
+
 void uart_init(void)
 {
 	// Configure UART instance
@@ -21,6 +23,11 @@ void uart_init(void)
 
 	// Configure COM1 as UART
 	BSP_COM_Init(COM1, &uart_handle);
+
+	HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(USART1_IRQn);
+
+	HAL_UART_Receive_IT(&uart_handle, &buff, 1);
 
 	log_msg(DEBUG, "UART init done\n");
 
@@ -88,33 +95,33 @@ void UART_rx_thread(void const * argument)
 
 	while (1) {
 
-		// UART RX polling mode
-		if (HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
-			UART_Error_Handler();
-		}
-
-		for (int i = 0; i < RXBUFFERSIZE; i++) {
-			if ((RX_buffer[i] == '\r') || (RX_buffer[i]) == '\n') {
-				RX_buffer[i] = '\0';
-				break;
-			}
-		}
-
-		// Process command
-		if (RX_buffer[0] != '\0') {
-
-			// Log buffer content
-			char tmp[100];
-			sprintf(tmp, "UART RX: %s\n", RX_buffer);
-			log_msg(DEBUG, tmp);
-
-			// Process command
-			process_command();
-			execute_command();
-
-			// Clear buffer
-			RX_buffer[0] = '\0';
-		}
+//		// UART RX polling mode
+//		if (HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
+//			UART_Error_Handler();
+//		}
+//
+//		for (int i = 0; i < RXBUFFERSIZE; i++) {
+//			if ((RX_buffer[i] == '\r') || (RX_buffer[i]) == '\n') {
+//				RX_buffer[i] = '\0';
+//				break;
+//			}
+//		}
+//
+//		// Process command
+//		if (RX_buffer[0] != '\0') {
+//
+//			// Log buffer content
+//			char tmp[100];
+//			sprintf(tmp, "UART RX: %s\n", RX_buffer);
+//			log_msg(DEBUG, tmp);
+//
+//			// Process command
+//			process_command();
+//			execute_command();
+//
+//			// Clear buffer
+//			RX_buffer[0] = '\0';
+//		}
 	}
 
 	while (1) {
@@ -459,5 +466,12 @@ uint8_t verify_angle(uint8_t servo, int16_t angle) {
 	return 0;
 }
 
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	while(1) {
+
+	}
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
