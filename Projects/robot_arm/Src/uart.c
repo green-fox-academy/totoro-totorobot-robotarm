@@ -378,20 +378,23 @@ void set_value(void)
 			coord.y = (double) xyz.y;
 			coord.z = (double) xyz.z;
 
-			for (int i = 0; i < 3; i++) {
-				if (coord.[i] < c_params.value_[i]) {
-					while (coord.[i] < c_params.value_[i]) {
-						coord.[i] += STEP_MOVEMENT;
-					}
-				} else if (coord.[i] > c_params[3 + i]) {
-					while (coord.[i] > c_params.value_[i]) {
-						coord.[i] -= STEP_MOVEMENT;
-					}
-				} else {
-					coord.[i] = xyz.[i];
+			/*if (coord.x < c_params.value_x) {
+				while (coord.x < c_params.value_x) {
+					coord.x += STEP_MOVEMENT;
+					osDelay(STEP_TIME);
 				}
-				osDelay(STEP_TIME);
-			}
+			} else if (coord.x > c_params.value_x) {
+				while (coord.x > c_params.value_x) {
+					coord.x -= STEP_MOVEMENT;
+					osDelay(STEP_TIME);
+				}
+			} else {
+				coord.x = (double) c_params.value_x;
+			}*/
+
+			coord.x = (double) c_params.value_x;
+			coord.y = (double) c_params.value_y;
+			coord.z = (double) c_params.value_z;
 			// Set pwm pulse
 			xyz_to_pulse(&coord);
 
