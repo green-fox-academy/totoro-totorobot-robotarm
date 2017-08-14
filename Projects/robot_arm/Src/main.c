@@ -121,24 +121,33 @@ static void StartThread(void const * argument)
 { 
 
     /* Initialize LCD */
-    BSP_Config();
+     BSP_Config();
   
     // Create tcp_ip stack thread
-    // tcpip_init(NULL, NULL);
+     tcpip_init(NULL, NULL);
   
-    // Initialize the LwIP stack
-    // Netif_Config();
+   //Initialize the LwIP stack
+     Netif_Config();
 
-    // Notify user about the network interface config
-    // User_notification(&gnetif);
-  
-    // Enable for networking
-    // Start DHCPClient
-    // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    // osThreadCreate (osThread(DHCP), &gnetif);
+   //Notify user about the network interface config
+     User_notification(&gnetif);
 
-    osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(SERVO_CONTROL), NULL);
+   //Enable for networking
+   //Start DHCPClient
+     osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+     osThreadCreate (osThread(DHCP), &gnetif);
+     osDelay(1000);
+    /*osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(SERVO_CONTROL), NULL);*/
+
+	osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	osThreadCreate (osThread(udp_client), NULL);
+	osDelay(4000);
+
+	LCD_UsrLog("eddig meg jo");
+	osThreadDef(rtc_get_time, rtc_get_time_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	osThreadCreate (osThread(rtc_get_time), NULL);
+
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 
