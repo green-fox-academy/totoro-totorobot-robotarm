@@ -128,4 +128,9 @@ typedef struct
 	LCD_UsrLog("Time: %s",ctime((const time_t*)&txTm));
 
 	closesocket(sockfd);
+
+	while (1) {
+		/* Delete the Init Thread */
+		osThreadTerminate(NULL);
+	}
 }

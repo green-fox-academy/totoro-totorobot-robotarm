@@ -150,11 +150,11 @@ static void StartThread(void const * argument)
     osDelay(1000);
     osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(udp_client), NULL);
-    osDelay(1000);
+    osDelay(4000);
 
     LCD_UsrLog("eddig meg jo");
-    osThreadDef(time_on_board, time_on_board_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(time_on_board), NULL);
+    osThreadDef(rtc_get_time, rtc_get_time_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(rtc_get_time), NULL);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 

@@ -33,38 +33,22 @@
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-
-
-
 /* Include core modules */
-
 
 RTC_HandleTypeDef RtcHandle;
 RTC_InitTypeDef rtcInit;
-RTC_TimeTypeDef ntp_time;
-RTC_DateTypeDef rtcDate;
-
-typedef struct
-{
-	uint8_t		 Hours;
-	uint8_t	 	 Minutes;
-	uint8_t	 	 Seconds;
-	uint32_t	 SubSeconds;
-	uint32_t	 SecondFraction;
-	uint8_t	     TimeFormat;
-	uint32_t	 DayLightSaving;
-	uint32_t	 StoreOperation;
-
-}time_data_t;
-
 
 /**
   * @brief  Configure the current time and date.
   * @param  None
   * @retval None
   */
-void k_CalendarBkupInit(void)
+void rtc_init(void)
 {
+
+	// Enable RTC //
+	__HAL_RCC_RTC_ENABLE();
+
 	/*##-1- Configure the RTC peripheral #######################################*/
 	/* Configure RTC prescaler and RTC data registers */
 	/* RTC configured as follow:
@@ -83,143 +67,55 @@ void k_CalendarBkupInit(void)
 	RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
 
 	if(HAL_RTC_Init(&RtcHandle) != HAL_OK) {
+		LCD_UsrLog("RTC error: RTC initialization failed.");
 	}
 }
 
-/**
-  * @brief RTC MSP Initialization
-  *        This function configures the hardware resources used in this example:
-  *           - Peripheral's clock enable
-  * @param  hrtc: RTC handle pointer
-  * @retval None
-  */
-void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc)
+
+void rtc_set(void)
 {
-	RCC_OscInitTypeDef        RCC_OscInitStruct;
-	RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
-
-	/*##-1- Configure LSE as RTC clock source ##################################*/
-	RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-	RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-	if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		return;
-	}
-
-	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-	if(HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-		return;
-	}
-
-  /*##-2- Enable RTC peripheral Clocks #######################################*/
-  /* Enable RTC Clock */
-	__HAL_RCC_RTC_ENABLE();
-}
-
-/**
-  * @brief RTC MSP De-Initialization
-  *        This function frees the hardware resources used in this example:
-  *          - Disable the Peripheral's clock
-  * @param  hrtc: RTC handle pointer
-  * @retval None
-  */
-void HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc)
-{
-	/*##-1- Reset peripherals ##################################################*/
-	__HAL_RCC_RTC_DISABLE();
-}
-
-
-/**
-  * @brief  Backup save parameter
-  * @param  address: RTC Backup data Register number.
-  *                  This parameter can be: RTC_BKP_DRx where x can be from 0 to 19 to
-  *                                         specify the register.
-  * @param  Data:    Data to be written in the specified RTC Backup data register.
-  * @retval None
-  */
-void k_BkupSaveParameter(uint32_t address, uint32_t data)
-{
-	HAL_RTCEx_BKUPWrite(&RtcHandle,address,data);
-}
-
-/**
-  * @brief  Backup restore parameter.
-  * @param  address: RTC Backup data Register number.
-  *                  This parameter can be: RTC_BKP_DRx where x can be from 0 to 19 to
-  *                                         specify the register.
-  * @retval None
-  */
-uint32_t k_BkupRestoreParameter(uint32_t address)
-{
-	return HAL_RTCEx_BKUPRead(&RtcHandle,address);
-}
-
-/**
-  * @brief  RTC Get time.
-  * @param  Time: Pointer to Time structure
-  * @retval None
-  */
-
-/**
-  * @brief  RTC Set time.
-  * @param  Time: Pointer to Time structure
-  * @retval None
-  */
-
-/**
-  * @brief  RTC Get date
-  * @param  Date: Pointer to Date structure
-  * @retval None
-  */
-void k_GetDate(RTC_DateTypeDef *Date)
-{
-	HAL_RTC_GetDate(&RtcHandle, Date, FORMAT_BIN);
-
-	if((Date->Date == 0) || (Date->Month == 0)) {
-		Date->Date = Date->Month = 1;
-	}
-}
-/**
-  * @brief  RTC Set date
-  * @param  Date: Pointer to Date structure
-  * @retval None
-  */
-void k_SetDate(RTC_DateTypeDef *Date)
-{
-	HAL_RTC_SetDate(&RtcHandle, Date, FORMAT_BIN);
-}
-/**
-  * @}
-  */
-void time_on_board_thread(void* parameter)
-{
-	//rtc_data_t* input_time = (rtc_data_t*)parameter;
-
-	// time_t t = time(NULL);
 	struct tm input_time = *localtime(&txTm);
 
-	ntp_time.Seconds = input_time.tm_sec;
-	ntp_time.Minutes = input_time.tm_min;
-	ntp_time.Hours = input_time.tm_hour;
-	HAL_RTC_SetTime(&RtcHandle, &ntp_time, RTC_FORMAT_BCD);
+	RTC_DateTypeDef dateStruct;
+	RTC_TimeTypeDef timeStruct;
 
-	LCD_UsrLog("Time now:  %d:%d:%d\n", input_time.tm_hour, input_time.tm_min, input_time.tm_sec);
+	timeStruct.Hours = input_time.tm_hour;
+    timeStruct.Minutes = input_time.tm_min;
+    timeStruct.Seconds = input_time.tm_sec;
+    timeStruct.TimeFormat = RTC_HOURFORMAT_24;
+    timeStruct.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+    timeStruct.StoreOperation = RTC_STOREOPERATION_RESET;
 
-	HAL_RTC_GetTime(&RtcHandle, &ntp_time, RTC_FORMAT_BCD);
+    dateStruct.WeekDay = input_time.tm_wday;
+    dateStruct.Month = input_time.tm_mon;
+	dateStruct.Date = input_time.tm_mday;
+	dateStruct.Year = input_time.tm_year;
 
-	//HAL_RTC_GetTime();
-	//LCD_UsrLog("Time: %s", time_out);
-	/*LCD_UsrLog("loooooooooooooooolllll");
-	char text[16] = {0};
-	sprintf(text,"%.2u:%.2u:%.2u",rtc_data->hour,rtc_data->minute,rtc_data->second);
-	LCD_UsrLog("Time: %s", text);*/
+	HAL_RTC_SetTime(&RtcHandle, &timeStruct, RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(&RtcHandle, &dateStruct, RTC_FORMAT_BIN);
 
-	//printf("now: %d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
-/**
-  * @}
-  */
+
+void rtc_get_time_thread(void const * argument)
+{
+	while(1){
+	rtc_set();
+	printf("RTC TIME:\n");
+	//rtc_data_t* rtc_data = (rtc_data_t*)parameter;
+
+	RTC_DateTypeDef dateStruct;
+	RTC_TimeTypeDef timeStruct;
+
+	HAL_RTC_GetTime(&RtcHandle, &timeStruct, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&RtcHandle, &dateStruct, RTC_FORMAT_BIN);
+	char text[16] = {0};
+	sprintf(text,"%.2d:%.2d:%.2d", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds);
+	LCD_UsrLog("Time: %s\n", text);
+	osDelay(1000);
+	}
+	while (1) {
+		/* Delete the Init Thread */
+		osThreadTerminate(NULL);
+}
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
