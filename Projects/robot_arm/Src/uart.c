@@ -384,12 +384,42 @@ void set_value(void)
 		{
 			// Read in xyz values
 			coord_cart_t coord;
-			coord.x = (double) c_params.value_x;
-			coord.y = (double) c_params.value_y;
-			coord.z = (double) c_params.value_z;
+			coord_cart_t xyz;
+
+			coord.x = (double) xyz.x;
+			coord.y = (double) xyz.y;
+			coord.z = (double) xyz.z;
+			uint16_t tomb[] = {coord.x, coord.y, coord.z};
+			uint16_t tomb2[] = {c_params.value_x, c_params.value_y, c_params.value_z};
+
+			for (int i = 0; i < 3; i++) {
+				if (tomb[i] < tomb2[i]) {
+					while (tomb[i] < tomb2[i]) {
+						tomb[i] += STEP_MOVEMENT;
+						// Set pwm pulse
+						xyz_to_pulse(&coord);
+						osDelay(STEP_TIME);
+					}
+				} else if (tomb[i] > tomb2[i]) {
+					while (tomb[i] > tomb2[i]) {
+						tomb[i] -= STEP_MOVEMENT;
+						// Set pwm pulse
+						xyz_to_pulse(&coord);
+						osDelay(STEP_TIME);
+					}
+				} else {
+					tomb[i] = tomb2[i];
+					// Set pwm pulse
+					xyz_to_pulse(&coord);
+				}
+			}
+
+			//coord.x = (double) c_params.value_x;
+			//coord.y = (double) c_params.value_y;
+			//coord.z = (double) c_params.value_z;
 
 			// Set pwm pulse
-			xyz_to_pulse(&coord);
+			//xyz_to_pulse(&coord);
 
 			UART_send("Set position done.");
 		}
