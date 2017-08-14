@@ -136,7 +136,7 @@ void write_sd_card(char* file_name, char* line_to_write)
 	FIL file;
 
 	// Open a new or existing text file object with write access
-	f_open(&file, file_name, FA_OPEN_EXISTING | FA_WRITE);
+	f_open(&file, file_name, FA_OPEN_EXISTING | FA_WRITE | FA_CREATE_NEW);
 
 	// Append data as ASCII text to the file
 	uint32_t size = (&file)->fsize;
