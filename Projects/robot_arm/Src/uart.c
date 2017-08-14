@@ -396,6 +396,8 @@ void set_value(void)
 				if (tomb[i] < tomb2[i]) {
 					while (tomb[i] < tomb2[i]) {
 						tomb[i] += STEP_MOVEMENT;
+						if (tomb[i] > tomb2[i])
+							tomb[i] = tomb2[i];
 						// Set pwm pulse
 						xyz_to_pulse(&coord);
 						osDelay(STEP_TIME);
@@ -403,6 +405,8 @@ void set_value(void)
 				} else if (tomb[i] > tomb2[i]) {
 					while (tomb[i] > tomb2[i]) {
 						tomb[i] -= STEP_MOVEMENT;
+						if (tomb[i] < tomb2[i])
+							tomb[i] = tomb2[i];
 						// Set pwm pulse
 						xyz_to_pulse(&coord);
 						osDelay(STEP_TIME);
