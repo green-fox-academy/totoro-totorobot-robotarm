@@ -24,11 +24,10 @@ void uart_init(void)
 	// Configure COM1 as UART
 	BSP_COM_Init(COM1, &uart_handle);
 
-	HAL_UART_Receive_IT(&uart_handle, &buff, 1);
-
 	HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
-	__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_RXNE);
+
+	HAL_UART_Receive_IT(&uart_handle, &buff, 1);
 
 	log_msg(DEBUG, "UART init done\n");
 
