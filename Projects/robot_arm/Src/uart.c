@@ -22,6 +22,8 @@ void uart_init(void)
 	// Configure COM1 as UART
 	BSP_COM_Init(COM1, &uart_handle);
 
+	log_msg(DEBUG, "UART init done\n");
+
 	return;
 }
 
@@ -81,6 +83,8 @@ void UART_rx_thread(void const * argument)
 
 	uart_init();
 	UART_send_help();
+
+	log_msg(DEBUG, "Inside UART thread, before while\n");
 
 	while (1) {
 

@@ -49,7 +49,7 @@ char logfile_name[100];
 
 uint8_t FAT_fs_init(void);
 void write_sd_card(char* file_name, char* line_to_write);
-void read_sd_card(void);
+void read_sd_card(char* file_name);
 void sd_logger_thread(void const * argument);
 void log_msg(uint8_t log_level, char* message);
 

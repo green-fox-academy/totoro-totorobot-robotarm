@@ -106,7 +106,7 @@ int main(void)
     BSP_Config();
   
     // Init thread
-    osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(Start), NULL);
   
     // Start scheduler
@@ -131,9 +131,13 @@ static void StartThread(void const * argument)
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
 	lcd_logger_on = 1;
+	sd_logger_on = 0;
 
-    osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
-    osThreadCreate (osThread(SD_LOGGER), NULL);
+	lcd_log_level = DEBUG;
+	file_log_level = NONE;
+
+    // osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
+    // osThreadCreate (osThread(SD_LOGGER), NULL);
 
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
@@ -149,12 +153,14 @@ static void StartThread(void const * argument)
     // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(DHCP), &gnetif);
 
+	log_msg(USER, "Before servo config.\n");
+
     servo_config();
 
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(UART_RX), NULL);
 
-    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(PWM), NULL);
 
     log_msg(USER, "TotoRobot started.\n");
@@ -355,5 +361,12 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 #endif
 
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+	while (1) {
+
+	}
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

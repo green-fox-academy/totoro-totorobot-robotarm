@@ -109,19 +109,25 @@ uint8_t FAT_fs_init(void)
 	return 0;
 }
 
-void read_sd_card(void)
+void read_sd_card(char* file_name)
 {
 
-	/*## Open the text file object with read access ###############*/
-	res = f_open(&MyFile, btext, FA_READ);
-	if (res != FR_OK)
-		LCD_ErrLog((char*) "Open the file has failed.\n");
+	// Create file pointer
+	FIL file;
+
+	// Open the text file object with read access
+	if (f_open(&file, file_name, FA_READ) != FR_OK) {
+		LCD_ErrLog((char*) "Open file has failed.\n");
+	}
+
 
 	/*## Read data from the text file ###########################*/
-	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
+	f_read(&file, rtext, sizeof(rtext), (UINT*)&bytesread);
+	LCD_UsrLog(rtext);
+
 
 	/*##-9- Close the open text file #############################*/
-	f_close(&MyFile);
+	f_close(&file);
 }
 
 void write_sd_card(char* file_name, char* line_to_write)
