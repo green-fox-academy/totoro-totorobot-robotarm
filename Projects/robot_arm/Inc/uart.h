@@ -12,6 +12,9 @@
 #define TXBUFFERSIZE        100				// transmit
 #define RXBUFFERSIZE        TXBUFFERSIZE	// receive
 
+#define STEP_MOVEMENT		1				//value of the angle change
+#define STEP_TIME			100				// time between two angle change
+
 typedef enum {NO_COMMAND, HELP, GET_VALUE, SET_VALUE} uart_command_t;
 typedef enum {NO_ATTRIB, PULSE, ANGLE, POSITION, MANUAL_CONTROL, DATA_DISP, DEMO} uart_attrib_t;
 
