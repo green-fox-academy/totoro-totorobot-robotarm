@@ -81,7 +81,7 @@ void pwm_init(void)
 		pwm[i].Init.Prescaler = pwm_conf[i].prescaler;
 		HAL_TIM_PWM_Init(&pwm[i]);
 
-		char tmp[20];
+		char tmp[50];
 		sprintf(tmp, "Servo%d init done\n", i);
 		log_msg(DEBUG, tmp);
 

@@ -131,13 +131,13 @@ static void StartThread(void const * argument)
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
 	lcd_logger_on = 1;
-	sd_logger_on = 0;
+	sd_logger_on = 1;
 
 	lcd_log_level = DEBUG;
-	file_log_level = NONE;
+	file_log_level = DEBUG;
 
-    // osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
-    // osThreadCreate (osThread(SD_LOGGER), NULL);
+    osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadCreate (osThread(SD_LOGGER), NULL);
 
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
