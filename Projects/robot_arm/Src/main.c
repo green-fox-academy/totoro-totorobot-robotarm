@@ -209,8 +209,6 @@ static void BSP_Config(void)
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
     LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
-
-
 }
 
 /**
