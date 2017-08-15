@@ -26,7 +26,7 @@ void FatFs_Init()
 	/*## Register the file system object to the FatFs module ##########*/
 	res = (f_mount(&SDFatFs, (TCHAR const*)SDPath, 0));
 	if (res != FR_OK)
-			LCD_ErrLog((char*) "Mount the driver has failed .\n");
+			LCD_ErrLog((char*) "Mount the driver has failed.\n");
 }
 
 void read_sd_card()
@@ -41,6 +41,14 @@ void read_sd_card()
 	/*## Read data from the text file ###########################*/
 	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
 	LCD_UsrLog((char*) rtext);
+	char* pch;
+	int i = 1;
+	pch = strtok (rtext,"\n");
+	while (pch != NULL) {
+		LCD_UsrLog("%d: %s\n", i, pch);
+	    pch = strtok (NULL, "\n");
+	    i++;
+	    }
 
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
