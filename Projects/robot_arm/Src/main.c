@@ -58,6 +58,7 @@
 #include "robot_arm.h"
 #include "uart.h"
 #include "sd_card.h"
+#include "rtc.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -150,6 +151,10 @@ static void StartThread(void const * argument)
     // Start DHCPClient
     // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(DHCP), &gnetif);
+
+    // Start NTP client, set RTC time
+    // osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    // osThreadCreate (osThread(NTP), NULL);
 
     // Configure servos
     servo_config();
