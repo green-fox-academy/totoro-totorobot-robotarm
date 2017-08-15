@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #define TXBUFFERSIZE        100			// transmit
-#define RXBUFFERSIZE        255			// receive
+#define RXBUFFERSIZE        100			// receive
 
 typedef enum {NO_COMMAND, HELP, GET_VALUE, SET_VALUE} uart_command_t;
 typedef enum {NO_ATTRIB, PULSE, ANGLE, POSITION, MANUAL_CONTROL, DATA_DISP, DEMO} uart_attrib_t;

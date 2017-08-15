@@ -127,7 +127,7 @@ static void StartThread(void const * argument)
 	osMutexDef(SERVO_ADC);
 	servo_adc_mutex = osMutexCreate(osMutex(SERVO_ADC));
 
-	osMailQDef(LOG_Q, 10, msg_log_t);  // Declare mail queue
+	osMailQDef(LOG_Q, 10, msg_log_t);
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
 	lcd_logger_on = 1;
@@ -138,6 +138,10 @@ static void StartThread(void const * argument)
 
     osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(SD_LOGGER), NULL);
+
+//    osThreadDef(UART_TX, UART_tx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
+//    osThreadCreate (osThread(UART_TX), NULL);
+
 
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
@@ -157,7 +161,7 @@ static void StartThread(void const * argument)
 
     servo_config();
 
-    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 50);
     osThreadCreate (osThread(UART_RX), NULL);
 
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);

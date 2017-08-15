@@ -41,11 +41,7 @@ void uart_init(void)
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 
 	// Start UART receiver in interrupt mode
-
-
 	HAL_UART_Receive_IT(&uart_handle, &char_buff, 1);
-	//__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_RXNE);
-	//__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_TC);
 
 	log_msg(DEBUG, "UART init done\n");
 
@@ -54,6 +50,12 @@ void uart_init(void)
 
 void UART_send(char* buffer)
 {
+	/*
+	 * WARNING: Heavy LCD screen logging will break the UART interface.
+	 * Keep logging lines commented out unless you need them for debug.
+	 * In that case make sure commands are supplied at a slow rate.
+	 */
+
 	uint16_t buffer_len = strlen(buffer);
 	uint32_t timeout = 500;
 
@@ -63,11 +65,12 @@ void UART_send(char* buffer)
 	// Send new line
 	HAL_UART_Transmit(&uart_handle, (uint8_t*) "\r\n", 2, timeout);
 
-	// Log buffer content
-	char tmp[100];
-	log_msg(DEBUG, "UART TX: ");
-	log_msg(DEBUG, buffer);
-	log_msg(DEBUG, "\n");
+	// Uncomment for debug
+	//
+	// char tmp[TXBUFFERSIZE + 20] = "UART TX: ";
+	// strcat(tmp, buffer);
+	// strcat(tmp, "\n");
+	// log_msg(DEBUG, buffer);
 
 	return;
 }
@@ -101,33 +104,25 @@ void UART_send_help(void)
 void UART_rx_thread(void const * argument)
 {
 
+	/*
+	 * WARNING: Heavy LCD screen logging will break the UART interface.
+	 * Keep logging lines commented out unless you need them for debug.
+	 * In that case make sure commands are supplied at a slow rate.
+	 */
+
 	uint8_t char_to_copy;
 
 	uart_init();
 	UART_send_help();
 
-
-
 	while (1) {
 
 		if (command_in) {
 
-			char tmp2[100];
-			sprintf(tmp2, "Commands in UART queue: %d\n", command_in);
-			log_msg(DEBUG, tmp2);
-
-
-			log_msg(DEBUG, (char*) RX_buffer.buffer);
-			log_msg(DEBUG, "\n");
-
-			// TODO do a check on the circ buffer state
-			// if nearly full, send alert -> Command buffer full
-
-
 			uint16_t i = 0;
 
 			// Copy data from circular buffer to command buffer
-			// between the last read pointer and the next LF
+			// between current position of the read pointer and the next LF
 			do {
 				// Copy one char and move the read pointer to the next one
 				char_to_copy = *(RX_buffer.read_p++);
@@ -145,13 +140,16 @@ void UART_rx_thread(void const * argument)
 			// Remove LF char from the last written position
 			command_buffer[--i] = 0;
 
-			// Remove possible CR char from one-before last position
-			if (command_buffer[--i] == '\r') {
+			if ((i > 0) && (command_buffer[--i] == '\r')) {
 				command_buffer[i] = 0;
 			}
 
-			log_msg(DEBUG, "UART RX: ");
-			log_msg(DEBUG, (char*) command_buffer);
+			// Uncomment for debug
+			//
+			// char tmp[RXBUFFERSIZE + 20] = "command_buffer: ";
+			// strcat(tmp, (char*) command_buffer);
+			// strcat(tmp, "\n");
+			// log_msg(DEBUG, tmp);
 
 			// Process command
 			process_command();
@@ -159,10 +157,6 @@ void UART_rx_thread(void const * argument)
 
 			// Decrease command counter
 			command_in--;
-
-			sprintf(tmp2, "Commands2 in UART queue: %d\n", command_in);
-			log_msg(DEBUG, tmp2);
-
 		}
 
 		osDelay(10);
@@ -176,6 +170,13 @@ void UART_rx_thread(void const * argument)
 
 void process_command(void)
 {
+
+	/*
+	 * WARNING: Heavy LCD screen logging will break the UART interface.
+	 * Keep logging lines commented out unless you need them for debug.
+	 * In that case make sure commands are supplied at a slow rate.
+	 */
+
 	// Clear command structure
 	c_params.attrib = NO_ATTRIB;
 	c_params.command = NO_COMMAND;
@@ -272,12 +273,13 @@ void process_command(void)
 		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
 	}
 
-	// Log command parameters
-	char tmp[100];
-	sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
-				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
-				c_params.value_x, c_params.value_y, c_params.value_z, c_params.error);
-	log_msg(DEBUG, tmp);
+	// Uncomment for debug
+	//
+	//	char tmp[100];
+	//	sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
+	//				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
+	//				c_params.value_x, c_params.value_y, c_params.value_z, c_params.error);
+	//	log_msg(DEBUG, tmp);
 
 	return;
 }
@@ -515,23 +517,24 @@ uint8_t verify_angle(uint8_t servo, int16_t angle) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	// This interrupt is fired when we receive a single character via USART1
-	// Copy character into the circular buffer
 
+	// Copy character into the circular buffer
 	*(RX_buffer.write_p) = char_buff;
 
 	// Increase write pointer value;
 	RX_buffer.write_p++;
 
-	// Loop if write pointer is out of bounds
+	// Loop write pointer at the end of buffer
 	if (RX_buffer.write_p > RX_buffer.tail_p) {
 		RX_buffer.write_p = RX_buffer.head_p;
 	}
 
-	// Raise flag if we received LF character
+	// Increase commands in queue counter when we received LF character
 	if (char_buff == '\n') {
 		command_in++;
 	}
 
+	// Re-enable the interrupt
 	HAL_UART_Receive_IT(huart, &char_buff, 1);
 
 	return;
