@@ -8,13 +8,31 @@
 #include <stdint.h>
 #include <math.h>
 #include <time.h>
-#include "main.h"
 #include <stdio.h>
-
-
 #include "stm32f7xx_hal_rtc.h"
-//#include "client.h"
-#include <time.h>
+#include "stm32f7xx_hal_rcc.h"
+#include <stdlib.h>
+
+#include "ethernetif.h"
+#include "lwip/netif.h"
+#include "lwip/sockets.h"
+#include "lwip/tcpip.h"
+#include "app_ethernet.h"
+
+#include <sys/types.h>
+
+#include <inttypes.h>
+
+#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
+#define bcopy(b1,b2,len) (memmove((b2), (b1), (len)), (void) 0)
+
+
+#define NTP_TIMESTAMP_DELTA 2208988800ull
+#define server_ip			"193.6.222.47"
+
+
+
+#define SENSOR_ADDRESS 0xD0 // set this according to HW configuration
 
 //#include "defines.h"
 
@@ -29,8 +47,8 @@
 #define MIN_ADC_VALUE		0
 #define MAX_ADC_VALUE		4095
 
-#define RTC_ASYNCH_PREDIV  0x7F   /* LSE as RTC clock */
-#define RTC_SYNCH_PREDIV   0x00FF /* LSE as RTC clock */
+#define RTC_ASYNCH_PREDIV  124   /* LSE as RTC clock */
+#define RTC_SYNCH_PREDIV  7999 /* LSE as RTC clock */
 
 ADC_HandleTypeDef adc_handle;
 ADC_ChannelConfTypeDef adc_ch_conf;
@@ -43,6 +61,9 @@ int udp_client_ready;
 int udp_send_allowed;
 
 time_t txTm;
+
+RTC_HandleTypeDef RtcHandle;
+RTC_InitTypeDef rtcInit;
 
 void servo_control_thread(void const * argument);
 

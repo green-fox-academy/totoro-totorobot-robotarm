@@ -122,7 +122,7 @@ static void StartThread(void const * argument)
 
     /* Initialize LCD */
      BSP_Config();
-  
+
     // Create tcp_ip stack thread
      tcpip_init(NULL, NULL);
   
@@ -134,9 +134,10 @@ static void StartThread(void const * argument)
 
    //Enable for networking
    //Start DHCPClient
-     osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+   osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
      osThreadCreate (osThread(DHCP), &gnetif);
      osDelay(1000);
+
     /*osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(SERVO_CONTROL), NULL);*/
 

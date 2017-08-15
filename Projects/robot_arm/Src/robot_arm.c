@@ -2,40 +2,7 @@
 #include "robot_arm.h"
 
 
-#include "stm32f7xx_hal_rtc.h"
-#include "stm32f7xx_hal_rcc.h"
 
-#include "lcd_log.h"
-#include "cmsis_os.h"
-#include "ethernetif.h"
-#include "lwip/netif.h"
-#include "lwip/tcpip.h"
-#include "app_ethernet.h"
-#include "lcd_log.h"
-#include "main.h"
-
-#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
-#define bcopy(b1,b2,len) (memmove((b2), (b1), (len)), (void) 0)
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/types.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <string.h>
-#include "stm32746g_discovery_ts.h"
-#include "lwip/dns.h"
-#include "app_ethernet.h"
-#include "lwip/sockets.h"
-#include "stm32746g_discovery_ts.h"
-
-#define NTP_TIMESTAMP_DELTA 2208988800ull
-#define server_ip			"193.6.222.47"
-
-#define RTC_ASYNCH_PREDIV  0x7F   /* LSE as RTC clock */
-#define RTC_SYNCH_PREDIV   0x00FF /* LSE as RTC clock */
-
-#define SENSOR_ADDRESS 0xD0 // set this according to HW configuration
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -299,8 +266,7 @@ typedef struct
 }
 
 
-RTC_HandleTypeDef RtcHandle;
-RTC_InitTypeDef rtcInit;
+
 
 /**
   * @brief  Configure the current time and date.
@@ -309,6 +275,12 @@ RTC_InitTypeDef rtcInit;
   */
 void rtc_init(void)
 {
+
+	__HAL_RCC_PWR_CLK_ENABLE();
+	 HAL_PWR_EnableBkUpAccess();
+
+
+	 __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_HSE_DIV25);
 
 	// Enable RTC //
 	__HAL_RCC_RTC_ENABLE();
@@ -362,10 +334,13 @@ void rtc_set(void)
 
 void rtc_get_time_thread(void const * argument)
 {
-	while(1){
+    rtc_init();
+
 	rtc_set();
+
+	while(1){
+
 	printf("RTC TIME:\n");
-	//rtc_data_t* rtc_data = (rtc_data_t*)parameter;
 
 	RTC_DateTypeDef dateStruct;
 	RTC_TimeTypeDef timeStruct;
