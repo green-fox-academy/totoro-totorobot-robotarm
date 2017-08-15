@@ -21,7 +21,7 @@ void uart_init(void)
 		RX_buffer.buffer[i] = 0;
 	}
 
-	// Init flags
+	// Init command queue length counter
 	command_in = 0;
 
 	// Configure UART instance
@@ -41,7 +41,11 @@ void uart_init(void)
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 
 	// Start UART receiver in interrupt mode
+
+
 	HAL_UART_Receive_IT(&uart_handle, &char_buff, 1);
+	//__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_RXNE);
+	//__HAL_UART_ENABLE_IT(&uart_handle, UART_IT_TC);
 
 	log_msg(DEBUG, "UART init done\n");
 
@@ -61,8 +65,9 @@ void UART_send(char* buffer)
 
 	// Log buffer content
 	char tmp[100];
-	sprintf(tmp, "UART TX: %s\n", buffer);
-	log_msg(DEBUG, tmp);
+	log_msg(DEBUG, "UART TX: ");
+	log_msg(DEBUG, buffer);
+	log_msg(DEBUG, "\n");
 
 	return;
 }
@@ -101,13 +106,19 @@ void UART_rx_thread(void const * argument)
 	uart_init();
 	UART_send_help();
 
+
+
 	while (1) {
 
 		if (command_in) {
 
-			char tmp[100];
-			sprintf(tmp, "Commands in UART queue: %d\n", command_in);
-			log_msg(DEBUG, tmp);
+			char tmp2[100];
+			sprintf(tmp2, "Commands in UART queue: %d\n", command_in);
+			log_msg(DEBUG, tmp2);
+
+
+			log_msg(DEBUG, (char*) RX_buffer.buffer);
+			log_msg(DEBUG, "\n");
 
 			// TODO do a check on the circ buffer state
 			// if nearly full, send alert -> Command buffer full
@@ -131,9 +142,6 @@ void UART_rx_thread(void const * argument)
 
 			} while (char_to_copy != '\n');
 
-			// Reset flag
-			command_in = 0;
-
 			// Remove LF char from the last written position
 			command_buffer[--i] = 0;
 
@@ -149,9 +157,12 @@ void UART_rx_thread(void const * argument)
 			process_command();
 			execute_command();
 
-			// Decrease counter
-			// TODO use mutex?
+			// Decrease command counter
 			command_in--;
+
+			sprintf(tmp2, "Commands2 in UART queue: %d\n", command_in);
+			log_msg(DEBUG, tmp2);
+
 		}
 
 		osDelay(10);
@@ -505,6 +516,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	// This interrupt is fired when we receive a single character via USART1
 	// Copy character into the circular buffer
+
 	*(RX_buffer.write_p) = char_buff;
 
 	// Increase write pointer value;
@@ -517,9 +529,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	// Raise flag if we received LF character
 	if (char_buff == '\n') {
-		// TODO use mutex?
 		command_in++;
 	}
+
+	HAL_UART_Receive_IT(huart, &char_buff, 1);
+
+	return;
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
