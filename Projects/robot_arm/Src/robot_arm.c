@@ -348,9 +348,9 @@ void rtc_get_time_thread(void const * argument)
 	HAL_RTC_GetTime(&RtcHandle, &timeStruct, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&RtcHandle, &dateStruct, RTC_FORMAT_BIN);
 	char text[16] = {0};
-	sprintf(text,"%.2d:%.2d:%.2d", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds);
+	sprintf(text,"%.2d:%.2d:%.2d %.4d", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds, timeStruct.SubSeconds);
 	LCD_UsrLog("Time: %s\n", text);
-	osDelay(1000);
+	osDelay(800);
 	}
 	while (1) {
 		/* Delete the Init Thread */

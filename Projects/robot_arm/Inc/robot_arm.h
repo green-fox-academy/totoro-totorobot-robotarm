@@ -37,8 +37,7 @@
 //#include "defines.h"
 
 
-#define RTC_ASYNCH_PREDIV  0x7F   /* LSE as RTC clock */
-#define RTC_SYNCH_PREDIV   0x00FF /* LSE as RTC clock */
+
 
 #define MIN_DEGREE	0
 #define MAX_DEGREE	180
