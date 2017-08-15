@@ -40,6 +40,7 @@ void read_sd_card()
 
 	/*## Read data from the text file ###########################*/
 	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
+	LCD_UsrLog((char*) rtext);
 
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
