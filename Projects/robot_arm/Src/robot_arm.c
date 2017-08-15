@@ -348,8 +348,10 @@ void rtc_get_time_thread(void const * argument)
 	HAL_RTC_GetTime(&RtcHandle, &timeStruct, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&RtcHandle, &dateStruct, RTC_FORMAT_BIN);
 	char text[16] = {0};
+	char text_1[16] = {0};
 	sprintf(text,"%.2d:%.2d:%.2d %.4d", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds, timeStruct.SubSeconds);
-	LCD_UsrLog("Time: %s\n", text);
+	sprintf(text_1,"%.4d-%.2d-%.2d", dateStruct.Year + 1900, dateStruct.Month + 1, dateStruct.Date);
+	LCD_UsrLog("Time: %s %s\n", text_1, text);
 	osDelay(800);
 	}
 	while (1) {
