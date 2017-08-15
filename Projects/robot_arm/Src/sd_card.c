@@ -11,7 +11,7 @@ FRESULT res;    /* FatFs function common result code */
 uint32_t bytesread;      				            /* File write/read counts */
 uint32_t size;
 char wtext[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
-char btext[] = "STM333.TXT";						/* Name of the file */
+char btext[] = "STM1.TXT";						/* Name of the file */
 char rtext[100];                                   	/* File read buffer */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -50,7 +50,12 @@ void write_sd_card()
 	FatFs_Init();
 
 	/*## Open a new an existing text file object with write access #####*/
-	f_open(&MyFile, btext, FA_OPEN_EXISTING | FA_WRITE);
+	if (f_open(&MyFile, btext, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
+		LCD_UsrLog((char*) "Open an existing file\n");
+	} else {
+		f_open(&MyFile, btext, FA_CREATE_ALWAYS | FA_WRITE);
+		LCD_UsrLog((char*) "Create and open a new file\n");
+	}
 
 	/*## Write data to the text file ################################*/
 	size = (&MyFile)->fsize;
