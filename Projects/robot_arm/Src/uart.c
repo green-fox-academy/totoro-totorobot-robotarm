@@ -95,9 +95,8 @@ void UART_send_help(void)
 
 void UART_rx_thread(void const * argument)
 {
-	uint8_t command_buffer[RXBUFFERSIZE];
+
 	uint8_t char_to_copy;
-	command_buffer[0] = 0;
 
 	uart_init();
 	UART_send_help();
@@ -106,22 +105,28 @@ void UART_rx_thread(void const * argument)
 
 		if (command_in) {
 
-			// TODO do a chek on the circ buffer state
+			char tmp[100];
+			sprintf(tmp, "Commands in UART queue: %d\n", command_in);
+			log_msg(DEBUG, tmp);
+
+			// TODO do a check on the circ buffer state
 			// if nearly full, send alert -> Command buffer full
 
 
-			int i = 0;
+			uint16_t i = 0;
 
 			// Copy data from circular buffer to command buffer
 			// between the last read pointer and the next LF
 			do {
-				uint8_t char_to_copy = *(RX_buffer.read_p++);
+				// Copy one char and move the read pointer to the next one
+				char_to_copy = *(RX_buffer.read_p++);
 
-				// Loop read pointer
+				// Loop read pointer at the end of the circular buffer
 				if (RX_buffer.read_p > RX_buffer.tail_p) {
 					RX_buffer.read_p = RX_buffer.head_p;
 				}
 
+				// Add char to command buffer and move pointer by one
 				command_buffer[i++]= char_to_copy;
 
 			} while (char_to_copy != '\n');
@@ -129,48 +134,27 @@ void UART_rx_thread(void const * argument)
 			// Reset flag
 			command_in = 0;
 
-			// Remove CR/LF char
-			command_buffer[i - 1] = 0;
-			if (command_buffer[i - 2] == '\r') {
-				command_buffer[i - 2] = 0;
+			// Remove LF char from the last written position
+			command_buffer[--i] = 0;
+
+			// Remove possible CR char from one-before last position
+			if (command_buffer[--i] == '\r') {
+				command_buffer[i] = 0;
 			}
 
+			log_msg(DEBUG, "UART RX: ");
+			log_msg(DEBUG, (char*) command_buffer);
+
 			// Process command
+			process_command();
+			execute_command();
 
 			// Decrease counter
-			// TODO use mutex
+			// TODO use mutex?
 			command_in--;
-
 		}
 
-
-//		// UART RX polling mode
-//		if (HAL_UART_Receive(&uart_handle, RX_buffer, RXBUFFERSIZE, timeout) != HAL_OK) {
-//			UART_Error_Handler();
-//		}
-//
-//		for (int i = 0; i < RXBUFFERSIZE; i++) {
-//			if ((RX_buffer[i] == '\r') || (RX_buffer[i]) == '\n') {
-//				RX_buffer[i] = '\0';
-//				break;
-//			}
-//		}
-//
-//		// Process command
-//		if (RX_buffer[0] != '\0') {
-//
-//			// Log buffer content
-//			char tmp[100];
-//			sprintf(tmp, "UART RX: %s\n", RX_buffer);
-//			log_msg(DEBUG, tmp);
-//
-//			// Process command
-//			process_command();
-//			execute_command();
-//
-//			// Clear buffer
-//			RX_buffer[0] = '\0';
-//		}
+		osDelay(10);
 	}
 
 	while (1) {
@@ -191,9 +175,9 @@ void process_command(void)
 	c_params.value_z = 65535;
 	c_params.error = 0;
 
-	// Copy command from UART RX buffer
+	// Copy command from command buffer
 	char received[RXBUFFERSIZE];
-	//strcpy(received, (char*) RX_buffer);
+	strcpy(received, (char*) command_buffer);
 
 	// Command
 	char* s = strtok(received, " ");
@@ -291,8 +275,8 @@ void execute_command(void)
 {
 	// Send error message
 	if (c_params.error) {
-		sprintf((char*)TX_buffer, "Unrecognized command or value: %s", RX_buffer);
-		UART_send((char*)TX_buffer);
+		sprintf((char*) TX_buffer, "Unrecognized command or value: %s", (char*) command_buffer);
+		UART_send((char*) TX_buffer);
 		return;
 	}
 
@@ -328,11 +312,11 @@ void UART_send_settings(void)
 
 	case PULSE:
 		for (int i = 0; i < SERVOS; i++) {
-			// Get value
+			// Read value from global storage
 			osMutexWait(servo_pulse_mutex, osWaitForever);
 			uint32_t pulse = servo_pulse[i];
 			osMutexRelease(servo_pulse_mutex);
-			// Send value
+			// Send value to user
 			sprintf((char*) TX_buffer, "Servo%d pulse: %lu", i, pulse);
 			UART_send((char*) TX_buffer);
 		}
@@ -340,10 +324,12 @@ void UART_send_settings(void)
 
 	case ANGLE:
 		for (int i = 0; i < SERVOS; i++) {
-			// Get pulse value
+			// Get pulse value from global storage
 			osMutexWait(servo_pulse_mutex, osWaitForever);
 			uint32_t pulse = servo_pulse[i];
 			osMutexRelease(servo_pulse_mutex);
+
+			// TODO check angle calculation
 
 			// Calculate angle
 			uint8_t angle = (uint8_t) map((double) pulse, (double) servo_conf[i].min_pulse,
@@ -531,7 +517,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	// Raise flag if we received LF character
 	if (char_buff == '\n') {
-		// TODO use mutex
+		// TODO use mutex?
 		command_in++;
 	}
 }

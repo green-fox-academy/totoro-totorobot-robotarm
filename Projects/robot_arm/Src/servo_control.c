@@ -111,9 +111,9 @@ void pwm_set_pulse(uint8_t servo, uint32_t pulse)
 	HAL_TIM_PWM_ConfigChannel(&pwm[servo], &pwm_oc_init[servo], TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&pwm[servo], TIM_CHANNEL_1);
 
-	char tmp[30];
-	sprintf(tmp, "Servo: %d pulse: %5lu\n", servo, pulse);
-	log_msg(DEBUG, tmp);
+//	char tmp[30];
+//	sprintf(tmp, "Servo: %d pulse: %5lu\n", servo, pulse);
+//	log_msg(DEBUG, tmp);
 
 	return;
 }

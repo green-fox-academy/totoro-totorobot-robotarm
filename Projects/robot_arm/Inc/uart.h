@@ -39,6 +39,7 @@ UART_HandleTypeDef uart_handle;
 uint8_t char_buff;
 uint8_t TX_buffer[TXBUFFERSIZE];
 circular_buffer_t RX_buffer;
+uint8_t command_buffer[RXBUFFERSIZE];
 
 uint8_t command_in;
 
