@@ -71,14 +71,19 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/robot_arm.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/servo_control.c</name>
-			<locationURI>PARENT-2-PROJECT_LOC/Src/servo_control.c</locationURI>			
+			<name>Application/User/rtc.c</name>
 			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/rtc.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/sd_card.c</name>
-			<locationURI>PARENT-2-PROJECT_LOC/Src/sd_card.c</locationURI>			
 			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/sd_card.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/servo_control.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/servo_control.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/stm32f7xx_hal_msp.c</name>

@@ -98,7 +98,6 @@ int main(void)
        - Global MSP (MCU Support Package) initialization
      */
     HAL_Init();
-
   
     /* Configure the system clock to 200 MHz */
     SystemClock_Config();
@@ -118,7 +117,6 @@ int main(void)
   * @param  argument not used
   * @retval None
   */
-
 static void StartThread(void const * argument)
 { 
 	osMutexDef(SERVO_PULSE);
@@ -139,10 +137,6 @@ static void StartThread(void const * argument)
     osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(SD_LOGGER), NULL);
 
-//    osThreadDef(UART_TX, UART_tx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 5);
-//    osThreadCreate (osThread(UART_TX), NULL);
-
-
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
   
@@ -157,13 +151,14 @@ static void StartThread(void const * argument)
     // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(DHCP), &gnetif);
 
-	log_msg(USER, "Before servo config.\n");
-
+    // Configure servos
     servo_config();
 
-    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 50);
+    // Start UART RX interface
+    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(UART_RX), NULL);
 
+    // Start robot arm control
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(PWM), NULL);
 
