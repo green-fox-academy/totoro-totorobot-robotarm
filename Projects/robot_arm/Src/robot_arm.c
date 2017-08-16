@@ -13,6 +13,7 @@
 /* Private functions ---------------------------------------------------------*/
 
 void string_splitter(void){
+
 	char str[] = "This a sample string1.This a sample string2.This a sample string3.\n";
 	char buff[3][50];
 	char * pch;
