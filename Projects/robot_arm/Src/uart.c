@@ -339,13 +339,20 @@ void UART_send_settings(void)
 
 		// A block statement is needed for the declaration
 		{
-
 			angles_t servo_angles;
+			double angles[SERVOS - 1];
 
+			// Convert pulse values to absolute angle
+			pulse_to_ang_abs(&servo_angles);
 
+			// Feed angles into list
+			angles[0] = servo_angles.theta0;
+			angles[1] = servo_angles.theta1;
+			angles[2] = servo_angles.theta2;
 
-				// Send value
-				sprintf((char*) TX_buffer, "Servo%d angle: %4d degrees", i, angle);
+			// Convert angles from radian to degrees and print them
+			for (int i = 0; i < SERVOS - 1; i++) {
+				sprintf((char*) TX_buffer, "Servo%d angle: %4d degrees", i, rad_to_deg(angles[i]));
 				UART_send((char*)TX_buffer);
 			}
 		}
@@ -401,23 +408,32 @@ void set_value(void)
 
 	case ANGLE:
 
-		// TODO correct 2nd joint angle
-
-		// A block statement is needed for the declaration
+		// A block statement is needed for declaration
 		{
-			// Convert degree to radians
-			double ang_rad = deg_to_rad(c_params.value);
+			angles_t joint_angles;
 
-			// Calculate pulse
-			uint32_t pulse = (uint32_t) map(ang_rad, servo_conf[c_params.device_id].min_angle_rad,
-										  servo_conf[c_params.device_id].max_angle_rad,
-										  (double) servo_conf[c_params.device_id].min_pulse,
-										  (double) servo_conf[c_params.device_id].max_pulse);
+			// Get current angles
+			pulse_to_ang_abs(&joint_angles);
 
-			// Set pulse
-			osMutexWait(servo_pulse_mutex, osWaitForever);
-			servo_pulse[c_params.device_id] = pulse;
-			osMutexRelease(servo_pulse_mutex);
+			// Update with user data
+			switch (c_params.device_id) {
+			case 0:
+				joint_angles.theta0 = deg_to_rad(c_params.value);
+				break;
+			case 0:
+				joint_angles.theta1 = deg_to_rad(c_params.value);
+				break;
+			case 0:
+				joint_angles.theta2 = deg_to_rad(c_params.value);
+				break;
+			default:
+				UART_send("Unrecognized command or value.");
+				break;
+			}
+
+			// Calculate and set pulse
+			ang_abs_to_pulse(&joint_angles);
+
 			UART_send("Set angle done.");
 		}
 		break;
