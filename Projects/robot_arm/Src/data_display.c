@@ -92,7 +92,7 @@ void lcd_data_display_thread(void const * argument)
 
 		// Print and log absolute servo angles
 		rel_to_abs_angle(&servo_angles);
-		sprintf(lcd_data_buff, "ang R:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
+		sprintf(lcd_data_buff, "ang A:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
 				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
 		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
 		log_msg(DEBUG, lcd_data_buff);

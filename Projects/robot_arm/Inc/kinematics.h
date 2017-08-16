@@ -9,9 +9,9 @@
 
 #define VERTICAL_ARM_SIZE		134	// mm
 #define HORIZONTAL_ARM_SIZE		147	// mm
-#define PLATFORM_HEIGHT			95	// mm
-#define GRIPPER_Z_DIST			17	// mm
-#define GRIPPER_R_DIST			96	// mm
+#define PLATFORM_HEIGHT			98	// mm
+#define GRIPPER_Z_DIST			10	// mm
+#define GRIPPER_R_DIST			100	// mm
 
 /* Allowed work area */
 #define WORK_AREA_MIN_X	-100
