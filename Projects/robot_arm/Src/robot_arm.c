@@ -25,6 +25,11 @@ void string_splitter(void){
 		pch = strtok(NULL, ".");
 		i++;
 	}
+
+	for (i = 0; i < 3; i++){
+	        printf ("%s\n", buff[i]);
+	        pch = strtok(buff[i], " ");
+	}
 }
 
 void socket_server_thread(void const *argument)
