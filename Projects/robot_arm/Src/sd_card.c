@@ -2,6 +2,7 @@
 #include "sd_card.h"
 #include "lcd_log.h"
 #include <string.h>
+#include "cmsis_os.h"
 
 /* Private variables ---------------------------------------------------------*/
 FATFS SDFatFs;  /* File system object for SD card logical drive */
@@ -42,17 +43,29 @@ void read_sd_card()
 	/*## Read data from the text file ###########################*/
 	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
 	LCD_UsrLog((char*) rtext);
+	LCD_UsrLog("\n");
+	osDelay(2000);
 
     char buff[3][50];
     char * pch;
-
 	pch = strtok (rtext,"\n");
-	int i = 0;
+	uint8_t i = 0;
+
 	while (pch != NULL) {
-		LCD_UsrLog ("%s\n", pch);
+		//LCD_UsrLog("%s\n", pch);
 		strcpy(buff[i], pch);
-		pch = strtok(NULL, ".");
+		pch = strtok(NULL, ";");
 		i++;
+	}
+
+	for (uint8_t j = 0; j <= i; j++) {
+		//LCD_UsrLog("%s\n", buff[j]);
+		pch = strtok(buff[j]," ");
+		while (pch != NULL) {
+			LCD_UsrLog("%s\n", pch);
+			pch = strtok(NULL, " ");
+		}
+		osDelay(5000);
 	}
 
 	/*##-9- Close the open text file #############################*/
