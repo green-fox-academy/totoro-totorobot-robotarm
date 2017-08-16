@@ -12,6 +12,14 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+void string_splitter(void){
+	char str[] = "This a sample string1.This a sample string2.This a sample string3.\n";
+	char buff[3][50];
+	char * pch;
+
+	pch = strtok(str, ".");
+	int i = 0;
+}
 
 void socket_server_thread(void const *argument)
 {
@@ -45,6 +53,10 @@ void socket_server_thread(void const *argument)
 	int slave_sock;              					// Slave socket definition, this will be used to store the incoming socket
 	char recv_buff[100];                			// Buffer for incoming and outgoing data
 	char send_buff[] = "Yeahh, I got it..";			// Buffer for feedback
+
+	struct msghdr message;
+	struct addrinfo hints;
+	hints.ai_family=AF_UNSPEC;
 
 	while (1) {
 		// Accept the connection and save the incoming socket
@@ -214,5 +226,6 @@ uint8_t get_degrees(void)
 
 	return degrees;
 }
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
