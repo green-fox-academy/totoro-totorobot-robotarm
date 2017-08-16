@@ -97,6 +97,8 @@ int main(void)
   
     /* Configure the system clock to 200 MHz */
     SystemClock_Config();
+
+    BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
   
     /* Init thread */
     osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);

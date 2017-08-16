@@ -20,8 +20,11 @@
 #include "app_ethernet.h"
 
 #include <sys/types.h>
-
 #include <inttypes.h>
+
+#include "stm32746g_discovery.h"
+#include "stm32746g_discovery_ts.h"
+#include "stm32746g_discovery_lcd.h"
 
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
 #define bcopy(b1,b2,len) (memmove((b2), (b1), (len)), (void) 0)
@@ -78,5 +81,7 @@ void udp_client_thread(void const *argument);
 void rtc_init(void);
 void rtc_set(void);
 void rtc_get_time_thread(void const * argument);
+
+TS_StateTypeDef ts_state;
 
 #endif /* __ROBOT_ARM_H_ */

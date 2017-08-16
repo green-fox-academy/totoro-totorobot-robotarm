@@ -2,13 +2,19 @@
 #include "robot_arm.h"
 
 
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+#define TS_CLICK_THRESHOLD	3
+uint8_t HID_Buffer[4];
+
+typedef struct {
+	int32_t x;
+	int32_t y;
+} coordinate_t;
 
 
 void servo_control_thread(void const * argument)
@@ -360,4 +366,72 @@ void rtc_get_time_thread(void const * argument)
 }
 }
 
+void touch_screen(void)
+{
+	BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+
+coordinate_t last_ts_coord;
+	last_ts_coord.x = 0;
+	last_ts_coord.y = 0;
+
+coordinate_t first_ts_coord;
+	first_ts_coord.x = 0;
+	first_ts_coord.y = 0;
+
+	uint8_t first_touch_detected_flag = 0;
+	uint8_t possible_click_event = 0;
+
+	/* Run Application (Interrupt mode) */
+	while (1) {
+		// Get touch screen state
+		BSP_TS_GetState(&ts_state);
+		// Reset USB HID buffer
+		HID_Buffer[0] = 0;
+		HID_Buffer[1] = 0;
+		HID_Buffer[2] = 0;
+
+		if (ts_state.touchDetected) {
+			BSP_LED_On(LED1);
+
+			if (!first_touch_detected_flag) {
+				first_touch_detected_flag = 1;
+				possible_click_event = 1;
+				last_ts_coord.x = ts_state.touchX[0];
+				last_ts_coord.y = ts_state.touchY[0];
+				first_ts_coord.x = ts_state.touchX[0];
+				first_ts_coord.y = ts_state.touchY[0];
+			} else {
+				int8_t diff_x = ts_state.touchX[0] - last_ts_coord.x;
+				int8_t diff_y = ts_state.touchY[0] - last_ts_coord.y;
+
+				HID_Buffer[1] = diff_x * 3;
+				HID_Buffer[2] = diff_y * 3;
+
+				last_ts_coord.x = ts_state.touchX[0];
+				last_ts_coord.y = ts_state.touchY[0];
+
+				// Check if the user finger left a predefined area
+				// This means that this is not a clicking, just a cursor movement
+				int32_t click_diff_x = ts_state.touchX[0] - first_ts_coord.x;
+				int32_t click_diff_y = ts_state.touchY[0] - first_ts_coord.y;
+				if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
+					possible_click_event = 0;
+
+
+			}
+		} else {
+			BSP_LED_Off(LED1);
+			first_touch_detected_flag = 0;
+			if (possible_click_event) {
+				HAL_Delay(10);
+				HID_Buffer[0] = 0b001;
+
+				HAL_Delay(10);
+				HID_Buffer[0] = 0;
+
+				possible_click_event = 0;
+			}
+		}
+	}
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
