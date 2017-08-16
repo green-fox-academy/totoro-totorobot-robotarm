@@ -50,10 +50,10 @@ void read_sd_card()
 		LCD_ErrLog((char*) "Open the file has failed.\n");
 
 	/*## Read data from the text file ###########################*/
-	LCD_UsrLog((char*)"hello1");
+	while (1) {
 	f_gets(buff, 100, &MyFile);
 	LCD_UsrLog((char*) buff);
-
+	}
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
 }
