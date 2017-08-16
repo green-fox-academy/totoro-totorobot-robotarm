@@ -11,12 +11,21 @@ char SDPath[4]; /* SD card logical drive path */
 FRESULT res;    /* FatFs function common result code */
 
 uint32_t bytesread;      				            /* File write/read counts */
-uint32_t size;
+uint64_t size;
 char wtext[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
 char btext[] = "STM1.TXT";						/* Name of the file */
-char rtext[100];                                   	/* File read buffer */
-
+char readf[] = "STM2.txt";
+char rtext[10];												/* File read buffer */
+char buff[100];
 /* Private function prototypes -----------------------------------------------*/
+int file_length(FIL* fp)
+{
+	uint32_t size;
+
+	size = sizeof(&MyFile);
+	return size;
+}
+
 void FatFs_Init()
 {
 	/*## Link the micro SD disk I/O driver ################################*/
@@ -36,40 +45,14 @@ void read_sd_card()
 	FatFs_Init();
 
 	/*## Open the text file object with read access ###############*/
-	res = f_open(&MyFile, btext, FA_READ);
+	res = f_open(&MyFile, readf, FA_READ);
 	if (res != FR_OK)
 		LCD_ErrLog((char*) "Open the file has failed.\n");
 
 	/*## Read data from the text file ###########################*/
-	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
-	LCD_UsrLog((char*) rtext);
-	LCD_UsrLog("\n");
-	LCD_UsrLog("\n");
-	osDelay(2000);
-
-	//1. line
-    char* pch;
-	pch = strtok (rtext,"\n");
-	LCD_UsrLog("%s\n", pch);
-	osDelay(2000);
-
-	//2. line
-	pch = strtok (rtext,"\n");
-	LCD_UsrLog("%s\n", pch);
-	osDelay(2000);
-	pch = strtok (rtext,"\n");
-	LCD_UsrLog("%s\n", pch);
-
-	//3. line
-
-	/*uint8_t i = 0;
-
-	while (pch != NULL) {
-
-		strcpy(buff[i], pch);
-		pch = strtok(NULL, ";");
-		i++;
-	}*/
+	LCD_UsrLog((char*)"hello1");
+	f_gets(buff, 100, &MyFile);
+	LCD_UsrLog((char*) buff);
 
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
