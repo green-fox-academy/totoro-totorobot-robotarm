@@ -17,6 +17,7 @@ char btext[] = "STM1.TXT";						/* Name of the file */
 char readf[] = "STM2.txt";
 char rtext[10];												/* File read buffer */
 char buff[100];
+char tomb[10];
 /* Private function prototypes -----------------------------------------------*/
 int file_length(FIL* fp)
 {
@@ -53,11 +54,12 @@ void read_sd_card()
 	f_gets(buff, 100, &MyFile);
 	LCD_UsrLog((char*) buff);
 	//char str[] = "This a sample string";
+
 	char* pch;
 	pch = strtok (buff," ");
 	while (pch != NULL) {
 		LCD_UsrLog("%s\n", pch);
-		pch = strtok(NULL, " ");
+		pch = strtok(NULL, " XY");
 	}
 
 	/*while (1) {
