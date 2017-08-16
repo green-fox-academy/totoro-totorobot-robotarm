@@ -27,7 +27,7 @@ int16_t rad_to_deg(double rad)
 void abs_to_rel_angle(angles_t* joint_angles)
 {
 	double gamma = joint_angles->theta2;
-	joint_angles->theta2 = joint_angles->theta1 + gamma;
+	joint_angles->theta2 = gamma - joint_angles->theta1;
 
 	return;
 }

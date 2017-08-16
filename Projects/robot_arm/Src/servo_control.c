@@ -382,7 +382,7 @@ void pulse_to_ang_rel(angles_t* joint_angles)
 		// We need to adjust the value, to get the angle compared to the XY-plane
 		servo_angles.theta2 += servo_angles.theta1;
 
-void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
+void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 {
 	coord_polar_t pos_polar;
 
@@ -394,3 +394,17 @@ void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 
 	return;
 }
+
+void ang_abs_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
+{
+	coord_polar_t pos_polar;
+
+	// Calculate position in polar coordinates
+	calc_forward_kinematics(joint_angles, &pos_polar);
+
+	// Convert polar coordinates to xyz
+	polar_to_cart(&pos_polar, pos_cart);
+
+	return;
+}
+

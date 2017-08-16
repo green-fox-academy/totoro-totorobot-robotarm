@@ -139,8 +139,12 @@ void stop_adc_thread(void);
 void adc_thread(void const * argument);
 double map(double input, double min_in, double max_in, double min_out, double max_out);
 void xyz_to_pulse(coord_cart_t* pos_cart);
-void pulse_to_ang(angles_t* joint_angles);
-void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 void pulse_to_xyz(coord_cart_t* pos_cart);
+void pulse_to_ang_rel(angles_t* joint_angles);
+void pulse_to_ang_abs(angles_t* joint_angles);
+void ang_rel_to_pulse(angles_t* joint_angles);
+void ang_abs_to_pulse(angles_t* joint_angles);
+void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
+void ang_abs_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 
 #endif /* __SERVO_CONTROL_H_ */
