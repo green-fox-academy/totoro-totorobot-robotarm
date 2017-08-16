@@ -54,12 +54,15 @@ void read_sd_card()
 	f_gets(buff, 100, &MyFile);
 	LCD_UsrLog((char*) buff);
 	//char str[] = "This a sample string";
-
+	uint8_t i = 0;
 	char* pch;
 	pch = strtok (buff," ");
 	while (pch != NULL) {
+		tomb[i] = pch;
+		LCD_UsrLog("%d: %s\n", i, pch);
 		LCD_UsrLog("%s\n", pch);
 		pch = strtok(NULL, " XY");
+		i++;
 	}
 
 	/*while (1) {
