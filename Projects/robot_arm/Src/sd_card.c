@@ -1,6 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "sd_card.h"
 #include "lcd_log.h"
+#include <string.h>
 
 /* Private variables ---------------------------------------------------------*/
 FATFS SDFatFs;  /* File system object for SD card logical drive */
@@ -41,14 +42,18 @@ void read_sd_card()
 	/*## Read data from the text file ###########################*/
 	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
 	LCD_UsrLog((char*) rtext);
-	char* pch;
-	int i = 1;
+
+    char buff[3][50];
+    char * pch;
+
 	pch = strtok (rtext,"\n");
+	int i = 0;
 	while (pch != NULL) {
-		LCD_UsrLog("%d: %s\n", i, pch);
-	    pch = strtok (NULL, "\n");
-	    i++;
-	    }
+		LCD_UsrLog ("%s\n", pch);
+		strcpy(buff[i], pch);
+		pch = strtok(NULL, ".");
+		i++;
+	}
 
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
