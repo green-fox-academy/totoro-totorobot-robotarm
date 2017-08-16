@@ -44,29 +44,32 @@ void read_sd_card()
 	f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
 	LCD_UsrLog((char*) rtext);
 	LCD_UsrLog("\n");
+	LCD_UsrLog("\n");
 	osDelay(2000);
 
-    char buff[3][50];
-    char * pch;
+	//1. line
+    char* pch;
 	pch = strtok (rtext,"\n");
-	uint8_t i = 0;
+	LCD_UsrLog("%s\n", pch);
+	osDelay(2000);
+
+	//2. line
+	pch = strtok (rtext,"\n");
+	LCD_UsrLog("%s\n", pch);
+	osDelay(2000);
+	pch = strtok (rtext,"\n");
+	LCD_UsrLog("%s\n", pch);
+
+	//3. line
+
+	/*uint8_t i = 0;
 
 	while (pch != NULL) {
-		//LCD_UsrLog("%s\n", pch);
+
 		strcpy(buff[i], pch);
 		pch = strtok(NULL, ";");
 		i++;
-	}
-
-	for (uint8_t j = 0; j <= i; j++) {
-		//LCD_UsrLog("%s\n", buff[j]);
-		pch = strtok(buff[j]," ");
-		while (pch != NULL) {
-			LCD_UsrLog("%s\n", pch);
-			pch = strtok(NULL, " ");
-		}
-		osDelay(5000);
-	}
+	}*/
 
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
