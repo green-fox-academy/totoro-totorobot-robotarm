@@ -299,13 +299,34 @@ void xyz_to_pulse(coord_cart_t* pos_cart)
 	// Convert xyz to polar coordinates
 	cart_to_polar(pos_cart, &pos_polar);
 
-	// Calculate servo angles
+	// Calculate relative servo angles
 	calc_inverse_kinematics(&pos_polar, &joint_angles);
 
-	// TODO: correct for joint 2
-	angles[0] = joint_angles.theta0;
-	angles[1] = joint_angles.theta1;
-	angles[2] = joint_angles.theta2;
+	// Calculate and set pulse
+	ang_rel_to_pulse(&joint_angles);
+
+	return;
+}
+
+void pulse_to_xyz(coord_cart_t* pos_cart)
+{
+	angles_t joint_angles;
+
+	pulse_to_ang_abs(&joint_angles);
+	ang_abs_to_xyz(&joint_angles, pos_cart);
+
+	return;
+}
+
+void ang_abs_to_pulse(angles_t* joint_angles)
+{
+	uint32_t pulse_width[SERVOS - 1];
+	double angles[SERVOS - 1];
+
+	// Feed angles into array
+	angles[0] = joint_angles->theta0;
+	angles[1] = joint_angles->theta1;
+	angles[2] = joint_angles->theta2;
 
 	// Calculate pulse width values
 	for (int i = 0; i < SERVOS - 1; i++) {
@@ -323,12 +344,13 @@ void xyz_to_pulse(coord_cart_t* pos_cart)
 	return;
 }
 
-void pulse_to_xyz(coord_cart_t* pos_cart)
+void ang_rel_to_pulse(angles_t* joint_angles)
 {
-	angles_t joint_angles;
+	// Convert angles from relative to absolute values
+	rel_to_abs_angle(joint_angles);
 
-	pulse_to_ang(&joint_angles);
-	ang_to_xyz(&joint_angles, pos_cart);
+	// Calculate and set pulse
+	ang_abs_to_pulse(joint_angles);
 
 	return;
 }
@@ -356,6 +378,11 @@ void pulse_to_ang_abs(angles_t* joint_angles)
 						 servo_conf[i].min_angle_rad, servo_conf[i].max_angle_rad);
 	}
 
+	// Feed angles into structure
+	joint_angles->theta0 = ang_rad[0];
+	joint_angles->theta1 = ang_rad[1];
+	joint_angles->theta2 = ang_rad[2];
+
 	return;
 }
 
@@ -366,21 +393,14 @@ void pulse_to_ang_rel(angles_t* joint_angles)
 	 * i.e. measured to the previous link
 	 */
 
-	// Calculate absolut angles
+	// Calculate absolute angles
 	pulse_to_ang_abs(joint_angles);
 
-	// Correct for Theta2 between link1 and link2
-	joint_angles->theta2 -= joint_angles->theta1;
+	// Convert angles to relative
+	abs_to_rel_angle(joint_angles);
 
 	return;
 }
-
-// Calculate angles
-		pulse_to_ang(&servo_angles);
-
-		// Theta2 is the angle between link1 and link2.
-		// We need to adjust the value, to get the angle compared to the XY-plane
-		servo_angles.theta2 += servo_angles.theta1;
 
 void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 {
@@ -397,13 +417,11 @@ void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 
 void ang_abs_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 {
-	coord_polar_t pos_polar;
+	// Convert absolute angles to relative
+	abs_to_rel_angle(joint_angles);
 
-	// Calculate position in polar coordinates
-	calc_forward_kinematics(joint_angles, &pos_polar);
-
-	// Convert polar coordinates to xyz
-	polar_to_cart(&pos_polar, pos_cart);
+	// Calculate xyz from relative angles
+	ang_rel_to_xyz(joint_angles, pos_cart);
 
 	return;
 }
