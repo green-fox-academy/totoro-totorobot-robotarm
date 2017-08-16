@@ -420,10 +420,10 @@ void set_value(void)
 			case 0:
 				joint_angles.theta0 = deg_to_rad(c_params.value);
 				break;
-			case 0:
+			case 1:
 				joint_angles.theta1 = deg_to_rad(c_params.value);
 				break;
-			case 0:
+			case 2:
 				joint_angles.theta2 = deg_to_rad(c_params.value);
 				break;
 			default:
