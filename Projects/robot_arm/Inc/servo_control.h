@@ -16,7 +16,7 @@
 
 // PWM D3 PB4 TIM3_CH1
 // ADC A0 PA0 ADC3_IN0
-// 0 degre @ 5165
+// 0 deg @ 5165
 #define SERVO0_INST			TIM3
 #define SERVO0_PERIOD		0xffff
 #define SERVO0_PRESCALER	30
@@ -35,7 +35,7 @@
 
 // PWM D6 PH6 TIM12_CH1
 // ADC A1 PF10 ADC3_IN8
-// 90 degree @ 5063
+// 90 deg @ 5063
 #define SERVO1_INST			TIM12
 #define SERVO1_PERIOD		0xffff
 #define SERVO1_PRESCALER	30
@@ -54,7 +54,7 @@
 
 // PWM D9 PA15 TIM2_CH1
 // ADC A2 PF9 ADC3_IN7
-// 0 degree @ 5490
+// 0 deg @ 5490
 #define SERVO2_INST			TIM2
 #define SERVO2_PERIOD		0xffff
 #define SERVO2_PRESCALER	30

@@ -48,8 +48,8 @@ double r3;	// Distance between joint3 and base R point of gripper
 void kinematics_conf(void);
 double deg_to_rad(int16_t deg);
 int16_t rad_to_deg(double rad);
-double abs_to_rel_angle(double angle);
-double rel_to_abs_angle(double angle);
+void abs_to_rel_angle(angles_t* joint_angles);
+void rel_to_abs_angle(angles_t* joint_angles);
 void polar_to_cart(coord_polar_t* pos_polar, coord_cart_t* pos_cart);
 void cart_to_polar(coord_cart_t* pos_cart, coord_polar_t* pos_polar);
 void calc_forward_kinematics(angles_t* joint_angles, coord_polar_t* pos_polar);

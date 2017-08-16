@@ -333,8 +333,13 @@ void pulse_to_xyz(coord_cart_t* pos_cart)
 	return;
 }
 
-void pulse_to_ang(angles_t* joint_angles)
+void pulse_to_ang_abs(angles_t* joint_angles)
 {
+	/*
+	 * This function calculates absolute angles, i.e.
+	 * they are measured to the XY plane
+	 */
+
 	uint32_t pulse_width[SERVOS - 1];
 	double ang_rad[SERVOS - 1];
 
@@ -351,18 +356,31 @@ void pulse_to_ang(angles_t* joint_angles)
 						 servo_conf[i].min_angle_rad, servo_conf[i].max_angle_rad);
 	}
 
-	// TODO correct for joint2
+	return;
+}
 
-	// When calculating angle from pulse values, it is always measured
-	// to the xy plane. Fot positioning Theta2 should be the angle of difference
-	// between link1 anf link2.
-	joint_angles->theta0 = ang_rad[0];
-	joint_angles->theta1 = ang_rad[1];
-	joint_angles->theta2 = ang_rad[2];
+void pulse_to_ang_rel(angles_t* joint_angles)
+{
+	/*
+	 * This function calculates the relative angles
+	 * i.e. measured to the previous link
+	 */
+
+	// Calculate absolut angles
+	pulse_to_ang_abs(joint_angles);
+
+	// Correct for Theta2 between link1 and link2
 	joint_angles->theta2 -= joint_angles->theta1;
 
 	return;
 }
+
+// Calculate angles
+		pulse_to_ang(&servo_angles);
+
+		// Theta2 is the angle between link1 and link2.
+		// We need to adjust the value, to get the angle compared to the XY-plane
+		servo_angles.theta2 += servo_angles.theta1;
 
 void ang_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 {

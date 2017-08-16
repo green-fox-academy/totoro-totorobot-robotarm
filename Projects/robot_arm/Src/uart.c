@@ -336,22 +336,18 @@ void UART_send_settings(void)
 		break;
 
 	case ANGLE:
-		for (int i = 0; i < SERVOS; i++) {
-			// Get pulse value from global storage
-			osMutexWait(servo_pulse_mutex, osWaitForever);
-			uint32_t pulse = servo_pulse[i];
-			osMutexRelease(servo_pulse_mutex);
 
-			// TODO check angle calculation
+		// A block statement is needed for the declaration
+		{
 
-			// Calculate angle
-			uint8_t angle = (uint8_t) map((double) pulse, (double) servo_conf[i].min_pulse,
-					(double) servo_conf[i].max_pulse, (double) servo_conf[i].min_angle_deg,
-					(double) servo_conf[i].max_angle_deg);
+			angles_t servo_angles;
 
-			// Send value
-			sprintf((char*) TX_buffer, "Servo%d angle: %4d degrees", i, angle);
-			UART_send((char*)TX_buffer);
+
+
+				// Send value
+				sprintf((char*) TX_buffer, "Servo%d angle: %4d degrees", i, angle);
+				UART_send((char*)TX_buffer);
+			}
 		}
 		break;
 
