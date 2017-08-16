@@ -18,7 +18,7 @@ void string_splitter(void){
 	char * pch;
 
 	pch = strtok(str, ".");
-	int i = 0;
+	uint8_t i = 0;
 
 	while (pch != NULL) {
 		strcpy(buff[i], pch);
@@ -29,6 +29,10 @@ void string_splitter(void){
 	for (i = 0; i < 3; i++){
 	        printf ("%s\n", buff[i]);
 	        pch = strtok(buff[i], " ");
+	        while (pch != NULL) {
+	            printf("%s\n", pch);
+	            pch = strtok(NULL, " ");
+	        }
 	}
 }
 
