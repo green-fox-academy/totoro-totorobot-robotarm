@@ -15,9 +15,7 @@ void start_lcd_data_display(void)
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_SetFont(&Font20);
 	BSP_LCD_DisplayStringAtLine(1, (uint8_t*) "  TotoRobot runtime parameters   ");
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-	BSP_LCD_DisplayStringAtLine(3, (uint8_t*) "Coordinates");
-	BSP_LCD_DisplayStringAtLine(7, (uint8_t*) "       Serv0  Serv1  Serv2  Serv3");
+	BSP_LCD_DisplayStringAtLine(6, (uint8_t*) "       Serv0  Serv1  Serv2  Serv3");
 
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
@@ -66,15 +64,11 @@ void lcd_data_display_thread(void const * argument)
 		}
 		osMutexRelease(servo_pulse_mutex);
 
-		// Calculate angles
-		pulse_to_ang(&servo_angles);
-
-		// Theta2 is the angle between link1 and link2.
-		// We need to adjust the value, to get the angle compared to the XY-plane
-		servo_angles.theta2 += servo_angles.theta1;
+		// Calculate relative angles
+		pulse_to_ang_rel(&servo_angles);
 
 		// Calculate XYZ
-		ang_to_xyz(&servo_angles, &arm_position);
+		ang_rel_to_xyz(&servo_angles, &arm_position);
 
 		// Get ADC data
 		osMutexWait(servo_adc_mutex, osWaitForever);
@@ -86,12 +80,19 @@ void lcd_data_display_thread(void const * argument)
 		// Print and log coordinates
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
-		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
+		BSP_LCD_DisplayStringAtLine(4, (uint8_t*) lcd_data_buff);
 		log_msg(DEBUG, lcd_data_buff);
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
-		// Print and log servo angles
-		sprintf(lcd_data_buff, "angle:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
+		// Print and log relative servo angles
+		sprintf(lcd_data_buff, "ang R:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
+				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
+		BSP_LCD_DisplayStringAtLine(8, (uint8_t*) lcd_data_buff);
+		log_msg(DEBUG, lcd_data_buff);
+
+		// Print and log absolute servo angles
+		rel_to_abs_angle(&servo_angles);
+		sprintf(lcd_data_buff, "ang R:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
 				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
 		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
 		log_msg(DEBUG, lcd_data_buff);
