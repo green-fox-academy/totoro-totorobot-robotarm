@@ -1,6 +1,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "robot_arm.h"
-
+#include "stm32746g_discovery.h"
+#include "stm32746g_discovery_ts.h"
+#include "stm32746g_discovery_lcd.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -358,7 +360,7 @@ void rtc_get_time_thread(void const * argument)
 	sprintf(text,"%.2d:%.2d:%.2d %.4d", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds, timeStruct.SubSeconds);
 	sprintf(text_1,"%.4d-%.2d-%.2d", dateStruct.Year + 1900, dateStruct.Month + 1, dateStruct.Date);
 	LCD_UsrLog("Time: %s %s\n", text_1, text);
-	osDelay(800);
+	osDelay(30);
 	}
 	while (1) {
 		/* Delete the Init Thread */
@@ -366,15 +368,27 @@ void rtc_get_time_thread(void const * argument)
 }
 }
 
-void touch_screen(void)
+void touch_screen_thread(void const * argument)
 {
-	BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+/*	TS_StateTypeDef TS_State;
+	LCD_UsrLog("ehehehehe\n");
 
-coordinate_t last_ts_coord;
+	while (1) {
+		BSP_TS_GetState(&TS_State);
+		if (TS_State.touchDetected) {
+			BSP_LED_On(LED1);
+			BSP_LCD_FillCircle(TS_State.touchX[0], TS_State.touchY[0]);
+		} else
+		BSP_LED_Off(LED1);
+	}*/
+
+	TS_StateTypeDef ts_state;
+
+	coordinate_t last_ts_coord;
 	last_ts_coord.x = 0;
 	last_ts_coord.y = 0;
 
-coordinate_t first_ts_coord;
+	coordinate_t first_ts_coord;
 	first_ts_coord.x = 0;
 	first_ts_coord.y = 0;
 
@@ -390,7 +404,9 @@ coordinate_t first_ts_coord;
 		HID_Buffer[1] = 0;
 		HID_Buffer[2] = 0;
 
-		if (ts_state.touchDetected) {
+		osDelay(100);
+
+		if (ts_state.touchDetected == 1) {
 			BSP_LED_On(LED1);
 
 			if (!first_touch_detected_flag) {
@@ -417,16 +433,26 @@ coordinate_t first_ts_coord;
 				if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 					possible_click_event = 0;
 
-
+				char position[100];
+				int8_t cor_x = click_diff_x;
+				int8_t cor_y = click_diff_y;
+				sprintf(position,"%d - %d", cor_x, cor_y);
+				LCD_UsrLog("%s\n", position);
 			}
+
+		//	BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0]);
+			char position[100];
+			int8_t cor_x = HID_Buffer[1];
+			int8_t cor_y = HID_Buffer[2];
+			sprintf(position,"%d - %d", cor_x, cor_y);
+			LCD_UsrLog("%s\n", position);
+
 		} else {
 			BSP_LED_Off(LED1);
 			first_touch_detected_flag = 0;
 			if (possible_click_event) {
 				HAL_Delay(10);
 				HID_Buffer[0] = 0b001;
-
-				HAL_Delay(10);
 				HID_Buffer[0] = 0;
 
 				possible_click_event = 0;
@@ -434,4 +460,5 @@ coordinate_t first_ts_coord;
 		}
 	}
 }
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

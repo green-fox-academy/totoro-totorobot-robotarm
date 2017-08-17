@@ -84,4 +84,6 @@ void rtc_get_time_thread(void const * argument);
 
 TS_StateTypeDef ts_state;
 
+void touch_screen_thread(void const * argument);
+
 #endif /* __ROBOT_ARM_H_ */

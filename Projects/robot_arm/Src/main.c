@@ -136,21 +136,23 @@ static void StartThread(void const * argument)
 
    //Enable for networking
    //Start DHCPClient
-   osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-     osThreadCreate (osThread(DHCP), &gnetif);
-     osDelay(1000);
+   /* osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	osThreadCreate (osThread(DHCP), &gnetif);
+	osDelay(1000);*/
 
     /*osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(SERVO_CONTROL), NULL);*/
 
-	osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	/*osThreadDef(udp_client, udp_client_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
 	osThreadCreate (osThread(udp_client), NULL);
 	osDelay(4000);
 
 	LCD_UsrLog("eddig meg jo");
 	osThreadDef(rtc_get_time, rtc_get_time_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-	osThreadCreate (osThread(rtc_get_time), NULL);
+	osThreadCreate (osThread(rtc_get_time), NULL);*/
 
+	osThreadDef(touch_screen, touch_screen_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	osThreadCreate (osThread(touch_screen), &gnetif);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 
@@ -195,6 +197,9 @@ static void Netif_Config(void)
   */
 static void BSP_Config(void)
 {
+	/* Configure LED1 */
+	BSP_LED_Init(LED1);
+
     /* Initialize the LCD */
     BSP_LCD_Init();
   
