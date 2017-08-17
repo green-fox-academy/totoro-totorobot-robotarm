@@ -2,6 +2,7 @@
 #include "sd_card.h"
 #include "lcd_log.h"
 #include <string.h>
+#include <stdlib.h>
 #include "cmsis_os.h"
 
 /* Private variables ---------------------------------------------------------*/
@@ -56,12 +57,24 @@ void read_sd_card()
 	//char str[] = "This a sample string";
 	uint8_t i = 0;
 	char* pch;
-	pch = strtok (buff," ");
+	pch = strtok(buff," G");
+	LCD_UsrLog("%s\n", pch);
 	while (pch != NULL) {
-		tomb[i] = pch;
+		if (i == 0) {
+			raw_G_code.G_code = atoi(pch);
+			LCD_UsrLog("raw_G_code.G_code: %d\n", raw_G_code.G_code);
+		} else if (i == 1) {
+			raw_G_code.x_param = atof(pch);
+			LCD_UsrLog("raw_G_code.x_param: %f\n", raw_G_code.x_param);
+		} else if (i == 2) {
+			raw_G_code.y_param = atof(pch);
+			LCD_UsrLog("raw_G_code.y_param: %f\n", raw_G_code.y_param);
+		} else {
+			raw_G_code.e_param = atof(pch);
+			LCD_UsrLog("raw_G_code.e_param: %f\n", raw_G_code.e_param);
+		}
 		LCD_UsrLog("%d: %s\n", i, pch);
-		LCD_UsrLog("%s\n", pch);
-		pch = strtok(NULL, " XY");
+		pch = strtok(NULL, " XYE");
 		i++;
 	}
 

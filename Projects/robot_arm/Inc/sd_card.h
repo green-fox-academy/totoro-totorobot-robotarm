@@ -10,6 +10,15 @@
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
 
+typedef struct {
+	uint8_t G_code;
+	double x_param;
+	double y_param;
+	double e_param;
+} G_code_struct_t;
+
+G_code_struct_t raw_G_code;
+
 void FatFs_Init();
 void write_sd_card();
 void read_sd_card();
