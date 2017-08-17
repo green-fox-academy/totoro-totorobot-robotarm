@@ -36,12 +36,12 @@ typedef struct {
 uart_command_struct_t c_params;
 UART_HandleTypeDef uart_handle;
 
-uint8_t char_buff;
+volatile uint8_t char_buff;
 uint8_t TX_buffer[TXBUFFERSIZE];
-circular_buffer_t RX_buffer;
+volatile circular_buffer_t RX_buffer;
 uint8_t command_buffer[RXBUFFERSIZE];
 
-uint8_t command_in;
+volatile uint8_t command_in;
 
 extern uint8_t adc_on;
 extern uint8_t lcd_data_display_on;

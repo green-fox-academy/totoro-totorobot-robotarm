@@ -56,6 +56,7 @@ void lcd_data_display_thread(void const * argument)
 		angles_t servo_angles;
 		uint32_t adc[SERVOS];
 		coord_cart_t arm_position;
+		coord_polar_t arm_polar;
 
 		// Get PWM values
 		osMutexWait(servo_pulse_mutex, osWaitForever);
@@ -67,6 +68,9 @@ void lcd_data_display_thread(void const * argument)
 		// Calculate relative angles
 		pulse_to_ang_rel(&servo_angles);
 
+		// Calculate polar coordinates
+		calc_forward_kinematics(&servo_angles, &arm_polar);
+
 		// Calculate XYZ
 		ang_rel_to_xyz(&servo_angles, &arm_position);
 
@@ -77,12 +81,17 @@ void lcd_data_display_thread(void const * argument)
 		}
 		osMutexRelease(servo_adc_mutex);
 
+		// Print and log polar coordinates
+		sprintf(lcd_data_buff, "      R: %3d  A: %3d  Z: %3d  ", (int16_t) arm_polar.r, (int16_t) rad_to_deg(arm_polar.angle), (int16_t) arm_polar.z);
+		BSP_LCD_DisplayStringAtLine(3, (uint8_t*) lcd_data_buff);
+		log_msg(DEBUG, lcd_data_buff);
+
 		// Print and log coordinates
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		sprintf(lcd_data_buff, "   X: %3d  Y: %3d  Z: %3d", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
+		sprintf(lcd_data_buff, "      X: %3d  Y: %3d  Z: %3d  ", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
 		BSP_LCD_DisplayStringAtLine(4, (uint8_t*) lcd_data_buff);
-		log_msg(DEBUG, lcd_data_buff);
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+		log_msg(DEBUG, lcd_data_buff);
 
 		// Print and log relative servo angles
 		sprintf(lcd_data_buff, "ang R:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
@@ -91,10 +100,12 @@ void lcd_data_display_thread(void const * argument)
 		log_msg(DEBUG, lcd_data_buff);
 
 		// Print and log absolute servo angles
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		rel_to_abs_angle(&servo_angles);
 		sprintf(lcd_data_buff, "ang A:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
 				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
 		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 		log_msg(DEBUG, lcd_data_buff);
 
 		// Print and log pulse values

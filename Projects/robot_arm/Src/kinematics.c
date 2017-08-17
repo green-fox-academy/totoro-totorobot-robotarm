@@ -62,7 +62,7 @@ void cart_to_polar(coord_cart_t* pos_cart, coord_polar_t* pos_polar)
 	pos_polar->r = sqrt(pow(pos_cart->x, 2.0) + pow(pos_cart->y, 2.0));
 
 	// Calculate angle
-	pos_polar->angle = atan2(pos_cart->x, pos_cart->y);
+	pos_polar->angle = atan2(pos_cart->y, pos_cart->x);
 
 	// Calculate coord Z
 	pos_polar->z = pos_cart->z;
