@@ -52,13 +52,17 @@ void read_sd_card()
 		LCD_ErrLog((char*) "Open the file has failed.\n");
 
 	/*## Read data from the text file ###########################*/
-	f_gets(buff, 100, &MyFile);
-	LCD_UsrLog((char*) buff);
-	//char str[] = "This a sample string";
-	uint8_t i = 0;
+	int boolean = 0;
 	char* pch;
-	pch = strtok(buff," G");
+	while (boolean == 0) {
+		f_gets(buff, 100, &MyFile);
+		LCD_UsrLog((char*) buff);
+		pch = strtok(buff," ");
+		if (buff[0] == 'G')
+			boolean = 1;
+	}
 	LCD_UsrLog("%s\n", pch);
+	uint8_t i = 0;
 	while (pch != NULL) {
 		if (i == 0) {
 			raw_G_code.G_code = atoi(pch);
