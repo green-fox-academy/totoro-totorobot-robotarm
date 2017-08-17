@@ -56,28 +56,23 @@ void read_sd_card()
 	char* pch;
 	while (boolean == 0) {
 		f_gets(buff, 100, &MyFile);
-		LCD_UsrLog((char*) buff);
-		pch = strtok(buff," ");
-		if (buff[0] == 'G')
+		if (buff[0] == 'G') {
 			boolean = 1;
+			LCD_UsrLog((char*) buff);
+		}
+		pch = strtok(buff," ");
 	}
-	LCD_UsrLog("%s\n", pch);
 	uint8_t i = 0;
 	while (pch != NULL) {
 		if (i == 0) {
 			raw_G_code.G_code = atoi(pch);
-			LCD_UsrLog("raw_G_code.G_code: %d\n", raw_G_code.G_code);
 		} else if (i == 1) {
 			raw_G_code.x_param = atof(pch);
-			LCD_UsrLog("raw_G_code.x_param: %f\n", raw_G_code.x_param);
 		} else if (i == 2) {
 			raw_G_code.y_param = atof(pch);
-			LCD_UsrLog("raw_G_code.y_param: %f\n", raw_G_code.y_param);
 		} else {
 			raw_G_code.e_param = atof(pch);
-			LCD_UsrLog("raw_G_code.e_param: %f\n", raw_G_code.e_param);
 		}
-		LCD_UsrLog("%d: %s\n", i, pch);
 		pch = strtok(NULL, " XYE");
 		i++;
 	}
