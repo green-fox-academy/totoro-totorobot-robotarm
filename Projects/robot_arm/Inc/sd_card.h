@@ -35,6 +35,11 @@ uint8_t http_log_level;
 uint8_t sd_logger_on;
 uint8_t lcd_logger_on;
 
+static FATFS SDFatFs;  		/* File system object for SD card logical drive */
+static char sd_path[4]; 	/* SD card logical drive path */
+static uint32_t bytesread;  /* File write/read counts */
+static char rtext[100];     /* File read buffer */
+
 char msg_log[100];
 char logfile_name[100];
 
