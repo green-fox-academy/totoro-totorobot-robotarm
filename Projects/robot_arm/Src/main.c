@@ -139,10 +139,16 @@ static void StartThread(void const * argument)
 
     /*
     osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(SERVO_CONTROL), NULL);*/
+    osThreadCreate (osThread(SERVO_CONTROL), NULL);
+    */
 
+    /*
     osThreadDef(SOCKET_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(SOCKET_SERVER), NULL);
+    */
+
+    osThreadDef(TOUCH, touch_screen_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(TOUCH), NULL);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 
@@ -187,7 +193,9 @@ static void Netif_Config(void)
   */
 static void BSP_Config(void)
 {
-    /* Initialize the LCD */
+	BSP_LED_Init(LED1);
+
+	/* Initialize the LCD */
     BSP_LCD_Init();
   
     /* Initialize the LCD Layers */
