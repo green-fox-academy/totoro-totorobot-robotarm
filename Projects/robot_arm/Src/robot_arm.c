@@ -370,27 +370,15 @@ void rtc_get_time_thread(void const * argument)
 
 void touch_screen_thread(void const * argument)
 {
-/*	TS_StateTypeDef TS_State;
-	LCD_UsrLog("ehehehehe\n");
-
-	while (1) {
-		BSP_TS_GetState(&TS_State);
-		if (TS_State.touchDetected) {
-			BSP_LED_On(LED1);
-			BSP_LCD_FillCircle(TS_State.touchX[0], TS_State.touchY[0]);
-		} else
-		BSP_LED_Off(LED1);
-	}*/
-
 	TS_StateTypeDef ts_state;
 
 	coordinate_t last_ts_coord;
 	last_ts_coord.x = 0;
-	last_ts_coord.y = 0;
+	last_ts_coord.y = 0 - 272;
 
 	coordinate_t first_ts_coord;
 	first_ts_coord.x = 0;
-	first_ts_coord.y = 0;
+	first_ts_coord.y = 0 - 272;
 
 	uint8_t first_touch_detected_flag = 0;
 	uint8_t possible_click_event = 0;
@@ -399,6 +387,9 @@ void touch_screen_thread(void const * argument)
 	while (1) {
 		// Get touch screen state
 		BSP_TS_GetState(&ts_state);
+
+		//ts_state.touchY[0] -= 272;
+
 		// Reset USB HID buffer
 		HID_Buffer[0] = 0;
 		HID_Buffer[1] = 0;
@@ -434,22 +425,18 @@ void touch_screen_thread(void const * argument)
 					possible_click_event = 0;
 
 				char position[1000];
-				int8_t cor_x = click_diff_x;
-				int8_t cor_y = click_diff_y;
+				int16_t cor_x = ts_state.touchX[0];
+				int16_t cor_y = ts_state.touchY[0];
 				sprintf(position,"%d - %d", cor_x, cor_y);
 				LCD_UsrLog("%s\n", position);
 			}
 
-		//	BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0]);
-		/*	char position[100];
-			uint16_t cor_x = HID_Buffer[1];
-			uint16_t cor_y = HID_Buffer[2];
-			sprintf(position,"%d - %d", cor_x, cor_y);
-			LCD_UsrLog("%s\n", position);*/
+
+			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 
 		} else {
 			BSP_LED_Off(LED1);
-			first_touch_detected_flag = 0;
+			//first_touch_detected_flag = 0;
 			if (possible_click_event) {
 				HAL_Delay(10);
 				HID_Buffer[0] = 0b001;
