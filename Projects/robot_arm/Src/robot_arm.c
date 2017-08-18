@@ -404,7 +404,7 @@ void touch_screen_thread(void const * argument)
 		HID_Buffer[1] = 0;
 		HID_Buffer[2] = 0;
 
-		osDelay(100);
+		osDelay(10);
 
 		if (ts_state.touchDetected == 1) {
 			BSP_LED_On(LED1);
@@ -433,7 +433,7 @@ void touch_screen_thread(void const * argument)
 				if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 					possible_click_event = 0;
 
-				char position[100];
+				char position[1000];
 				int8_t cor_x = click_diff_x;
 				int8_t cor_y = click_diff_y;
 				sprintf(position,"%d - %d", cor_x, cor_y);
@@ -441,11 +441,11 @@ void touch_screen_thread(void const * argument)
 			}
 
 		//	BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0]);
-			char position[100];
-			int8_t cor_x = HID_Buffer[1];
-			int8_t cor_y = HID_Buffer[2];
+		/*	char position[100];
+			uint16_t cor_x = HID_Buffer[1];
+			uint16_t cor_y = HID_Buffer[2];
 			sprintf(position,"%d - %d", cor_x, cor_y);
-			LCD_UsrLog("%s\n", position);
+			LCD_UsrLog("%s\n", position);*/
 
 		} else {
 			BSP_LED_Off(LED1);
