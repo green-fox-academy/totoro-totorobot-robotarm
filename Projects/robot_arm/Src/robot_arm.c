@@ -374,11 +374,11 @@ void touch_screen_thread(void const * argument)
 
 	coordinate_t last_ts_coord;
 	last_ts_coord.x = 0;
-	last_ts_coord.y = 0 - 272;
+	last_ts_coord.y = 0;
 
 	coordinate_t first_ts_coord;
 	first_ts_coord.x = 0;
-	first_ts_coord.y = 0 - 272;
+	first_ts_coord.y = 0;
 
 	uint8_t first_touch_detected_flag = 0;
 	uint8_t possible_click_event = 0;
@@ -426,11 +426,10 @@ void touch_screen_thread(void const * argument)
 
 				char position[1000];
 				int16_t cor_x = ts_state.touchX[0];
-				int16_t cor_y = ts_state.touchY[0];
+				int16_t cor_y = abs(ts_state.touchY[0] - 272);
 				sprintf(position,"%d - %d", cor_x, cor_y);
 				LCD_UsrLog("%s\n", position);
 			}
-
 
 			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 
