@@ -388,8 +388,6 @@ void touch_screen_thread(void const * argument)
 		// Get touch screen state
 		BSP_TS_GetState(&ts_state);
 
-		//ts_state.touchY[0] -= 272;
-
 		// Reset USB HID buffer
 		HID_Buffer[0] = 0;
 		HID_Buffer[1] = 0;
@@ -406,13 +404,13 @@ void touch_screen_thread(void const * argument)
 
 			BSP_LED_On(LED1);
 
-			if ((7 > ts_state.touchX[0]) || (265 < ts_state.touchY[0])) {
+			if ((7 > ts_state.touchX[0]) || (7 > ts_state.touchY[0])) {
 				ts_state.touchX[0] = 7;
 				ts_state.touchY[0] = 265;
 				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 			}
 
-			if ((472 < ts_state.touchX[0]) || (7 > ts_state.touchY[0])) {
+			if ((472 < ts_state.touchX[0]) || (265 < ts_state.touchY[0])) {
 				ts_state.touchX[0] = 472;
 				ts_state.touchY[0] = 7;
 				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
@@ -462,6 +460,10 @@ void touch_screen_thread(void const * argument)
 			}
 		}
 	}
+	while (1) {
+		/* Delete the Init Thread */
+		osThreadTerminate(NULL);
+}
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
