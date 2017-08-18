@@ -37,6 +37,22 @@ void string_splitter(void){
 	}
 }
 
+void touch_screen_thread(void const * argument)
+{
+	string_splitter();
+
+	TS_StateTypeDef touch_scr;
+
+	do {
+		BSP_TS_GetState(&touch_scr);
+		if (touch_scr.touchDetected) {
+			BSP_LED_On(LED1);
+			BSP_LCD_FillCircle(touch_scr.touchX[0], touch_scr.touchY[0], 6);
+		} else
+			BSP_LED_Off(LED1);
+	} while (1 > 0);
+}
+
 void socket_server_thread(void const *argument)
 {
 	// Server address structure initialization

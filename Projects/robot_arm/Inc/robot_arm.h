@@ -21,6 +21,7 @@ uint8_t debug;
 
 void servo_control_thread(void const * argument);
 void socket_server_thread(void const * argument);
+void touch_screen_thread(void const * argument);
 
 void pwm_init(void);
 void adc_init(void);
