@@ -397,8 +397,28 @@ void touch_screen_thread(void const * argument)
 
 		osDelay(10);
 
+		if (BSP_PB_GetState(BUTTON_KEY)) {
+			BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
+			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+		}
+
 		if (ts_state.touchDetected == 1) {
+
 			BSP_LED_On(LED1);
+
+			if ((7 > ts_state.touchX[0]) || (265 < ts_state.touchY[0])) {
+				ts_state.touchX[0] = 7;
+				ts_state.touchY[0] = 265;
+				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+			}
+
+			if ((472 < ts_state.touchX[0]) || (7 > ts_state.touchY[0])) {
+				ts_state.touchX[0] = 472;
+				ts_state.touchY[0] = 7;
+				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+			}
+
+			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 
 			if (!first_touch_detected_flag) {
 				first_touch_detected_flag = 1;
@@ -430,9 +450,6 @@ void touch_screen_thread(void const * argument)
 				sprintf(position,"%d - %d", cor_x, cor_y);
 				LCD_UsrLog("%s\n", position);
 			}
-
-			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
-
 		} else {
 			BSP_LED_Off(LED1);
 			//first_touch_detected_flag = 0;
