@@ -3,7 +3,6 @@
 #include "lcd_log.h"
 #include <string.h>
 #include <stdlib.h>
-#include "cmsis_os.h"
 
 /* Private variables ---------------------------------------------------------*/
 FATFS SDFatFs;  /* File system object for SD card logical drive */
@@ -11,23 +10,13 @@ FIL MyFile;     /* File object */
 char SDPath[4]; /* SD card logical drive path */
 FRESULT res;    /* FatFs function common result code */
 
-uint32_t bytesread;      				            /* File write/read counts */
-uint64_t size;
-char wtext[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
-char btext[] = "STM1.TXT";						/* Name of the file */
-char readf[] = "STM2.txt";
-char rtext[10];												/* File read buffer */
-char buff[100];
-char tomb[10];
+uint64_t size;										/* Size of the text where the pointer show it */
+char log_text[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
+char log_file[] = "STM1.TXT";						/* Name of the log file */
+char read_file[] = "STM2.txt";						/* Name of the G code file */
+char line_buffer[100];
+
 /* Private function prototypes -----------------------------------------------*/
-int file_length(FIL* fp)
-{
-	uint32_t size;
-
-	size = sizeof(&MyFile);
-	return size;
-}
-
 void FatFs_Init()
 {
 	/*## Link the micro SD disk I/O driver ################################*/
@@ -42,12 +31,12 @@ void FatFs_Init()
 			LCD_ErrLog((char*) "Mount the driver has failed.\n");
 }
 
-void read_sd_card()
+void read_G_code()
 {
 	FatFs_Init();
 
 	/*## Open the text file object with read access ###############*/
-	res = f_open(&MyFile, readf, FA_READ);
+	res = f_open(&MyFile, read_file, FA_READ);
 	if (res != FR_OK)
 		LCD_ErrLog((char*) "Open the file has failed.\n");
 
@@ -55,12 +44,12 @@ void read_sd_card()
 	int boolean = 0;
 	char* pch;
 	while (boolean == 0) {
-		f_gets(buff, 100, &MyFile);
-		if (buff[0] == 'G') {
+		f_gets(line_buffer, 100, &MyFile);
+		if (line_buffer[0] == 'G') {
 			boolean = 1;
-			LCD_UsrLog((char*) buff);
+			LCD_UsrLog((char*) line_buffer);
 		}
-		pch = strtok(buff," ");
+		pch = strtok(line_buffer," ");
 	}
 	uint8_t i = 0;
 	while (pch != NULL) {
@@ -77,10 +66,6 @@ void read_sd_card()
 		i++;
 	}
 
-	/*while (1) {
-	f_gets(buff, 100, &MyFile);
-	LCD_UsrLog((char*) buff);
-	}*/
 	/*##-9- Close the open text file #############################*/
 	f_close(&MyFile);
 }
@@ -90,20 +75,45 @@ void write_sd_card()
 	FatFs_Init();
 
 	/*## Open a new an existing text file object with write access #####*/
-	if (f_open(&MyFile, btext, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
+	if (f_open(&MyFile, log_file, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
 		LCD_UsrLog((char*) "Open an existing file\n");
 	} else {
-		f_open(&MyFile, btext, FA_CREATE_ALWAYS | FA_WRITE);
+		f_open(&MyFile, log_file, FA_CREATE_ALWAYS | FA_WRITE);
 		LCD_UsrLog((char*) "Create and open a new file\n");
 	}
 
 	/*## Write data to the text file ################################*/
 	size = (&MyFile)->fsize;
 	f_lseek(&MyFile, size);
-	f_printf(&MyFile, wtext);
-	LCD_UsrLog((char*) wtext);
+	f_printf(&MyFile, log_text);
+	LCD_UsrLog((char*) log_text);
 
 	/*## Close the open text file #################################*/
 	f_close(&MyFile);
 	LCD_UsrLog((char*) "Close the open text file\n");
+}
+
+void G_read_thread(void const * argument)
+{
+	uint8_t lock;
+
+	osMutexWait(servo_ready_mutex, osWaitForever);
+	lock = servo_pos_ready;
+	osMutexRelease(servo_ready_mutex);
+
+	if (lock == 1)
+		read_G_code();
+
+	osMutexWait(servo_ready_mutex, osWaitForever);
+	servo_pos_ready = 0;
+	osMutexRelease(servo_ready_mutex);
+}
+
+void test_timer_thread(void const * argument)
+{
+	osMutexWait(servo_ready_mutex, osWaitForever);
+	servo_pos_ready = 1;
+	osMutexRelease(servo_ready_mutex);
+
+	osDelay(1000);
 }

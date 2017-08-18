@@ -125,6 +125,15 @@ static void StartThread(void const * argument)
 
     /* Initialize LCD */
     BSP_Config();
+
+    osMutexDef(G_CODE);
+    servo_ready_mutex = osMutexCreate(osMutex(G_CODE));
+
+    osThreadDef(G_READ, G_read_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(G_READ), NULL);
+
+    osThreadDef(TEST, test_timer_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(TEST), NULL);
   
     // Create tcp_ip stack thread
     // tcpip_init(NULL, NULL);
@@ -144,7 +153,7 @@ static void StartThread(void const * argument)
     //osThreadCreate (osThread(SERVO_CONTROL), NULL);
 
     LCD_UsrLog((char*) "TotoRobot started2.\n");
-    read_sd_card();
+    read_G_code();
     //write_sd_card();
 
     while (1) {
