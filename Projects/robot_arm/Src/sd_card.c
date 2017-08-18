@@ -11,6 +11,7 @@ char SDPath[4]; /* SD card logical drive path */
 FRESULT res;    /* FatFs function common result code */
 
 uint64_t size;										/* Size of the text where the pointer show it */
+uint16_t size2 = 0;
 char log_text[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
 char log_file[] = "STM1.TXT";						/* Name of the log file */
 char read_file[] = "STM2.txt";						/* Name of the G code file */
@@ -33,8 +34,6 @@ void FatFs_Init()
 
 void read_G_code()
 {
-	FatFs_Init();
-
 	/*## Open the text file object with read access ###############*/
 	res = f_open(&MyFile, read_file, FA_READ);
 	if (res != FR_OK)
@@ -44,7 +43,10 @@ void read_G_code()
 	int boolean = 0;
 	char* pch;
 	while (boolean == 0) {
+		f_lseek(&MyFile, size2);
 		f_gets(line_buffer, 100, &MyFile);
+		size2 += strlen(line_buffer) + 1;
+
 		if (line_buffer[0] == 'G') {
 			boolean = 1;
 			LCD_UsrLog((char*) line_buffer);
