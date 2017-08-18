@@ -491,40 +491,7 @@ void set_value(void)
 	return;
 }
 
-uint8_t verify_coordinates(int16_t x, int16_t y, int16_t z) {
 
-	if ((x > WORK_AREA_MAX_X) || (x < WORK_AREA_MIN_X)) {
-		return 1;	// Flag error
-	}
-
-	if ((y > WORK_AREA_MAX_Y) || (y < WORK_AREA_MIN_Y)) {
-		return 1;	// Flag error
-	}
-
-	if ((z > WORK_AREA_MAX_Z) || (z < WORK_AREA_MIN_Z)) {
-		return 1;	// Flag error
-	}
-
-	return 0;
-}
-
-uint8_t verify_pulse(uint8_t servo, uint32_t pulse) {
-
-	if ((pulse > servo_conf[servo].max_pulse) || (pulse < servo_conf[servo].min_pulse)) {
-		return 1; // Flag error
-	}
-
-	return 0;
-}
-
-uint8_t verify_angle(uint8_t servo, int16_t angle) {
-
-	if ((angle > servo_conf[servo].max_angle_deg) || (angle < servo_conf[servo].min_angle_deg)) {
-		return 1;  // Flag error
-	}
-
-	return 0;
-}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
