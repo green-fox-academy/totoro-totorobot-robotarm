@@ -97,23 +97,32 @@ void G_read_thread(void const * argument)
 {
 	uint8_t lock;
 
-	osMutexWait(servo_ready_mutex, osWaitForever);
-	lock = servo_pos_ready;
-	osMutexRelease(servo_ready_mutex);
+	while (1) {
+		osMutexWait(servo_ready_mutex, osWaitForever);
+		lock = servo_pos_ready;
+		osMutexRelease(servo_ready_mutex);
 
-	if (lock == 1)
-		read_G_code();
+		if (lock == 1)
+			read_G_code();
 
-	osMutexWait(servo_ready_mutex, osWaitForever);
-	servo_pos_ready = 0;
-	osMutexRelease(servo_ready_mutex);
+		osMutexWait(servo_ready_mutex, osWaitForever);
+		servo_pos_ready = 0;
+		osMutexRelease(servo_ready_mutex);
+	}
+	while (1) {
+		osThreadTerminate(NULL);
+	}
 }
 
 void test_timer_thread(void const * argument)
 {
-	osMutexWait(servo_ready_mutex, osWaitForever);
-	servo_pos_ready = 1;
-	osMutexRelease(servo_ready_mutex);
-
-	osDelay(1000);
+	while(1) {
+		osMutexWait(servo_ready_mutex, osWaitForever);
+		servo_pos_ready = 1;
+		osMutexRelease(servo_ready_mutex);
+		osDelay(1000);
+	}
+	while (1) {
+		osThreadTerminate(NULL);
+	}
 }
