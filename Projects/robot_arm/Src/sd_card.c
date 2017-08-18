@@ -74,8 +74,6 @@ void read_G_code()
 
 void write_sd_card()
 {
-	FatFs_Init();
-
 	/*## Open a new an existing text file object with write access #####*/
 	if (f_open(&MyFile, log_file, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
 		LCD_UsrLog((char*) "Open an existing file\n");
