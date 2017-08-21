@@ -136,6 +136,7 @@ static void StartThread(void const * argument)
     // Start DHCPClient
     osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(DHCP), &gnetif);
+    osDelay(500);
 
     /*
     osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
