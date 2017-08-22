@@ -14,6 +14,24 @@ typedef struct {
     int32_t y;
 } coordinate_t;
 
+void drawing_stage()
+{
+	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
+	//Create drawing area
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
+	BSP_LCD_FillCircle(370, 65, 30);
+	/*BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+	BSP_LCD_FillCircle(340, 135, 26);*/
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKCYAN);
+	BSP_LCD_FillCircle(370, 205, 30);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	//BSP_LCD_DrawLine(2, 2, 380, 270);
+	for (int i = 1; i < 10; i++)
+		BSP_LCD_DrawLine(15, i * 28, 265, i * 28);
+	for (int j = 1; j < 10; j++)
+			BSP_LCD_DrawLine(j * 28, 15, j * 28, 260);
+}
+
 void mouse_coordinate_thread(void const * argument)
 {
 		LCD_UsrLog("Im in the MousE CoorD THREAD!\n");
