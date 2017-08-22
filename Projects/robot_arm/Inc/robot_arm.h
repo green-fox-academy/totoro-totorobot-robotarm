@@ -12,6 +12,10 @@
 #define MIN_ADC_VALUE	0
 #define MAX_ADC_VALUE	4095
 
+#define TS_CLICK_THRESHOLD    3
+uint8_t HID_Buffer[4];
+//int c_socket;
+
 ADC_HandleTypeDef adc_handle;
 ADC_ChannelConfTypeDef adc_ch_conf;
 TIM_HandleTypeDef pwm_handle;
@@ -21,7 +25,8 @@ uint8_t debug;
 
 void servo_control_thread(void const * argument);
 void socket_server_thread(void const * argument);
-void touch_screen_thread(void const * argument);
+void touch_screen_test_thread(void const * argument);
+void mouse_coordinate_thread(void const * argument);
 
 void pwm_init(void);
 void adc_init(void);
