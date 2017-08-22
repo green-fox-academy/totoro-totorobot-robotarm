@@ -2,7 +2,6 @@
 
 #define END_STOP1		GPIO_PIN_6
 #define END_STOP2		GPIO_PIN_6
-#define POWER_ON		GPIO_PIN_6
 
 void end_stop_init(void)
 {
