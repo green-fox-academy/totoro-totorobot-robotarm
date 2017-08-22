@@ -5,8 +5,9 @@
 #include "cmsis_os.h"
 #include "stm32f7xx_hal_gpio.h"
 #include "stm32746g_discovery.h"
+#include "stm32f7xx_it.h"
 
-void arm_init(void);
-void arm_thread(void const * argument);
+void end_stop_init(void);
+void end_stop_thread(void const * argument);
 
 #endif /* __INTERRUPT_H_ */

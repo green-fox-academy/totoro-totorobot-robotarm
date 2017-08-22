@@ -169,8 +169,8 @@ static void StartThread(void const * argument)
     osThreadCreate (osThread(PWM), NULL);
 
     //Start robot arm max position control
-    osThreadDef(ARM_ALARM, arm_thread, osPriorityRealtime, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(ARM_ALARM), NULL);
+    osThreadDef(END_STOP, end_stop_thread, osPriorityRealtime, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(END_STOP), NULL);
 
     log_msg(USER, "TotoRobot started.\n");
 

@@ -194,6 +194,11 @@ void EXTI15_10_IRQHandler(void)
 * @param  None
 * @retval None
 */
+void EXTI_IRQHandler(void)
+{
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+}
+
 void DMA2_Stream0_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(adc.DMA_Handle);
