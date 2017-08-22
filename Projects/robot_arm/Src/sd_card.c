@@ -12,7 +12,7 @@ FRESULT res;    /* FatFs function common result code */
 
 uint64_t size;										/* Size of the text where the pointer show it */
 uint16_t size2 = 0;
-uint16_t size3 = (&MyFile)->fsize;
+uint16_t size3;
 char log_text[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
 char log_file[] = "STM1.TXT";						/* Name of the log file */
 char read_file[] = "STM2.txt";						/* Name of the G code file */
@@ -41,9 +41,10 @@ void read_G_code()
 		LCD_ErrLog((char*) "Open the file has failed.\n");
 
 	/*## Read data from the text file ###########################*/
+	size3 = (&MyFile)->fsize;
 	int boolean = 0;
 	char* pch;
-	while (boolean == 0) {
+	while (boolean == 0 && size2 != size3) {
 		f_lseek(&MyFile, size2);
 		f_gets(line_buffer, 100, &MyFile);
 		size2 += strlen(line_buffer) + 1;
