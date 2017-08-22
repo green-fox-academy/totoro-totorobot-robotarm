@@ -18,18 +18,19 @@ void drawing_stage()
 {
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	//Create drawing area
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
-	BSP_LCD_FillCircle(370, 65, 30);
-	/*BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-	BSP_LCD_FillCircle(340, 135, 26);*/
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKCYAN);
-	BSP_LCD_FillCircle(370, 205, 30);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+	BSP_LCD_FillCircle(420, 50, 26);
+	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_FillCircle(390, 135, 40);
+	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_FillCircle(420, 220, 26);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	//BSP_LCD_DrawLine(2, 2, 380, 270);
-	for (int i = 1; i < 10; i++)
-		BSP_LCD_DrawLine(15, i * 28, 265, i * 28);
+	//for (int i = 1; i < 10; i++)
+		//BSP_LCD_DrawLine(15, i * 28, 265, i * 28);
 	for (int j = 1; j < 10; j++)
-			BSP_LCD_DrawLine(j * 28, 15, j * 28, 260);
+			BSP_LCD_DrawLine(j + 28, 15, j + 28, 260);
+	BSP_LCD_SetTextColor(LCD_COLOR_BROWN);
 }
 
 void mouse_coordinate_thread(void const * argument)
@@ -61,13 +62,13 @@ void mouse_coordinate_thread(void const * argument)
 			osDelay(10);
 
 			if (BSP_PB_GetState(BUTTON_KEY)) {
-				BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
+				drawing_stage();
 			}
 
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
 
-				if ((7 < ts_state.touchX[0]) && (7 < ts_state.touchY[0]) && (472 > ts_state.touchX[0]) && (265 > ts_state.touchY[0])) {
+				if ((67 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (340 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
 
@@ -98,7 +99,7 @@ void mouse_coordinate_thread(void const * argument)
 					char coordinates[100];
 					int16_t cor_x = ts_state.touchX[0];
 					int16_t cor_y = abs(ts_state.touchY[0] - 272);
-					sprintf(coordinates, "%3d - %3d", cor_x, cor_y);
+					sprintf(coordinates, "X: %3d - Y: %3d", cor_x, cor_y);
 					//send(c_socket, position, strlen(position), 0);
 					//LCD_UsrLog("%s\n", coordinates);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
