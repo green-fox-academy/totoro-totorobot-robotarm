@@ -12,6 +12,7 @@ FRESULT res;    /* FatFs function common result code */
 
 uint64_t size;										/* Size of the text where the pointer show it */
 uint16_t size2 = 0;
+uint16_t size3 = (&MyFile)->fsize;
 char log_text[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
 char log_file[] = "STM1.TXT";						/* Name of the log file */
 char read_file[] = "STM2.txt";						/* Name of the G code file */
