@@ -291,12 +291,10 @@ double map(double input, double min_in, double max_in, double min_out, double ma
 	return output;
 }
 
-void xyz_to_pulse(coord_cart_t* pos_cart)
+uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 {
 	coord_polar_t pos_polar;
 	angles_t joint_angles;
-	double angles[SERVOS - 1];
-	uint32_t pulse_width[SERVOS - 1];
 
 	// Convert xyz to polar coordinates
 	cart_to_polar(pos_cart, &pos_polar);
@@ -305,9 +303,11 @@ void xyz_to_pulse(coord_cart_t* pos_cart)
 	calc_inverse_kinematics(&pos_polar, &joint_angles);
 
 	// Calculate and set pulse
-	ang_rel_to_pulse(&joint_angles);
+	if (ang_rel_to_pulse(&joint_angles) != 0) {
+		return 1;
+	}
 
-	return;
+	return 0;
 }
 
 void pulse_to_xyz(coord_cart_t* pos_cart)
@@ -320,7 +320,7 @@ void pulse_to_xyz(coord_cart_t* pos_cart)
 	return;
 }
 
-void ang_abs_to_pulse(angles_t* joint_angles)
+uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 {
 	uint32_t pulse_width[SERVOS - 1];
 	double angles[SERVOS - 1];
@@ -336,6 +336,14 @@ void ang_abs_to_pulse(angles_t* joint_angles)
 										(double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
 	}
 
+	// Verify if pulse width values are within allowed range
+	for (int i = 0; i < SERVOS - 1; i++) {
+		if (verify_pulse(i, pulse_width[i]) != 0) {
+			log_msg(ERROR, "Pulse width is out of allowed range!\n");
+			return 1;
+		}
+	}
+
 	// Update servo pulse values
 	osMutexWait(servo_pulse_mutex, osWaitForever);
 	for (int i = 0; i < SERVOS - 1; i++) {
@@ -343,18 +351,20 @@ void ang_abs_to_pulse(angles_t* joint_angles)
 	}
 	osMutexRelease(servo_pulse_mutex);
 
-	return;
+	return 0;
 }
 
-void ang_rel_to_pulse(angles_t* joint_angles)
+uint8_t ang_rel_to_pulse(angles_t* joint_angles)
 {
 	// Convert angles from relative to absolute values
 	rel_to_abs_angle(joint_angles);
 
 	// Calculate and set pulse
-	ang_abs_to_pulse(joint_angles);
+	if (ang_abs_to_pulse(joint_angles) != 0) {
+		return 1;
+	}
 
-	return;
+	return 0;
 }
 
 void pulse_to_ang_abs(angles_t* joint_angles)
@@ -462,3 +472,96 @@ uint8_t verify_angle(uint8_t servo, int16_t angle) {
 
 	return 0;
 }
+
+void set_position_thread(void const * argument)
+{
+	// Define variables
+	coord_cart_t current_pos;
+	coord_cart_t target_pos;
+	double step_size = DEFAULT_STEP;
+	double speed = DEFAULT_SPEED;
+	uint32_t wait_time = (step_size * 1000) / speed;
+
+	// Set thread flag to ready
+	set_position_on = 1;
+
+	while (1) {
+
+		uint8_t new_coord_ready = 0;
+
+		// Loop until a new target coordinate appears
+		while (!new_coord_ready) {
+			osMutexWait(arm_coord_mutex, osWaitForever);
+			if (next_coord_set) {
+
+				// Read in target position
+				target_pos.x = arm_pos_c.x;
+				target_pos.y = arm_pos_c.y;
+				target_pos.z = arm_pos_c.z;
+
+				// Reset next coordinate flag, so that other processes can use it
+				next_coord_set = 0;
+			}
+
+			osMutexRelease(arm_coord_mutex);
+			new_coord_ready = 1;
+			osDelay(5);
+		}
+
+		// Get current position based on servo PWM parameters
+		pulse_to_xyz(&current_pos);
+
+		// If target differs from current...
+		if ((abs(target_pos.x - current_pos.x) > MIN_X_RES) ||
+			(abs(target_pos.y - current_pos.y) > MIN_Y_RES) ||
+			(abs(target_pos.z - current_pos.z) > MIN_Z_RES)) {
+
+			// Verify if target position is in the work area ,if not send error
+			if (verify_coordinates((int16_t) target_pos.x, (int16_t) target_pos.y,
+					               (int16_t) target_pos.z) != 0) {
+				log_msg(ERROR, "Target xyz values are outside of working area!\n");
+
+				// TODO: check what is the appropriate action here
+				// break will terminate the thread
+				break;
+			}
+
+			// Calculate 3d distance
+			double dist = sqrt(pow(target_pos.x - current_pos.x, 2.0) +
+					           pow(target_pos.y - current_pos.y, 2.0) +
+						       pow(target_pos.z - current_pos.z, 2.0));
+
+			// Break down distance to steps.
+			uint16_t steps = dist / step_size;
+			double step_x = (target_pos.x - current_pos.x) / steps;
+			double step_y = (target_pos.y - current_pos.y) / steps;
+			double step_z = (target_pos.z - current_pos.z) / steps;
+
+			// Calculate step sizes along axes and execute movement
+			for (uint16_t i = 0; i < steps; i++) {
+				coord_cart_t interm_pos;
+				interm_pos.x = current_pos.x + step_x * (i + 1);
+				interm_pos.y = current_pos.y + step_y * (i + 1);
+				interm_pos.z = current_pos.z + step_z * (i + 1);
+
+				// Convert steps to motor pulse
+				if (xyz_to_pulse(&interm_pos) != 0) {
+					log_msg(ERROR, "Pulse out of range, set_position_thread will terminate.\n");
+					break;
+				} else {
+					char tmp[100];
+					sprintf(tmp, "movement to x:%d, y:%d, z:%d\n", (int16_t) interm_pos.x, (int16_t) interm_pos.y, (int16_t) interm_pos.z);
+					log_msg(DEBUG, tmp);
+				}
+				osDelay(wait_time);
+			}
+		}
+	}
+
+	while (1) {
+		// Terminate thread
+		log_msg(USER, "set_position_thread terminated\n");
+		osThreadTerminate(NULL);
+	}
+}
+

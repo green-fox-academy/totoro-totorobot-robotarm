@@ -126,6 +126,12 @@ char lcd_log[100];
 
 osMutexId servo_pulse_mutex;
 osMutexId servo_adc_mutex;
+osMutexId arm_coord_mutex;
+osMutexId arm_moving_mutex;
+
+uint8_t arm_is_moving;
+uint8_t set_position_on;
+uint8_t next_coord_set;
 
 void servo_config(void);
 void pwm_init(void);
@@ -138,16 +144,17 @@ void start_adc_thread(void);
 void stop_adc_thread(void);
 void adc_thread(void const * argument);
 double map(double input, double min_in, double max_in, double min_out, double max_out);
-void xyz_to_pulse(coord_cart_t* pos_cart);
+uint8_t xyz_to_pulse(coord_cart_t* pos_cart);
 void pulse_to_xyz(coord_cart_t* pos_cart);
 void pulse_to_ang_rel(angles_t* joint_angles);
 void pulse_to_ang_abs(angles_t* joint_angles);
-void ang_rel_to_pulse(angles_t* joint_angles);
-void ang_abs_to_pulse(angles_t* joint_angles);
+uint8_t ang_rel_to_pulse(angles_t* joint_angles);
+uint8_t ang_abs_to_pulse(angles_t* joint_angles);
 void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 void ang_abs_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 uint8_t verify_coordinates(int16_t x, int16_t y, int16_t z);
 uint8_t verify_pulse(uint8_t servo, uint32_t pulse);
 uint8_t verify_angle(uint8_t servo, int16_t angle);
+void set_position_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */

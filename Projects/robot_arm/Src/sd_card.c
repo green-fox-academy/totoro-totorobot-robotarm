@@ -113,38 +113,120 @@ void read_sd_card(char* file_name)
 {
 
 	// Create file pointer
-	FIL file;
+	FIL file_p;
 
 	// Open the text file object with read access
-	if (f_open(&file, file_name, FA_READ) != FR_OK) {
+	if (f_open(&file_p, file_name, FA_READ) != FR_OK) {
 		LCD_ErrLog((char*) "Open file has failed.\n");
 	}
 
 
 	/*## Read data from the text file ###########################*/
-	f_read(&file, rtext, sizeof(rtext), (UINT*)&bytesread);
+	f_read(&file_p, rtext, sizeof(rtext), (UINT*)&bytesread);
 	LCD_UsrLog(rtext);
 
 
 	/*##-9- Close the open text file #############################*/
-	f_close(&file);
+	f_close(&file_p);
 }
 
 void write_sd_card(char* file_name, char* line_to_write)
 {
 	// Create file pointer
-	FIL file;
+	FIL file_p;
 
 	// Open a new or existing text file object with write access
-	f_open(&file, file_name, FA_OPEN_EXISTING | FA_WRITE | FA_CREATE_NEW);
+	f_open(&file_p, file_name, FA_OPEN_EXISTING | FA_WRITE | FA_CREATE_NEW);
 
 	// Append data as ASCII text to the file
-	uint32_t size = (&file)->fsize;
-	f_lseek(&file, size);
-	f_printf(&file, line_to_write);
+	uint32_t size = (&file_p)->fsize;
+	f_lseek(&file_p, size);
+	f_printf(&file_p, line_to_write);
 
 	// Close the file
-	f_close(&file);
+	f_close(&file_p);
+
+	return;
+}
+
+void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code)
+{
+	// TODO how to handle file end?
+	// TODO how to handle if there is no G-code in file?
+
+	// Create file pointer
+	FIL file_p;
+	char line_buffer[255];
+
+	// Open the G-code file with read-only access
+	if (f_open(&file_p, file_name, FA_READ) != FR_OK)
+		log_msg(ERROR, "Failed to open G-code file.\n");
+
+	// Read text
+	uint8_t is_G_code = 0;
+	char* pch;
+
+	while (!is_G_code) {
+
+		f_lseek(&file_p, *read_pos);
+		f_gets(line_buffer, sizeof(line_buffer), &file_p);
+		*read_pos += strlen(line_buffer) + 1;
+
+		// Process line if it starts with G
+		if (line_buffer[0] == 'G') {
+
+			pch = strtok(line_buffer, " ");
+
+			while (pch != NULL) {
+
+				/*
+				 * We cannot use nested strtok, so we skip the first letter
+				 * by manipulating the pch pointer. After encapsulating data
+				 * pch must be set to original value to avoid crash
+				 */
+
+				switch(pch[0]) {
+				case 'G':
+				    pch++;
+					G_code->g = atoi(pch);
+                    pch--;
+					break;
+				case 'X':
+				    pch++;
+					G_code->x = atof(pch);
+                    pch--;
+					break;
+				case 'Y':
+				    pch++;
+				    G_code->y = atof(pch);
+                    pch--;
+					break;
+				case 'Z':
+                    pch++;
+                    G_code->z = atof(pch);
+                    pch--;
+					break;
+				case 'E':
+				    pch++;
+				    G_code->e = atof(pch);
+                    pch--;
+					break;
+				case 'F':
+				    pch++;
+				    G_code->f = atof(pch);
+				    pch--;
+					break;
+				}
+
+				pch = strtok(NULL, " ");
+			}
+
+			is_G_code = 1;
+		}
+	}
+
+	// Close file
+	f_close(&file_p);
 
 	return;
 }

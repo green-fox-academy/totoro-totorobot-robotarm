@@ -46,9 +46,6 @@ volatile uint8_t command_in;
 extern uint8_t adc_on;
 extern uint8_t lcd_data_display_on;
 extern uint8_t demo_on;
-
-
-
 extern uint8_t debug;
 
 void uart_init(void);
@@ -67,8 +64,6 @@ extern void start_adc_thread(void);
 extern void stop_adc_thread(void);
 extern void start_demo(void);
 extern void stop_demo(void);
-extern void xyz_to_pulse(coord_cart_t* pos_cart);
-extern void pulse_to_xyz(coord_cart_t* pos_cart);
 
 
 #endif /* __UART_H_ */

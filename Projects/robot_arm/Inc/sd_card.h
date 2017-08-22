@@ -9,6 +9,7 @@
 #include "lcd_log.h"
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
@@ -45,6 +46,16 @@ static char btext[] = "STM333.TXT";						/* Name of the file */
 static char rtext[100];
 
 
+typedef struct {
+	uint16_t g;
+	double x;
+	double y;
+	double z;
+	double e;
+	double f;
+} G_code_t;
+
+
 char msg_log[100];
 char logfile_name[100];
 
@@ -53,5 +64,6 @@ void write_sd_card(char* file_name, char* line_to_write);
 void read_sd_card(char* file_name);
 void sd_logger_thread(void const * argument);
 void log_msg(uint8_t log_level, char* message);
+void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code);
 
 #endif /* __SD_CARD_H_ */

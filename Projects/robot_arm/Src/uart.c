@@ -440,19 +440,22 @@ void set_value(void)
 
 	case POSITION:
 
-		// A block statement is needed for the declaration
-		{
-			// Read in xyz values
-			coord_cart_t coord;
-			coord.x = (double) c_params.value_x;
-			coord.y = (double) c_params.value_y;
-			coord.z = (double) c_params.value_z;
-
-			// Set pwm pulse
-			xyz_to_pulse(&coord);
-
-			UART_send("Set position done.");
+		// Read in xyz values and set pwm pulse
+		while(1) {
+			osMutexWait(arm_coord_mutex, osWaitForever);
+			if (!next_coord_set) {
+				arm_pos_c.x = (double) c_params.value_x;
+				arm_pos_c.y = (double) c_params.value_y;
+				arm_pos_c.z = (double) c_params.value_z;
+				next_coord_set = 1;
+				osMutexRelease(arm_coord_mutex);
+				break;
+			}
+			osMutexRelease(arm_coord_mutex);
+			osDelay(10);
 		}
+		// TODO: needs error handling
+		UART_send("Set position done.");
 		break;
 
 	case MANUAL_CONTROL:

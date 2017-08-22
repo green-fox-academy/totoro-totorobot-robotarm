@@ -21,6 +21,15 @@
 #define WORK_AREA_MIN_Z	-100
 #define	WORK_AREA_MAX_Z	300
 
+/* MINIMUM MOVEMENT RESOLUTION */
+#define MIN_X_RES	1 // mm
+#define MIN_Y_RES	1 // mm
+#define MIN_Z_RES	1 // mm
+
+/* MAXIMUM ALLOWED SPEED */
+#define DEFAULT_SPEED	1 // mm/sec
+#define DEFAULT_STEP	1 // mm
+
 typedef struct {
 	double x;		// mm
 	double y;		// mm

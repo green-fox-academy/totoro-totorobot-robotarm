@@ -126,6 +126,12 @@ static void StartThread(void const * argument)
 	osMutexDef(SERVO_ADC);
 	servo_adc_mutex = osMutexCreate(osMutex(SERVO_ADC));
 
+	osMutexDef(ARM_COORD);
+	arm_coord_mutex = osMutexCreate(osMutex(ARM_COORD));
+
+	osMutexDef(ARM_MOVE);
+	arm_moving_mutex = osMutexCreate(osMutex(ARM_MOVE));
+
 	osMailQDef(LOG_Q, 10, msg_log_t);
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
