@@ -372,6 +372,8 @@ void touch_screen_thread(void const * argument)
 {
 	TS_StateTypeDef ts_state;
 
+	BSP_LCD_DisplayOn();
+
 	coordinate_t last_ts_coord;
 	last_ts_coord.x = 0;
 	last_ts_coord.y = 0;
@@ -397,26 +399,15 @@ void touch_screen_thread(void const * argument)
 
 		if (BSP_PB_GetState(BUTTON_KEY)) {
 			BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
-			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 		}
 
 		if (ts_state.touchDetected == 1) {
 
 			BSP_LED_On(LED1);
 
-			if ((7 > ts_state.touchX[0]) || (7 > ts_state.touchY[0])) {
-				ts_state.touchX[0] = 7;
-				ts_state.touchY[0] = 265;
+			if ((7 < ts_state.touchX[0]) && (7 < ts_state.touchY[0]) && (472 > ts_state.touchX[0]) && (265 > ts_state.touchY[0])) {
 				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 			}
-
-			if ((472 < ts_state.touchX[0]) || (265 < ts_state.touchY[0])) {
-				ts_state.touchX[0] = 472;
-				ts_state.touchY[0] = 7;
-				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
-			}
-
-			BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 
 			if (!first_touch_detected_flag) {
 				first_touch_detected_flag = 1;
@@ -445,8 +436,9 @@ void touch_screen_thread(void const * argument)
 				char position[100];
 				int16_t cor_x = ts_state.touchX[0];
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
-				sprintf(position,"%d - %d", cor_x, cor_y);
-				LCD_UsrLog("%s\n", position);
+				sprintf(position,"%3d - %3d", cor_x, cor_y);
+//				LCD_UsrLog("%s\n", position);
+				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
 			}
 		} else {
 			BSP_LED_Off(LED1);
