@@ -150,6 +150,16 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 	//3 D2 PG6
 	GPIO_Init.Pin = GPIO_PIN_6;
 	HAL_GPIO_Init(GPIOG, &GPIO_Init);
+
+	// END_STOP_POWER
+	//1 D0 PC7 USART6_RX
+	GPIO_Init.Pin = GPIO_PIN_7	;
+	HAL_GPIO_Init(GPIOC, &GPIO_Init);
+
+	// POWER_ON
+	//5 D4 PB4
+	GPIO_Init.Pin = GPIO_PIN_7	;
+	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
