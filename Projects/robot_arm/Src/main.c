@@ -59,6 +59,7 @@
 #include "uart.h"
 #include "sd_card.h"
 #include "rtc.h"
+#include "interrupt.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -166,6 +167,10 @@ static void StartThread(void const * argument)
     // Start robot arm control
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(PWM), NULL);
+
+    //Start robot arm max position control
+    osThreadDef(ARM_ALARM, arm_thread, osPriorityRealtime, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(ARM_ALARM), NULL);
 
     log_msg(USER, "TotoRobot started.\n");
 
