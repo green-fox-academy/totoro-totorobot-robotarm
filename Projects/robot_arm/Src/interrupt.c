@@ -12,4 +12,5 @@ void arm_init(void)
 void arm_thread(void const * argument)
 {
 	arm_init();
+	HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
 }
