@@ -159,6 +159,7 @@ static void StartThread(void const * argument)
 
     // Configure servos
     servo_config();
+    end_stop_init();
 
     // Start UART RX interface
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);

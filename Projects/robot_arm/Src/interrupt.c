@@ -7,6 +7,7 @@
 
 void end_stop_init(void)
 {
+	HAL_MspInit();
 	HAL_GPIO_WritePin(GPIOC, END_STOP_POWER, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOG, POWER_ON, GPIO_PIN_RESET);
 
@@ -19,8 +20,8 @@ void end_stop_init(void)
 
 void end_stop_thread(void const * argument)
 {
-	end_stop_init();
+/*	end_stop_init();
 	HAL_GPIO_EXTI_IRQHandler(END_STOP1);
 
-	EXTI_IRQHandler(void);
+	EXTI_IRQHandler();*/
 }
