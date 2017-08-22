@@ -106,6 +106,8 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 	// Enable GPIO clocks
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOG_CLK_ENABLE();
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 
 	GPIO_InitTypeDef GPIO_Init;
@@ -138,6 +140,16 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 	GPIO_Init.Pin = GPIO_PIN_8;
 	GPIO_Init.Alternate = GPIO_AF1_TIM1;
 	HAL_GPIO_Init(GPIOA, &GPIO_Init);
+
+	//END_STOP1
+	//2 D1 PC6 USART6_TX
+	GPIO_Init.Pin = GPIO_PIN_6;
+	HAL_GPIO_Init(GPIOC, &GPIO_Init);
+
+	//END_STOP2
+	//3 D2 PG6
+	GPIO_Init.Pin = GPIO_PIN_6;
+	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
