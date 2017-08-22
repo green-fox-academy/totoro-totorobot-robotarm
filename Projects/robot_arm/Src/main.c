@@ -136,7 +136,7 @@ static void StartThread(void const * argument)
     // Start DHCPClient
     osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(DHCP), &gnetif);
-    osDelay(500);
+    osDelay(2000);
 
     /*
     osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
@@ -148,10 +148,17 @@ static void StartThread(void const * argument)
     osThreadCreate (osThread(SOCKET_SERVER), NULL);
     */
 
-    osThreadDef(TOUCH, touch_screen_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    /*
+    osThreadDef(TOUCH, touch_screen_test_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(TOUCH), NULL);
+     */
 
-    LCD_UsrLog((char*) "TotoRobot started.\n");
+
+    osThreadDef(MOUSE, mouse_coordinate_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(MOUSE), NULL);
+
+
+    LCD_UsrLog((char*) "\nTotoRobot started.\n\n");
 
     while (1) {
         /* Delete the Init Thread */
