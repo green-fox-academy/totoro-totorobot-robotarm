@@ -3,8 +3,6 @@
 #include "lwip/sockets.h"
 #include "stm32746g_discovery_ts.h"
 
-#include <string.h>
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -38,9 +36,11 @@ void mouse_coordinate_thread(void const * argument)
 			// Get touch screen state
 			BSP_TS_GetState(&ts_state);
 			// Reset USB HID buffer
-			HID_Buffer[0] = 0;
+			//HID_Buffer[0] = 0;
 			HID_Buffer[1] = 0;
 			HID_Buffer[2] = 0;
+
+			osDelay(10);
 
 			if (BSP_PB_GetState(BUTTON_KEY)) {
 				BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
@@ -78,22 +78,23 @@ void mouse_coordinate_thread(void const * argument)
 						possible_click_event = 0;
 
 
-					char coordinates[1000];
+					char coordinates[100];
 					int16_t cor_x = ts_state.touchX[0];
 					int16_t cor_y = abs(ts_state.touchY[0] - 272);
-					sprintf(coordinates,"%d - %d", cor_x, cor_y);
+					sprintf(coordinates, "%d - %d", cor_x, cor_y);
 					//send(c_socket, position, strlen(position), 0);
-					//LCD_UsrLog("%s\n", coordinates);
+					LCD_UsrLog("%s\n", coordinates);
+
 
 				}
 			} else {
 				BSP_LED_Off(LED1);
-				first_touch_detected_flag = 0;
+				//first_touch_detected_flag = 0;
 				if (possible_click_event) {
 					HAL_Delay(10);
-					HID_Buffer[0] = 0b001;
-					HAL_Delay(10);
-					HID_Buffer[0] = 0;
+					//HID_Buffer[0] = 0b001;
+					//HAL_Delay(10);
+					//HID_Buffer[0] = 0;
 					possible_click_event = 0;
 				}
 			}

@@ -5,6 +5,12 @@
 #include "cmsis_os.h"
 #include "lcd_log.h"
 
+#include <string.h>
+#include <stdint.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #define MIN_DEGREE	0
 #define MAX_DEGREE	180
 #define MIN_POS_DUTY_CYCLE	5				// pwm duty cycle in %
