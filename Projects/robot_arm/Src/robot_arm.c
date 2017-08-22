@@ -77,15 +77,13 @@ void mouse_coordinate_thread(void const * argument)
 					if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 						possible_click_event = 0;
 
-
 					char coordinates[100];
 					int16_t cor_x = ts_state.touchX[0];
 					int16_t cor_y = abs(ts_state.touchY[0] - 272);
-					sprintf(coordinates, "%d - %d", cor_x, cor_y);
+					sprintf(coordinates, "%3d - %3d", cor_x, cor_y);
 					//send(c_socket, position, strlen(position), 0);
-					LCD_UsrLog("%s\n", coordinates);
-
-
+					//LCD_UsrLog("%s\n", coordinates);
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
 			} else {
 				BSP_LED_Off(LED1);
