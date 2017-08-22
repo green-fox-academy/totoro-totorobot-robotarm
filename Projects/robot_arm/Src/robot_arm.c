@@ -210,7 +210,7 @@ typedef struct
 	struct sockaddr_in  serv_addr;  // Server address data structure.
 	//struct hostent *server;     // Server data structure.
 
-	sockfd = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP); // Create a UDP socket.
+	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); // Create a UDP socket.
 
 	if (sockfd < 0) {
 		LCD_UsrLog("UDP Socket error");
@@ -442,7 +442,7 @@ void touch_screen_thread(void const * argument)
 				if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 					possible_click_event = 0;
 
-				char position[1000];
+				char position[100];
 				int16_t cor_x = ts_state.touchX[0];
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
 				sprintf(position,"%d - %d", cor_x, cor_y);
