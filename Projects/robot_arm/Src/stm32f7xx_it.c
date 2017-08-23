@@ -196,7 +196,7 @@ void EXTI15_10_IRQHandler(void)
 */
 void EXTI_IRQHandler(void)
 {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
 }
 
 void DMA2_Stream0_IRQHandler(void)

@@ -7,7 +7,9 @@
 #include "stm32746g_discovery.h"
 #include "stm32f7xx_it.h"
 
-void pin_init();
+void pin_init(void);
+void EXTI1_IRQHandler(void);
+void EXTI2_IRQHandler(void);
 void end_stop_thread(void const * argument);
 
 #endif /* __INTERRUPT_H_ */
