@@ -412,6 +412,12 @@ void set_value(void)
 
 	case PULSE:
 
+		// If manual control is on, turn it off
+		if (adc_on) {
+			stop_adc_thread();
+			UART_send("Manual control ended, ADC terminated.");
+		}
+
 		osMutexWait(servo_pulse_mutex, osWaitForever);
 		servo_pulse[c_params.device_id] = c_params.value;
 		osMutexRelease(servo_pulse_mutex);
@@ -423,6 +429,12 @@ void set_value(void)
 		// A block statement is needed for declaration
 		{
 			angles_t joint_angles;
+
+			// If manual control is on, turn it off
+			if (adc_on) {
+				stop_adc_thread();
+				UART_send("Manual control ended, ADC terminated.");
+			}
 
 			// Get current angles
 			pulse_to_ang_abs(&joint_angles);
@@ -451,6 +463,12 @@ void set_value(void)
 		break;
 
 	case POSITION:
+
+		// If manual control is on, turn it off
+		if (adc_on) {
+			stop_adc_thread();
+			UART_send("Manual control ended, ADC terminated.");
+		}
 
 		// Read in xyz values and set pwm pulse
 		while(1) {
@@ -491,6 +509,13 @@ void set_value(void)
 		break;
 
 	case DEMO:
+
+		// If manual control is on, turn it off
+		if (adc_on) {
+			stop_adc_thread();
+			UART_send("Manual control ended, ADC terminated.");
+		}
+
 		if (c_params.value > 0) {
 			start_demo();
 			UART_send("Demo is on.");
@@ -498,6 +523,9 @@ void set_value(void)
 			stop_demo();
 			UART_send("Demo is turned off.");
 		}
+		break;
+
+	case FILE_NAME:
 		break;
 
 	case NO_ATTRIB:
@@ -508,6 +536,12 @@ void set_value(void)
 
 void execute_file(void)
 {
+	// If manual control is on, turn it off
+	if (adc_on) {
+		stop_adc_thread();
+		UART_send("Manual control ended, ADC terminated.");
+	}
+
 	// Launch G-code reader with the given file name
 	osThreadDef(FILE_READ, file_reader_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
 	osThreadCreate (osThread(FILE_READ), c_params.file_name);
