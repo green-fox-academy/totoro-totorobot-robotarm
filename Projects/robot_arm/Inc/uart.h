@@ -11,8 +11,8 @@
 #define TXBUFFERSIZE        100			// transmit
 #define RXBUFFERSIZE        100			// receive
 
-typedef enum {NO_COMMAND, HELP, GET_VALUE, SET_VALUE} uart_command_t;
-typedef enum {NO_ATTRIB, PULSE, ANGLE, POSITION, MANUAL_CONTROL, DATA_DISP, DEMO} uart_attrib_t;
+typedef enum {NO_COMMAND, HELP, GET_VALUE, SET_VALUE, EXECUTE} uart_command_t;
+typedef enum {NO_ATTRIB, PULSE, ANGLE, POSITION, MANUAL_CONTROL, DATA_DISP, DEMO, FILE_NAME} uart_attrib_t;
 
 typedef struct {
 	uint8_t buffer[RXBUFFERSIZE];
@@ -31,6 +31,7 @@ typedef struct {
 	int16_t value_y;
 	int16_t value_z;
 	uint8_t error;
+	char file_name[100];
 } uart_command_struct_t;
 
 uart_command_struct_t c_params;

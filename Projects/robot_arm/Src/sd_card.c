@@ -149,6 +149,11 @@ void write_sd_card(char* file_name, char* line_to_write)
 	return;
 }
 
+uint8_t verify_file(char* file_name){
+	// TODO: write function
+	return 0;
+}
+
 void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code)
 {
 	// TODO how to handle file end?
@@ -229,4 +234,28 @@ void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code)
 	f_close(&file_p);
 
 	return;
+}
+
+void file_reader_thread(void const * argument)
+{
+	char* file_name[100];
+	strcpy(file_name, (char*) argument);
+
+	file_reader_on = 1;
+
+	// Check other processes if they are running when needed
+
+	// Read in G-code
+	// Loop
+	uint32_t read_pos;
+	G_code_t G_code;
+
+	read_G_code(file_name, &read_pos, &G_code);
+
+	while (1) {
+		// Terminate thread
+		file_reader_on = 0;
+		log_msg(USER, "File reader thread terminated\n");
+		osThreadTerminate(NULL);
+	}
 }

@@ -35,6 +35,7 @@ uint8_t http_log_level;
 
 uint8_t sd_logger_on;
 uint8_t lcd_logger_on;
+uint8_t file_reader_on;
 
 static FATFS SDFatFs;  /* File system object for SD card logical drive */
 static FIL MyFile;     /* File object */
@@ -65,5 +66,6 @@ void read_sd_card(char* file_name);
 void sd_logger_thread(void const * argument);
 void log_msg(uint8_t log_level, char* message);
 void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code);
+uint8_t verify_file(char* file_name);
 
 #endif /* __SD_CARD_H_ */

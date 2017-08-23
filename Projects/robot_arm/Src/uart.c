@@ -79,13 +79,13 @@ void UART_send_help(void)
 {
 	UART_send("*** Greetings from TotoRobot! ***");
 	UART_send("Commands:");
-	UART_send(" get pulse | set pulse <servo> <value>  - Get/set PWM pulse width");
-	UART_send(" get angle | set angle <servo> <value>  - Get/set servo angle");
-	UART_send(" get position | set position <x,y,z>    - Get/set arm xyz coordinates");
-	UART_send(" get manual | set manual <0|1>          - Get/set manual control");
-	UART_send(" get display | set display <0|1>        - Get/set LCD data display");
-	UART_send(" get demo | set demo <0|1>              - Get/set demo playing");
-	UART_send(" execute <file_name.g>                  - Execute G code from SD card");
+	UART_send(" get pulse | set pulse <servo> <value>  : Get/set PWM pulse width");
+	UART_send(" get angle | set angle <servo> <value>  : Get/set servo angle");
+	UART_send(" get position | set position <x,y,z>    : Get/set arm xyz coordinates");
+	UART_send(" get manual | set manual <0|1>          : Get/set manual control");
+	UART_send(" get display | set display <0|1>        : Get/set LCD data display");
+	UART_send(" get demo | set demo <0|1>              : Get/set demo playing");
+	UART_send(" exec file <file_name.g>                : Execute G code from SD card");
 	UART_send("*** Always terminate commands with LF! ***");
 
 	return;
@@ -176,6 +176,7 @@ void process_command(void)
 	c_params.value_y = 65535;
 	c_params.value_z = 65535;
 	c_params.error = 0;
+	c_params.file_name[0] = 0;
 
 	// Copy command from command buffer
 	char received[RXBUFFERSIZE];
@@ -190,6 +191,9 @@ void process_command(void)
 		c_params.command = GET_VALUE;
 	} else if ((strcmp(s, "help") == 0) || (strcmp(s, "h") == 0)) {
 		c_params.command = HELP;
+		return;
+	} else if ((strcmp(s, "exec") == 0) || (strcmp(s, "e") == 0)) {
+		c_params.command = EXECUTE;
 		return;
 	} else {
 		c_params.error = 4;
@@ -211,6 +215,8 @@ void process_command(void)
 		c_params.attrib = DATA_DISP;
 	} else if ((strcmp(s, "demo") == 0) || (strcmp(s, "dem") == 0)) {
 		c_params.attrib = DEMO;
+	} else if ((strcmp(s, "file") == 0) || (strcmp(s, "fil") == 0)) {
+		c_params.attrib = FILE_NAME;
 	} else {
 		c_params.error = 2;
 		return;
@@ -263,6 +269,17 @@ void process_command(void)
 		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
 	}
 
+	// File name
+	if ((c_params.command == EXECUTE) && (c_params.attrib == FILE_NAME)) {
+		char* s = strtok(NULL, " ");
+
+		// Get file name
+		strcpy(c_params.file_name, s);
+
+		// Check if file exists
+		c_params.error = verify_file(c_params.file_name);
+	}
+
 	// Uncomment for debug
 	//
 	//	char tmp[100];
@@ -299,6 +316,11 @@ void execute_command(void)
 	// Set value
 	case SET_VALUE:
 		set_value();
+		break;
+
+	// Execute file
+	case EXECUTE:
+		execute_file();
 		break;
 
 	// Error
@@ -484,7 +506,16 @@ void set_value(void)
 	return;
 }
 
+void execute_file(void)
+{
+	// Launch G-code reader with the given file name
+	osThreadDef(FILE_READ, file_reader_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
+	osThreadCreate (osThread(FILE_READ), c_params.file_name);
 
+	UART_send("G-code reader started.");
+	log_msg(USER, "G-code reader started.\n");
+	return;
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
