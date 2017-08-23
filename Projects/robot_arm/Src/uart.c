@@ -81,20 +81,13 @@ void UART_send_help(void)
 	UART_send(" ");
 	UART_send("Commands:");
 	UART_send(" ");
-	UART_send("get pulse                    - Get servos' current pulse width");
-	UART_send("get angle                    - Get servos' current angle");
-	UART_send("get pos                      - Get robot arm's current xyz coordinates");
-	UART_send("get manual                   - Get current manual control status");
-	UART_send("get display                  - Get current status of LCD data display");
-	UART_send("get demo                     - Get current status of the demo");
-	UART_send(" ");
-	UART_send("set pulse <servo> <value>    - Set servo pulse width");
-	UART_send("set angle <servo> <value>    - Set servo angle");
-	UART_send("set position <x,y,z>         - Set robot arm xyz coordinates");
-	UART_send("set manual <0|1>             - Turn on or off manual control");
-	UART_send("set display <0|1>            - Turn on or off data display on LCD");
-	UART_send("set demo <0|1>               - Start/stop demo");
-	UART_send(" ");
+	UART_send("get pulse | set pulse <servo> <value>  - Get/set PWM pulse width");
+	UART_send("get angle | set angle <servo> <value>  - Get/set servos angle");
+	UART_send("get position | set position <x,y,z>    - Get/set arm's xyz coordinates");
+	UART_send("get manual | set manual <0|1>          - Get/set manual control");
+	UART_send("get display | set display <0|1>        - Get/set LCD data display");
+	UART_send("get demo | set demo <0|1>              - Get/set demo playing");
+	UART_send("execute <file_name.g>                  - Execute G code from SD card");
 	UART_send("Always terminate commands with LF!");
 	UART_send(" ");
 
