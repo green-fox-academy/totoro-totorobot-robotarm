@@ -18,6 +18,8 @@ typedef struct {
 	int32_t y;
 } coordinate_t;
 
+uint16_t test_port = 54545;
+char *test_ip = "10.27.6.52";
 
 void servo_control_thread(void const * argument)
 {
@@ -78,7 +80,6 @@ void pwm_set_duty_from_adc(void)
 
 	return;
 }
-
 
 
 void pwm_set_duty(uint8_t rot_degree)
@@ -365,7 +366,7 @@ void rtc_get_time_thread(void const * argument)
 	while (1) {
 		/* Delete the Init Thread */
 		osThreadTerminate(NULL);
-}
+	}
 }
 
 void touch_screen_thread(void const * argument)
@@ -437,7 +438,7 @@ void touch_screen_thread(void const * argument)
 				int16_t cor_x = ts_state.touchX[0];
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
 				sprintf(position,"%3d - %3d", cor_x, cor_y);
-//				LCD_UsrLog("%s\n", position);
+                //LCD_UsrLog("%s\n", position);
 				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
 			}
 		} else {
@@ -455,7 +456,76 @@ void touch_screen_thread(void const * argument)
 	while (1) {
 		/* Delete the Init Thread */
 		osThreadTerminate(NULL);
+	}
 }
+
+int connect_to_s(int *client_sock, uint16_t test_port, char *test_ip)
+{
+	// Creating client socket
+	(*client_sock) = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
+	if (*client_sock < 0) {
+		LCD_ErrLog("Socket client - can't create socket\n");
+		return -1;
+	}
+
+	// Creating server address structure
+	struct sockaddr_in addr_in;
+	addr_in.sin_family = AF_INET;
+	addr_in.sin_port = htons(test_port);
+	addr_in.sin_addr.s_addr = inet_addr(test_ip);
+
+	// Connecting the client socket to the server
+	int connect_retval = connect(*client_sock, (struct sockaddr *)&addr_in, sizeof(addr_in));
+	if (connect_retval < 0) {
+		LCD_ErrLog("Socket client - can't connect to server\n");
+		return -1;
+	} else {
+		LCD_UsrLog("Socket client - connected to server\n");
+		return 0;
+	}
+}
+
+void socket_client_thread(void const *argument)
+{
+	char buff[128];
+
+	char posit[] = {"cunciiiiiiiii"};
+
+
+	LCD_UsrLog("Socket client - startup...\n");
+	LCD_UsrLog("Socket client - waiting for IP address...\n");
+
+	// Wait for an IP address
+	while (!is_ip_ok())
+		osDelay(10);
+
+	int c_socket;
+
+	// Try to connect to the server
+	if (connect_to_s(&c_socket, test_port, test_ip) == 0)
+	{
+		//sprintf(buff, "%d", voltage);
+		int sent_bytes = send(c_socket, posit, strlen(posit), 0);
+		if (sent_bytes > 0) {
+
+			LCD_UsrLog("Socket client - data sent\n");
+
+			int recv_bytes = recv(c_socket, buff, 127, 0);
+			if (recv_bytes >= 0) {
+				LCD_UsrLog("Socket client - data received: ");
+				buff[recv_bytes] = 0;
+				LCD_UsrLog(buff);
+				LCD_UsrLog("\n");
+			}
+		}
+		closesocket(c_socket);
+	}
+
+	LCD_UsrLog("Socket client - terminating...\n");
+
+	while (1) {
+		osThreadTerminate(NULL);
+	}
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

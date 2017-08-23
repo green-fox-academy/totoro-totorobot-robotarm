@@ -33,14 +33,13 @@
 #define NTP_TIMESTAMP_DELTA 2208988800ull
 #define server_ip			"193.6.222.47"
 
+//#define TEST_IP		"10.27.6.52"
+//#define TEST_PORT		54545
 
 
 #define SENSOR_ADDRESS 0xD0 // set this according to HW configuration
 
 //#include "defines.h"
-
-
-
 
 #define MIN_DEGREE	0
 #define MAX_DEGREE	180
@@ -83,5 +82,7 @@ void rtc_set(void);
 void rtc_get_time_thread(void const * argument);
 
 void touch_screen_thread(void const * argument);
+
+void socket_client_thread(void const *argument);
 
 #endif /* __ROBOT_ARM_H_ */

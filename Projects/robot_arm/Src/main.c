@@ -136,9 +136,9 @@ static void StartThread(void const * argument)
 
    //Enable for networking
    //Start DHCPClient
-   /* osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
 	osThreadCreate (osThread(DHCP), &gnetif);
-	osDelay(1000);*/
+	osDelay(2000);
 
     /*osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(SERVO_CONTROL), NULL);*/
@@ -153,6 +153,9 @@ static void StartThread(void const * argument)
 
 	osThreadDef(touch_screen, touch_screen_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
 	osThreadCreate (osThread(touch_screen), &gnetif);
+
+	osThreadDef(socket_client, socket_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	osThreadCreate (osThread(socket_client), &gnetif);
 
     LCD_UsrLog((char*) "TotoRobot started.\n");
 
