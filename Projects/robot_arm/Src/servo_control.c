@@ -296,6 +296,12 @@ uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 	coord_polar_t pos_polar;
 	angles_t joint_angles;
 
+	// Verify if xyz coordinates are within work area
+	if (verify_xyz(&pos_cart) != 0) {
+		log_msg(ERROR, "XYZ coordinates are out of allowed area!\n");
+		return 1;
+	}
+
 	// Convert xyz to polar coordinates
 	cart_to_polar(pos_cart, &pos_polar);
 
@@ -324,6 +330,17 @@ uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 {
 	uint32_t pulse_width[SERVOS - 1];
 	double angles[SERVOS - 1];
+	angles_t joint_angles_deg;
+
+	// Convert angles to degrees
+	joint_angles_deg.theta0 = rad_to_deg(joint_angles->theta0);
+	joint_angles_deg.theta1 = rad_to_deg(joint_angles->theta1);
+	joint_angles_deg.theta2 = rad_to_deg(joint_angles->theta2);
+
+	// Check if angles are in the allowed range
+	if (verify_angle(&joint_angles_deg) != 0) {
+		return 1;
+	}
 
 	// Feed angles into array
 	angles[0] = joint_angles->theta0;
@@ -462,16 +479,42 @@ uint8_t verify_pulse(uint8_t servo, uint32_t pulse) {
 		return 1; // Flag error
 	}
 
-	// Check if horizontal is below 18 deg
-	if
-
 	return 0;
 }
 
-uint8_t verify_angle(uint8_t servo, int16_t angle) {
+uint8_t verify_angle(angles_t* ang_deg) {
 
-	if ((angle > servo_conf[servo].max_angle_deg) || (angle < servo_conf[servo].min_angle_deg)) {
-		return 1;  // Flag error
+	// 1.) Check if inside min and max range
+	if ((ang_deg->theta0 > servo_conf[0].max_angle_deg) ||
+		(ang_deg->theta0 < servo_conf[0].min_angle_deg)) {
+		log_msg(ERROR, "Theta0 is out of allowed range!\n");
+		return 1;
+	}
+
+	if ((ang_deg->theta1 > servo_conf[1].max_angle_deg) ||
+		(ang_deg->theta1 < servo_conf[1].min_angle_deg)) {
+		log_msg(ERROR, "Theta1 is out of allowed range!\n");
+		return 1;
+	}
+
+	if ((ang_deg->theta2 > servo_conf[2].max_angle_deg) ||
+		(ang_deg->theta2 < servo_conf[2].min_angle_deg)) {
+		log_msg(ERROR, "Theta2 is out of allowed range!\n");
+		return 1;
+	}
+
+	// 2.) 180 deg - (theta1 + theta2) > 35 deg
+	// where theta2 is the angle of link2 to horizon
+	if (180 - (ang_deg->theta1 + ang_deg->theta2) <= 35) {
+		log_msg(ERROR, "Angle between link1 and link2 is less than 35 deg!\n");
+		return 1;
+	}
+
+	// 3.) theta2 <= 0.035416 * theta1^2 - 2.51917 theta1 + 48
+	// where theta2 is the angle of link2 to horizon. Angles in deg.
+	if (ang_deg->theta2 > 0.035416 * pow(ang_deg->theta1, 2.0) - 2.51917 * ang_deg->theta1 + 48) {
+		log_msg(ERROR, "Link1 and link2 angles are outside of safe range!\n");
+		return 1;
 	}
 
 	return 0;

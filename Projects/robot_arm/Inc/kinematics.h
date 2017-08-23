@@ -43,9 +43,9 @@ typedef struct {
 } coord_polar_t;
 
 typedef struct {
-	double theta0;	// radian
-	double theta1;	// radian
-	double theta2;	// radian
+	double theta0;	// radian or deg
+	double theta1;	// radian or deg
+	double theta2;	// radian or deg
 } angles_t;
 
 double l1;	// Length of vertical arm between two joints

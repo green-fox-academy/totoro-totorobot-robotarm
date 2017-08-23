@@ -154,7 +154,7 @@ void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 void ang_abs_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
 uint8_t verify_xyz(coord_cart_t* coord);
 uint8_t verify_pulse(uint8_t servo, uint32_t pulse);
-uint8_t verify_angle(uint8_t servo, int16_t angle);
+uint8_t verify_angle(angles_t* ang_deg);
 void set_position_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */
