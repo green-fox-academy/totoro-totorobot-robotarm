@@ -438,7 +438,6 @@ void touch_screen(int c_socket)
 				int16_t cor_x = ts_state.touchX[0];
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
 				//sprintf(position,"%3d - %3d", cor_x, cor_y);
-                //LCD_UsrLog("%s\n", position);
 				//BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
 				send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
 			}
@@ -505,20 +504,6 @@ void socket_client_thread(void const *argument)
 	{
 		touch_screen(c_socket);
 
-/*		//sprintf(buff, "%d", voltage);
-		int sent_bytes = send(c_socket, position, strlen(position), 0);
-		if (sent_bytes > 0) {
-
-			LCD_UsrLog("Socket client - data sent\n");
-
-			int recv_bytes = recv(c_socket, buff, 127, 0);
-			if (recv_bytes >= 0) {
-				LCD_UsrLog("Socket client - data received: ");
-				buff[recv_bytes] = 0;
-				LCD_UsrLog(buff);
-				LCD_UsrLog("\n");
-			}
-		}*/
 		closesocket(c_socket);
 	}
 
