@@ -151,8 +151,8 @@ static void StartThread(void const * argument)
 	osThreadDef(rtc_get_time, rtc_get_time_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
 	osThreadCreate (osThread(rtc_get_time), NULL);*/
 
-	osThreadDef(touch_screen, touch_screen_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-	osThreadCreate (osThread(touch_screen), &gnetif);
+	/*osThreadDef(touch_screen, touch_screen_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+	osThreadCreate (osThread(touch_screen), &gnetif);*/
 
 	osThreadDef(socket_client, socket_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
 	osThreadCreate (osThread(socket_client), &gnetif);

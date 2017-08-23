@@ -369,7 +369,7 @@ void rtc_get_time_thread(void const * argument)
 	}
 }
 
-void touch_screen_thread(void const * argument)
+void touch_screen(int c_socket)
 {
 	TS_StateTypeDef ts_state;
 
@@ -437,9 +437,10 @@ void touch_screen_thread(void const * argument)
 				char position[100];
 				int16_t cor_x = ts_state.touchX[0];
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
-				sprintf(position,"%3d - %3d", cor_x, cor_y);
+				//sprintf(position,"%3d - %3d", cor_x, cor_y);
                 //LCD_UsrLog("%s\n", position);
-				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
+				//BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
+				send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
 			}
 		} else {
 			BSP_LED_Off(LED1);
@@ -487,9 +488,7 @@ int connect_to_s(int *client_sock, uint16_t test_port, char *test_ip)
 
 void socket_client_thread(void const *argument)
 {
-	char buff[128];
-
-	char posit[] = {"cunciiiiiiiii"};
+	//char buff[128];
 
 
 	LCD_UsrLog("Socket client - startup...\n");
@@ -504,8 +503,10 @@ void socket_client_thread(void const *argument)
 	// Try to connect to the server
 	if (connect_to_s(&c_socket, test_port, test_ip) == 0)
 	{
-		//sprintf(buff, "%d", voltage);
-		int sent_bytes = send(c_socket, posit, strlen(posit), 0);
+		touch_screen(c_socket);
+
+/*		//sprintf(buff, "%d", voltage);
+		int sent_bytes = send(c_socket, position, strlen(position), 0);
 		if (sent_bytes > 0) {
 
 			LCD_UsrLog("Socket client - data sent\n");
@@ -517,7 +518,7 @@ void socket_client_thread(void const *argument)
 				LCD_UsrLog(buff);
 				LCD_UsrLog("\n");
 			}
-		}
+		}*/
 		closesocket(c_socket);
 	}
 
