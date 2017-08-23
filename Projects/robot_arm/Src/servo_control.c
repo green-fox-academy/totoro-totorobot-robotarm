@@ -457,9 +457,13 @@ uint8_t verify_coordinates(int16_t x, int16_t y, int16_t z) {
 
 uint8_t verify_pulse(uint8_t servo, uint32_t pulse) {
 
+	// Check if within min and max values
 	if ((pulse > servo_conf[servo].max_pulse) || (pulse < servo_conf[servo].min_pulse)) {
 		return 1; // Flag error
 	}
+
+	// Check if horizontal is below 18 deg
+	if
 
 	return 0;
 }
