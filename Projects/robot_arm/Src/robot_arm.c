@@ -400,6 +400,7 @@ void touch_screen(int c_socket)
 
 		if (BSP_PB_GetState(BUTTON_KEY)) {
 			BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
+			BSP_LCD_DrawRect(390, 135, 50, 70);
 		}
 
 		if (ts_state.touchDetected == 1) {
@@ -434,11 +435,11 @@ void touch_screen(int c_socket)
 				if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 					possible_click_event = 0;
 
-				char position[100];
+				/*char position[100];
 				int16_t cor_x = ts_state.touchX[0];
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
-				//sprintf(position,"%3d - %3d", cor_x, cor_y);
-				//BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
+				sprintf(position,"%3d - %3d", cor_x, cor_y);
+				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);*/
 				send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
 			}
 		} else {
