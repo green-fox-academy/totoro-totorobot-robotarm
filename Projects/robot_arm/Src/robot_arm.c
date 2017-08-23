@@ -99,7 +99,7 @@ void mouse_coordinate_thread(void const * argument)
 					char coordinates[100];
 					int16_t cor_x = ts_state.touchX[0];
 					int16_t cor_y = abs(ts_state.touchY[0] - 272);
-					sprintf(coordinates, "X: %3d - Y: %3d", cor_x, cor_y);
+					sprintf(coordinates, "X%3d - Y%3d", cor_x, cor_y);
 					//send(c_socket, position, strlen(position), 0);
 					//LCD_UsrLog("%s\n", coordinates);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
