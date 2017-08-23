@@ -44,8 +44,8 @@ int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVE
 
 void drawing_stage()
 {
-	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	//Create drawing area
+	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
 	BSP_LCD_FillCircle(420, 50, 26);
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
@@ -53,7 +53,6 @@ void drawing_stage()
 	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 	BSP_LCD_FillCircle(420, 220, 26);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-	//BSP_LCD_DrawLine(2, 2, 380, 270);
 	//for (int i = 1; i < 10; i++)
 		//BSP_LCD_DrawLine(15, i * 28, 265, i * 28);
 	for (int j = 1; j < 10; j++)
@@ -128,18 +127,12 @@ void mouse_coordinate_thread(void const * argument)
 					int16_t cor_x = ts_state.touchX[0];
 					int16_t cor_y = abs(ts_state.touchY[0] - 272);
 					sprintf(coordinates, "X%3d - Y%3d", cor_x, cor_y);
-					//send(c_socket, position, strlen(position), 0);
-					//LCD_UsrLog("%s\n", coordinates);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
 			} else {
 				BSP_LED_Off(LED1);
 				//first_touch_detected_flag = 0;
 				if (possible_click_event) {
-					HAL_Delay(10);
-					//HID_Buffer[0] = 0b001;
-					//HAL_Delay(10);
-					//HID_Buffer[0] = 0;
 					possible_click_event = 0;
 				}
 			}
