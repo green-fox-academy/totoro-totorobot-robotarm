@@ -78,18 +78,15 @@ void UART_send(char* buffer)
 void UART_send_help(void)
 {
 	UART_send("*** Greetings from TotoRobot! ***");
-	UART_send(" ");
 	UART_send("Commands:");
-	UART_send(" ");
-	UART_send("get pulse | set pulse <servo> <value>  - Get/set PWM pulse width");
-	UART_send("get angle | set angle <servo> <value>  - Get/set servos angle");
-	UART_send("get position | set position <x,y,z>    - Get/set arm's xyz coordinates");
-	UART_send("get manual | set manual <0|1>          - Get/set manual control");
-	UART_send("get display | set display <0|1>        - Get/set LCD data display");
-	UART_send("get demo | set demo <0|1>              - Get/set demo playing");
-	UART_send("execute <file_name.g>                  - Execute G code from SD card");
-	UART_send("Always terminate commands with LF!");
-	UART_send(" ");
+	UART_send(" get pulse | set pulse <servo> <value>  - Get/set PWM pulse width");
+	UART_send(" get angle | set angle <servo> <value>  - Get/set servo angle");
+	UART_send(" get position | set position <x,y,z>    - Get/set arm xyz coordinates");
+	UART_send(" get manual | set manual <0|1>          - Get/set manual control");
+	UART_send(" get display | set display <0|1>        - Get/set LCD data display");
+	UART_send(" get demo | set demo <0|1>              - Get/set demo playing");
+	UART_send(" execute <file_name.g>                  - Execute G code from SD card");
+	UART_send("*** Always terminate commands with LF! ***");
 
 	return;
 }
