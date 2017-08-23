@@ -236,13 +236,11 @@ void socket_server_thread(void const *argument)
 			if (received_bytes > 0) {
 				//recv_buff[received_bytes] = '\0';
 				//printf("Received string: %s \n", recv_buff);
-				//BSP_LCD_DisplayStringAtLine(1, (uint8_t *)recv_buff);
 				// Send back the received string
 				//send(slave_sock, send_buff, sizeof(send_buff), 0);
 				int16_t cor_x = touch_scr.touchX[0];
 				int16_t cor_y = abs(touch_scr.touchY[0] - 272);
 				sprintf(position,"%3d - %3d", cor_x, cor_y);
-				//LCD_UsrLog("%s\n", position);
 				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
 			} else if (received_bytes < 0) {
 				LCD_UsrLog("Something went wrong with the client socket, trying to close it...\n");
