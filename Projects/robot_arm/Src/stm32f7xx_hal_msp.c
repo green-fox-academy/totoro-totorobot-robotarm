@@ -91,34 +91,7 @@ void HAL_MspDeInit(void)
 }
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
 {
-		// Enable GPIO clocks
-		__HAL_RCC_GPIOC_CLK_ENABLE();
-		__HAL_RCC_GPIOG_CLK_ENABLE();
 
-		GPIO_InitTypeDef GPIO_Init;
-
-		GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
-		GPIO_Init.Pull = GPIO_NOPULL;
-
-		//END_STOP1
-		//2 D1 PC6
-		GPIO_Init.Pin = GPIO_PIN_6;
-		HAL_GPIO_Init(GPIOC, &GPIO_Init);
-
-		//END_STOP2
-		//3 D2 PG6
-		GPIO_Init.Pin = GPIO_PIN_6;
-		HAL_GPIO_Init(GPIOG, &GPIO_Init);
-
-		// END_STOP_POWER
-		//1 D0 PC7
-		GPIO_Init.Pin = GPIO_PIN_7	;
-		HAL_GPIO_Init(GPIOC, &GPIO_Init);
-
-		// POWER_ON
-		//5 D4 PB4
-		GPIO_Init.Pin = GPIO_PIN_7	;
-		HAL_GPIO_Init(GPIOG, &GPIO_Init);
 }
 
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)

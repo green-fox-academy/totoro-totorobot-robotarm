@@ -7,7 +7,7 @@
 #include "stm32746g_discovery.h"
 #include "stm32f7xx_it.h"
 
-void end_stop_init(void);
+void pin_init();
 void end_stop_thread(void const * argument);
 
 #endif /* __INTERRUPT_H_ */
