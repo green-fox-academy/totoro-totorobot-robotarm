@@ -14,6 +14,8 @@ typedef struct {
     int32_t y;
 } coordinate_t;
 
+TS_StateTypeDef touch_scr;
+
 int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVER_IP)
 {
 	// Creating client socket
@@ -173,8 +175,6 @@ void touch_screen_test_thread(void const * argument)
 {
 	string_splitter();
 
-	TS_StateTypeDef touch_scr;
-
 	do {
 		BSP_TS_GetState(&touch_scr);
 		if (touch_scr.touchDetected) {
@@ -217,6 +217,7 @@ void socket_server_thread(void const *argument)
 	int slave_sock;              					// Slave socket definition, this will be used to store the incoming socket
 	char recv_buff[100];                			// Buffer for incoming and outgoing data
 	char send_buff[] = "Yeahh, I got it..";			// Buffer for feedback
+	char position[10];
 
 	while (1) {
 		// Accept the connection and save the incoming socket
@@ -230,12 +231,19 @@ void socket_server_thread(void const *argument)
 		// Receive the data sent by the client
 		int received_bytes;
 		do {
-			received_bytes = recv(slave_sock, recv_buff, 100, 0);
+			//received_bytes = recv(slave_sock, recv_buff, 100, 0);
+			received_bytes = recv(slave_sock, &touch_scr, sizeof(TS_StateTypeDef), 0);
 			if (received_bytes > 0) {
-				recv_buff[received_bytes] = '\0';
-				printf("Received string: %s \n", recv_buff);
+				//recv_buff[received_bytes] = '\0';
+				//printf("Received string: %s \n", recv_buff);
+				//BSP_LCD_DisplayStringAtLine(1, (uint8_t *)recv_buff);
 				// Send back the received string
-				send(slave_sock, send_buff, sizeof(send_buff), 0);
+				//send(slave_sock, send_buff, sizeof(send_buff), 0);
+				int16_t cor_x = touch_scr.touchX[0];
+				int16_t cor_y = abs(touch_scr.touchY[0] - 272);
+				sprintf(position,"%3d - %3d", cor_x, cor_y);
+				//LCD_UsrLog("%s\n", position);
+				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
 			} else if (received_bytes < 0) {
 				LCD_UsrLog("Something went wrong with the client socket, trying to close it...\n");
 				break;
