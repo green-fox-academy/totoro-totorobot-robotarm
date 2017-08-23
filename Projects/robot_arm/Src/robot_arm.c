@@ -14,6 +14,32 @@ typedef struct {
     int32_t y;
 } coordinate_t;
 
+int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVER_IP)
+{
+	// Creating client socket
+	(*client_sock) = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
+	if (*client_sock < 0) {
+		LCD_ErrLog("Socket client - can't create socket\n");
+		return -1;
+	}
+
+	// Creating server address structure
+	struct sockaddr_in addr_in;
+	addr_in.sin_family = AF_INET;
+	addr_in.sin_port = htons(SERVER_PORT);
+	addr_in.sin_addr.s_addr = inet_addr(CLIENT_SERVER_IP);
+
+	// Connecting the client socket to the server
+	int connect_retval = connect(*client_sock, (struct sockaddr *)&addr_in, sizeof(addr_in));
+	if (connect_retval < 0) {
+		LCD_ErrLog("Socket client - can't connect to server\n");
+		return -1;
+	} else {
+		LCD_UsrLog("Socket client - connected to server\n");
+		return 0;
+	}
+}
+
 void drawing_stage()
 {
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
