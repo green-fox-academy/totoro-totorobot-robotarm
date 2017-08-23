@@ -438,17 +438,17 @@ void ang_abs_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart)
 	return;
 }
 
-uint8_t verify_coordinates(int16_t x, int16_t y, int16_t z) {
+uint8_t verify_xyz(coord_cart_t* coord) {
 
-	if ((x > WORK_AREA_MAX_X) || (x < WORK_AREA_MIN_X)) {
+	if ((coord->x > WORK_AREA_MAX_X) || (coord->x < WORK_AREA_MIN_X)) {
 		return 1;	// Flag error
 	}
 
-	if ((y > WORK_AREA_MAX_Y) || (y < WORK_AREA_MIN_Y)) {
+	if ((coord->y > WORK_AREA_MAX_Y) || (coord->y < WORK_AREA_MIN_Y)) {
 		return 1;	// Flag error
 	}
 
-	if ((z > WORK_AREA_MAX_Z) || (z < WORK_AREA_MIN_Z)) {
+	if ((coord->z > WORK_AREA_MAX_Z) || (coord->z < WORK_AREA_MIN_Z)) {
 		return 1;	// Flag error
 	}
 

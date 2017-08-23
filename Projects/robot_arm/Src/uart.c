@@ -258,15 +258,35 @@ void process_command(void)
 		char* s = strtok(NULL, " ");
 
 		char* coord = strtok(s, ",");
-		c_params.value_x = atoi(coord);
+		if (coord != NULL) {
+			c_params.value_x = atoi(coord);
+		} else {
+			c_params.error = 5;
+			return;
+		}
 
 		coord = strtok(NULL, ",");
-		c_params.value_y = atoi(coord);
+		if (coord != NULL) {
+			c_params.value_y = atoi(coord);
+		} else {
+			c_params.error = 5;
+			return;
+		}
 
 		coord = strtok(NULL, ",");
-		c_params.value_z = atoi(coord);
+		if (coord != NULL) {
+			c_params.value_z = atoi(coord);
+		} else {
+			c_params.error = 5;
+			return;
+		}
 
-		c_params.error = verify_coordinates(c_params.value_x, c_params.value_y, c_params.value_z);
+		// Verify if xyz coordinates are within working area
+		coord_cart_t xyz_coord;
+		xyz_coord.x = (double) c_params.value_x;
+		xyz_coord.y = (double) c_params.value_y;
+		xyz_coord.z = (double) c_params.value_z;
+		c_params.error = verify_xyz(&xyz_coord);
 	}
 
 	// File name
