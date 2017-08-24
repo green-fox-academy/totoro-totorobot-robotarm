@@ -95,6 +95,9 @@ void mouse_coordinate_thread(void const * argument)
 		int16_t cor_y = 0;
 		ts_state.touchX[0] = 0;
 		ts_state.touchY[0] = 0;
+		int16_t save_x;
+		int16_t save_y;
+
 		//LCD_UsrLog("X:%d - Y:%d", ts_state.touchX[0], ts_state.touchY[0]);
 
 		/* Run Application (Interrupt mode) */
@@ -115,15 +118,12 @@ void mouse_coordinate_thread(void const * argument)
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
-					if (((last_ts_coord.x - 26) < ts_state.touchX[0]) && ((last_ts_coord.y - 26) < ts_state.touchY[0]) && ((last_ts_coord.x + 26) > ts_state.touchX[0]) && ((last_ts_coord.y + 26) > ts_state.touchY[0])) {
+
 						BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
 						BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 26);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						ts_state.touchX[0] = ((last_ts_coord.x - 26) + (last_ts_coord.x + 26)) / 2;
-						ts_state.touchY[0] = ((last_ts_coord.y - 26) + (last_ts_coord.y + 26)) / 2;
-						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+						BSP_LCD_FillCircle(save_x, save_y, 4);
 						drawing_flag = 0;
-					}
 				}
 
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
@@ -170,6 +170,8 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 26);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					save_x = ts_state.touchX[0];
+					save_y = ts_state.touchY[0];
 					drawing_flag = 1;
 				}
 				//first_touch_detected_flag = 0;
