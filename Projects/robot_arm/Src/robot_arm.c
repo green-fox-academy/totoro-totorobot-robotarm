@@ -47,6 +47,16 @@ void drawing_stage()
 	//Create drawing area
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+	BSP_LCD_DrawRect(396, 208, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_DrawRect(396, 144, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+	BSP_LCD_DrawRect(396, 80, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_DrawRect(396, 14, 70, 50);
+
+	/*
+	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
 	BSP_LCD_FillCircle(420, 50, 26);
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
 	BSP_LCD_FillCircle(390, 135, 40);
@@ -58,6 +68,7 @@ void drawing_stage()
 	for (int j = 1; j < 10; j++)
 			BSP_LCD_DrawLine(j + 28, 15, j + 28, 260);
 	BSP_LCD_SetTextColor(LCD_COLOR_BROWN);
+	*/
 }
 
 void mouse_coordinate_thread(void const * argument)
