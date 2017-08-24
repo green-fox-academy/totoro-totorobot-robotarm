@@ -199,6 +199,26 @@ void EXTI_IRQHandler(void)
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
 }
 
+/**
+  * @brief  This function handles external lines 3 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void EXTI3_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+}
+
+/**
+  * @brief  This function handles external lines 2 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void EXTI2_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
 void DMA2_Stream0_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(adc.DMA_Handle);
