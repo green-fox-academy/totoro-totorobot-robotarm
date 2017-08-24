@@ -244,12 +244,31 @@ void process_command(void)
 		// Convert ASCII to integer
 		c_params.value = atoi(s);
 
+		// Verify if pulse is within allowed range
 		if ((c_params.command == SET_VALUE) && (c_params.attrib == PULSE)) {
 			c_params.error = verify_pulse(c_params.device_id, c_params.value);
 		}
 
+		// Verify if angles are within allowed range
+		// Angles are in degrees, theta1 and theta2 are measured to the horizon
 		if ((c_params.command == SET_VALUE) && (c_params.attrib == ANGLE)) {
-			c_params.error = verify_angle(c_params.device_id, c_params.value);
+
+			angles_t ang_deg;
+			pulse_to_ang_abs(&ang_deg);
+
+			switch (c_params.device_id) {
+			case 0:
+				ang_deg.theta0 = (double) c_params.value;
+				break;
+			case 1:
+				ang_deg.theta1 = (double) c_params.value;
+				break;
+			case 2:
+				ang_deg.theta2 = (double) c_params.value;
+				break;
+			}
+
+			c_params.error = verify_angle(&ang_deg);
 		}
 	}
 
@@ -438,6 +457,7 @@ void set_value(void)
 			UART_send("Manual control ended, ADC terminated.");
 		}
 
+		// Pulse value has been checked in process_command()
 		osMutexWait(servo_pulse_mutex, osWaitForever);
 		servo_pulse[c_params.device_id] = c_params.value;
 		osMutexRelease(servo_pulse_mutex);
@@ -494,9 +514,9 @@ void set_value(void)
 		while(1) {
 			osMutexWait(arm_coord_mutex, osWaitForever);
 			if (!next_coord_set) {
-				arm_pos_c.x = (double) c_params.value_x;
-				arm_pos_c.y = (double) c_params.value_y;
-				arm_pos_c.z = (double) c_params.value_z;
+				target_xyz.x = (double) c_params.value_x;
+				target_xyz.y = (double) c_params.value_y;
+				target_xyz.z = (double) c_params.value_z;
 				next_coord_set = 1;
 				osMutexRelease(arm_coord_mutex);
 				break;
@@ -505,7 +525,7 @@ void set_value(void)
 			osDelay(10);
 		}
 		// TODO: needs error handling
-		UART_send("Set position done.");
+		UART_send("Target position sent.");
 		break;
 
 	case MANUAL_CONTROL:

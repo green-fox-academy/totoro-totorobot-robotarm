@@ -26,9 +26,20 @@
 #define MIN_Y_RES	1 // mm
 #define MIN_Z_RES	1 // mm
 
-/* MAXIMUM ALLOWED SPEED */
-#define DEFAULT_SPEED	1 // mm/sec
-#define DEFAULT_STEP	1 // mm
+#define MIN_THETA0_RES	1 // deg
+#define MIN_THETA1_RES	1 // deg
+#define MIN_THETA2_RES	1 // deg
+
+#define MIN_PULSE_RES	50 // pulse
+
+/* MAXIMUM ALLOWED SPEEDS */
+#define DEFAULT_SPEED			1  // mm/sec
+#define DEFAULT_ANG_SPEED		2  // deg/sec
+#define DEFAULT_PULSE_SPEED		60 // pulse/sec
+
+#define DEFAULT_STEP		1  // mm
+#define DEFAULT_ANG_STEP	2  // deg
+#define DEFAULT_PULSE_STEP	60 // pulse
 
 typedef struct {
 	double x;		// mm

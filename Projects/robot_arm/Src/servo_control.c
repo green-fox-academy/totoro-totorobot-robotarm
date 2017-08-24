@@ -332,12 +332,10 @@ uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 	double angles[SERVOS - 1];
 	angles_t joint_angles_deg;
 
-	// Convert angles to degrees
+	// Check if angles are in the allowed range
 	joint_angles_deg.theta0 = rad_to_deg(joint_angles->theta0);
 	joint_angles_deg.theta1 = rad_to_deg(joint_angles->theta1);
 	joint_angles_deg.theta2 = rad_to_deg(joint_angles->theta2);
-
-	// Check if angles are in the allowed range
 	if (verify_angle(&joint_angles_deg) != 0) {
 		return 1;
 	}
@@ -542,9 +540,9 @@ void set_position_thread(void const * argument)
 			if (next_coord_set) {
 
 				// Read in target position
-				target_pos.x = arm_pos_c.x;
-				target_pos.y = arm_pos_c.y;
-				target_pos.z = arm_pos_c.z;
+				target_pos.x = target_xyz.x;
+				target_pos.y = target_xyz.y;
+				target_pos.z = target_xyz.z;
 
 				// Reset next coordinate flag, so that other processes can use it
 				next_coord_set = 0;
@@ -562,16 +560,6 @@ void set_position_thread(void const * argument)
 		if ((abs(target_pos.x - current_pos.x) > MIN_X_RES) ||
 			(abs(target_pos.y - current_pos.y) > MIN_Y_RES) ||
 			(abs(target_pos.z - current_pos.z) > MIN_Z_RES)) {
-
-			// Verify if target position is in the work area ,if not send error
-			if (verify_coordinates((int16_t) target_pos.x, (int16_t) target_pos.y,
-					               (int16_t) target_pos.z) != 0) {
-				log_msg(ERROR, "Target xyz values are outside of working area!\n");
-
-				// TODO: check what is the appropriate action here
-				// break will terminate the thread
-				break;
-			}
 
 			// Calculate 3d distance
 			double dist = sqrt(pow(target_pos.x - current_pos.x, 2.0) +
@@ -591,7 +579,8 @@ void set_position_thread(void const * argument)
 				interm_pos.y = current_pos.y + step_y * (i + 1);
 				interm_pos.z = current_pos.z + step_z * (i + 1);
 
-				// Convert steps to motor pulse
+				// Convert steps to motor pulse.
+				// In case of error terminate the thread
 				if (xyz_to_pulse(&interm_pos) != 0) {
 					log_msg(ERROR, "Pulse out of range, set_position_thread will terminate.\n");
 					break;
@@ -603,12 +592,121 @@ void set_position_thread(void const * argument)
 				osDelay(wait_time);
 			}
 		}
+
+		// Quit from loop so we can terminate thread if there is no more movement
+		if (end_moving) {
+			break;
+		}
 	}
 
 	while (1) {
 		// Terminate thread
 		log_msg(USER, "set_position_thread terminated\n");
+		set_position_on = 0;
 		osThreadTerminate(NULL);
 	}
 }
 
+void set_angle_thread(void const * argument)
+{
+	// Define variables
+	angles_t current_ang;	// rad
+	angles_t target_ang;	// rad
+	double step_size = deg_to_rad(DEFAULT_ANG_STEP);
+	double speed = deg_to_rad(DEFAULT_ANG_SPEED);
+	uint32_t wait_time = (step_size * 1000) / speed;
+
+	// Set thread flag to ready
+	set_position_on = 1;
+
+	while (1) {
+
+		uint8_t new_coord_ready = 0;
+
+		// Loop until a new target angle appears
+		while (!new_coord_ready) {
+			osMutexWait(arm_coord_mutex, osWaitForever);
+			if (next_coord_set) {
+
+				// Read in target position
+				target_ang.theta0 = target_angles.theta0;
+				target_ang.theta1 = target_angles.theta1;
+				target_ang.theta2 = target_angles.theta2;
+
+				// Reset next coordinate flag, so that other processes can use it
+				next_coord_set = 0;
+			}
+
+			osMutexRelease(arm_coord_mutex);
+			new_coord_ready = 1;
+			osDelay(5);
+		}
+
+		// Get current position based on servo PWM parameters
+		pulse_to_ang_abs(&current_ang);
+
+		// If target differs from current...
+		double d_theta0 = abs(target_ang.theta0 - current_ang.theta0);
+		double d_theta1 = abs(target_ang.theta1 - current_ang.theta1);
+		double d_theta2 = abs(target_ang.theta2 - current_ang.theta2);
+
+		if ((d_theta0 > MIN_THETA0_RES) || (d_theta1 > MIN_THETA1_RES) ||
+			(d_theta2 > MIN_THETA2_RES)) {
+
+
+			uint16_t steps;
+			double step0;
+			double step1;
+			double step2;
+
+
+			if (d_theta0 > MIN_THETA0_RES) {
+				steps = d_theta0 / step_size;
+				step0 = (target_ang.theta0 - current_ang.theta0) / steps;
+				step1 = 0;
+				step2 = 0;
+			} else if (d_theta1 > MIN_THETA1_RES) {
+				steps = d_theta1 / step_size;
+				step0 = 0;
+				step1 = (target_ang.theta1 - current_ang.theta1) / steps;
+				step2 = 0;
+			} else if (d_theta2 > MIN_THETA2_RES) {
+				steps = d_theta2 / step_size;
+				step0 = 0;
+				step1 = 0;
+				step2 = (target_ang.theta2 - current_ang.theta2) / steps;
+			}
+
+			// Calculate step sizes along axes and execute movement
+			for (uint16_t i = 0; i < steps; i++) {
+				angles_t interm_ang;
+				interm_ang.theta0 = current_ang.theta0 + step0 * (i + 1);
+				interm_ang.theta1 = current_ang.theta1 + step1 * (i + 1);
+				interm_ang.theta2 = current_ang.theta2 + step2 * (i + 1);
+
+				// Convert angles to motor pulse
+				if (ang_abs_to_pulse(&interm_ang) != 0) {
+					log_msg(ERROR, "Pulse out of range, set_angle_thread will terminate.\n");
+					break;
+				} else {
+					//char tmp[100];
+					//sprintf(tmp, "movement to th0:%d, :%d, z:%d\n", (int16_t) interm_pos.x, (int16_t) interm_pos.y, (int16_t) interm_pos.z);
+					//log_msg(DEBUG, tmp);
+				}
+				osDelay(wait_time);
+			}
+		}
+
+		// Quit from loop so we can terminate thread if there is no more movement
+		if (end_moving) {
+			break;
+		}
+	}
+
+	while (1) {
+		// Terminate thread
+		log_msg(USER, "set_position_thread terminated\n");
+		set_position_on = 0;
+		osThreadTerminate(NULL);
+	}
+}

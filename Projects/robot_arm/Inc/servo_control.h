@@ -118,6 +118,9 @@ uint32_t servo_pulse[SERVOS];
 
 coord_polar_t arm_pos_p;
 coord_cart_t arm_pos_c;
+coord_cart_t target_xyz;
+angles_t target_angles;
+uint32_t target_pulse[SERVOS];
 
 uint8_t debug;
 uint8_t adc_on;
@@ -132,6 +135,7 @@ osMutexId arm_moving_mutex;
 uint8_t arm_is_moving;
 uint8_t set_position_on;
 uint8_t next_coord_set;
+uint8_t end_moving;
 
 void servo_config(void);
 void pwm_init(void);
@@ -156,5 +160,7 @@ uint8_t verify_xyz(coord_cart_t* coord);
 uint8_t verify_pulse(uint8_t servo, uint32_t pulse);
 uint8_t verify_angle(angles_t* ang_deg);
 void set_position_thread(void const * argument);
+void set_angle_thread(void const * argument);
+void set_pulse_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */
