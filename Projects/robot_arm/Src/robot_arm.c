@@ -130,6 +130,18 @@ void mouse_coordinate_thread(void const * argument)
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
+				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
+					BSP_LCD_FillRect(396, 208, 70, 50);
+				}
+				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
+					BSP_LCD_FillRect(396, 144, 70, 50);
+				}
+				if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
+					BSP_LCD_FillRect(396, 80, 70, 50);
+				}
+				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
+					BSP_LCD_FillRect(396, 14, 70, 50);
+				}
 
 				if (!first_touch_detected_flag) {
 					first_touch_detected_flag = 1;
