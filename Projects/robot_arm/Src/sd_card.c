@@ -136,7 +136,7 @@ void write_sd_card(char* file_name, char* line_to_write)
 	FIL file_p;
 
 	// Open a new or existing text file object with write access
-	f_open(&file_p, file_name, FA_OPEN_EXISTING | FA_WRITE | FA_CREATE_NEW);
+	f_open(&file_p, file_name, FA_WRITE | FA_CREATE_NEW);
 
 	// Append data as ASCII text to the file
 	uint32_t size = (&file_p)->fsize;
@@ -165,18 +165,9 @@ uint8_t verify_file(char* file_name){
 	return 0;
 }
 
-void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code)
+uint8_t read_G_code(FIL* file_o, G_code_t* G_code)
 {
-	// TODO how to handle file end?
-	// TODO how to handle if there is no G-code in file?
-
-	// Create file pointer
-	FIL file_p;
 	char line_buffer[255];
-
-	// Open the G-code file with read-only access
-	if (f_open(&file_p, file_name, FA_READ) != FR_OK)
-		log_msg(ERROR, "Failed to open G-code file.\n");
 
 	// Read text
 	uint8_t is_G_code = 0;
@@ -184,9 +175,8 @@ void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code)
 
 	while (!is_G_code) {
 
-		f_lseek(&file_p, *read_pos);
-		f_gets(line_buffer, sizeof(line_buffer), &file_p);
-		*read_pos += strlen(line_buffer) + 1;
+		// Read one line of text
+		f_gets(line_buffer, sizeof(line_buffer), file_o);
 
 		// Process line if it starts with G
 		if (line_buffer[0] == 'G') {
@@ -239,30 +229,57 @@ void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code)
 
 			is_G_code = 1;
 		}
+
+		// Exit from function when we reach file end
+		if (file_o->fptr >= file_o->fsize) {
+			if (is_G_code) {
+				return 1;
+			} else {
+				return 2;
+			}
+		}
 	}
 
-	// Close file
-	f_close(&file_p);
-
-	return;
+	return 0;
 }
 
 void file_reader_thread(void const * argument)
 {
-	char* file_name_p = (char*) argument;
-	char file_name[100];
-	strcpy(file_name, file_name_p);
-
-	file_reader_on = 1;
-
-	// Check other processes if they are running when needed
-
-	// Read in G-code
-	// Loop
-	uint32_t read_pos;
+	// Create file object and G_code struct
+	FIL file_o;
 	G_code_t G_code;
 
-	read_G_code(file_name, &read_pos, &G_code);
+	// Set on flag
+	file_reader_on = 1;
+
+	// Let other processes to complete
+	osDelay(500);
+
+	// Open the file with read-only access
+	if (f_open(&file_o, (char*) argument, FA_READ) != FR_OK) {
+		log_msg(ERROR, "Failed to open G-code file.\n");
+	} else {
+
+		// Read lines one-by-one
+		while(1) {
+			uint8_t file_end = read_G_code(&file_o, &G_code);
+
+			// Process G-code data
+			if (file_end < 2) {
+				printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
+
+				// Send G_code to set_position process
+
+				// Wait while arm movement finishes
+				osDelay(100);
+			}
+
+			// If this was the last line stop thread
+			if (file_end) {
+				break;
+			}
+		}
+	}
 
 	while (1) {
 		// Terminate thread
