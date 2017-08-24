@@ -485,7 +485,7 @@ void set_value(void)
 					sprintf(target_display, "s%d pulse %d\n", c_params.device_id, c_params.value);
 
 					// Reset next coordinate flag, so that other processes can use it
-					next_coord_set = 0;
+					next_coord_set = 1;
 
 					// Release mutex and break out of loop
 					osMutexRelease(arm_coord_mutex);
@@ -510,7 +510,7 @@ void set_value(void)
 
 		// A block statement is needed for declaration
 		{
-			angles_t joint_angles;
+			angles_t targ_ang_rad;
 
 			// If manual control is on, turn it off
 			if (adc_on) {
@@ -519,28 +519,57 @@ void set_value(void)
 			}
 
 			// Get current angles
-			pulse_to_ang_abs(&joint_angles);
+			pulse_to_ang_abs(&targ_ang_rad);
 
 			// Update with user data
 			switch (c_params.device_id) {
 			case 0:
-				joint_angles.theta0 = deg_to_rad(c_params.value);
+				targ_ang_rad.theta0 = deg_to_rad(c_params.value);
 				break;
 			case 1:
-				joint_angles.theta1 = deg_to_rad(c_params.value);
+				targ_ang_rad.theta1 = deg_to_rad(c_params.value);
 				break;
 			case 2:
-				joint_angles.theta2 = deg_to_rad(c_params.value);
+				targ_ang_rad.theta2 = deg_to_rad(c_params.value);
 				break;
 			default:
 				UART_send("Unrecognized command or value.");
 				break;
 			}
 
-			// Calculate and set pulse
-			ang_abs_to_pulse(&joint_angles);
+			// Send target angle
+			while (1) {
+				osMutexWait(arm_coord_mutex, osWaitForever);
+				if (!next_coord_set) {
 
-			UART_send("Set angle done.");
+					// Set angle
+					target_angles.theta0 = targ_ang_rad.theta0;
+					target_angles.theta1 = targ_ang_rad.theta1;
+					target_angles.theta2 = targ_ang_rad.theta2;
+
+					// Set display message
+					sprintf(target_display, "s%d angle %d deg\n", c_params.device_id, (int16_t) c_params.value);
+
+					// Reset next coordinate flag, so that other processes can use it
+					next_coord_set = 1;
+
+					// Release mutex and break out of loop
+					osMutexRelease(arm_coord_mutex);
+					break;
+				}
+				osMutexRelease(arm_coord_mutex);
+				osDelay(10);
+			}
+
+			// Set flag to one movement only
+			end_moving = 1;
+
+			// Launch process to set pulse
+		    osThreadDef(SET_ANGLE, set_angle_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
+		    osThreadCreate (osThread(SET_ANGLE), NULL);
+
+			UART_send("Target angle sent.");
+
 		}
 		break;
 
@@ -556,9 +585,15 @@ void set_value(void)
 		while(1) {
 			osMutexWait(arm_coord_mutex, osWaitForever);
 			if (!next_coord_set) {
+
+				// Set xyz coordinates
 				target_xyz.x = (double) c_params.value_x;
 				target_xyz.y = (double) c_params.value_y;
 				target_xyz.z = (double) c_params.value_z;
+
+				// Set display message
+				sprintf(target_display, "X:%5d  Y:%5d  Z:%5d\n", c_params.value_x, c_params.value_y, c_params.value_z);
+
 				next_coord_set = 1;
 				osMutexRelease(arm_coord_mutex);
 				break;
@@ -566,7 +601,14 @@ void set_value(void)
 			osMutexRelease(arm_coord_mutex);
 			osDelay(10);
 		}
-		// TODO: needs error handling
+
+		// Set flag to one movement only
+		end_moving = 1;
+
+		// Launch process to set pulse
+	    osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
+	    osThreadCreate (osThread(SET_POSITION), NULL);
+
 		UART_send("Target position sent.");
 		break;
 
