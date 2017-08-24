@@ -121,6 +121,7 @@ coord_cart_t arm_pos_c;
 coord_cart_t target_xyz;
 angles_t target_angles;
 uint32_t target_pulse[SERVOS];
+char target_display[100];
 
 uint8_t debug;
 uint8_t adc_on;

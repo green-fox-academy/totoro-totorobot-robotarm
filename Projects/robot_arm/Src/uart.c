@@ -450,18 +450,60 @@ void set_value(void)
 	switch (c_params.attrib) {
 
 	case PULSE:
+		{
+			uint32_t targ_pulse[SERVOS];
 
-		// If manual control is on, turn it off
-		if (adc_on) {
-			stop_adc_thread();
-			UART_send("Manual control ended, ADC terminated.");
+			// If manual control is on, turn it off
+			if (adc_on) {
+				stop_adc_thread();
+				UART_send("Manual control ended, ADC terminated.");
+			}
+
+			// Pulse value has been checked in process_command()
+
+			// Get current pulse
+			osMutexWait(servo_pulse_mutex, osWaitForever);
+			for (int i = 0; i < SERVOS; i++) {
+				targ_pulse[i] = servo_pulse[i];
+			}
+			osMutexRelease(servo_pulse_mutex);
+
+			// Set target pulse
+			targ_pulse[c_params.device_id] = c_params.value;
+
+			// Send target pulse
+			while (1) {
+				osMutexWait(arm_coord_mutex, osWaitForever);
+				if (!next_coord_set) {
+
+					// Set pulse
+					for (int i = 0; i < SERVOS; i++) {
+						target_pulse[i] = targ_pulse[i];
+					}
+
+					// Set display message
+					sprintf(target_display, "s%d pulse %d\n", c_params.device_id, c_params.value);
+
+					// Reset next coordinate flag, so that other processes can use it
+					next_coord_set = 0;
+
+					// Release mutex and break out of loop
+					osMutexRelease(arm_coord_mutex);
+					break;
+				}
+				osMutexRelease(arm_coord_mutex);
+				osDelay(10);
+			}
+
+			// Set flag to one movement only
+			end_moving = 1;
+
+			// Launch process to set pulse
+		    osThreadDef(SET_PULSE, set_pulse_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
+		    osThreadCreate (osThread(SET_PULSE), NULL);
+
+			UART_send("Target pulse sent.");
 		}
-
-		// Pulse value has been checked in process_command()
-		osMutexWait(servo_pulse_mutex, osWaitForever);
-		servo_pulse[c_params.device_id] = c_params.value;
-		osMutexRelease(servo_pulse_mutex);
-		UART_send("Set pulse done.");
 		break;
 
 	case ANGLE:
