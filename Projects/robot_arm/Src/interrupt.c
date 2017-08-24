@@ -15,23 +15,25 @@ void pin_init(void)
 	//END_STOP1
 	//2 D1 PC6
 	GPIO_Init.Pin = GPIO_PIN_6;
-	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 	GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_Init.Pull = GPIO_PULLUP;
+	GPIO_Init.Pull = GPIO_NOPULL;
+
+	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 
 	//END_STOP2
 	//3 D2 PG6
 	GPIO_Init.Pin = GPIO_PIN_6;
-	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 	GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_Init.Pull = GPIO_PULLUP;
+	GPIO_Init.Pull = GPIO_NOPULL;
 
+	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 	// POWER_ON
 	//5 D4 PB4
 	GPIO_Init.Pin = GPIO_PIN_7	;
-	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 	GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_Init.Pull = GPIO_NOPULL;
+
+	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 
 	// Set state
 	HAL_GPIO_WritePin(GPIOG, POWER_ON, GPIO_PIN_RESET);
