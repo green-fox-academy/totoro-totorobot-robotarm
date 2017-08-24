@@ -89,6 +89,9 @@ void mouse_coordinate_thread(void const * argument)
 		uint8_t first_touch_detected_flag = 0;
 		uint8_t possible_click_event = 0;
 
+		int16_t cor_x;
+		int16_t cor_y;
+
 		/* Run Application (Interrupt mode) */
 		while (1) {
 			// Get touch screen state
@@ -136,13 +139,16 @@ void mouse_coordinate_thread(void const * argument)
 						possible_click_event = 0;
 
 					char coordinates[100];
-					int16_t cor_x = ts_state.touchX[0];
-					int16_t cor_y = abs(ts_state.touchY[0] - 272);
+					cor_x = ts_state.touchX[0];
+					cor_y = abs(ts_state.touchY[0] - 272);
 					sprintf(coordinates, "X%3d - Y%3d", cor_x, cor_y);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
 			} else {
 				BSP_LED_Off(LED1);
+				BSP_LCD_SetTextColor(LCD_COLOR_RED);
+				BSP_LCD_DrawCircle(cor_x, cor_y, 26);
+
 				//first_touch_detected_flag = 0;
 				if (possible_click_event) {
 					possible_click_event = 0;
