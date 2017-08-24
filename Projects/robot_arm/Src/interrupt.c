@@ -27,6 +27,7 @@ void pin_init(void)
 	GPIO_Init.Pull = GPIO_NOPULL;
 
 	HAL_GPIO_Init(GPIOG, &GPIO_Init);
+
 	// POWER_ON
 	//5 D4 PB4
 	GPIO_Init.Pin = GPIO_PIN_7	;
@@ -35,7 +36,7 @@ void pin_init(void)
 
 	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 
-	// Set state
+	// Set POWER_ON state
 	HAL_GPIO_WritePin(GPIOG, POWER_ON, GPIO_PIN_RESET);
 
 	/* Set Interrupt priority */
@@ -45,16 +46,26 @@ void pin_init(void)
     HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 }
 
-void EXTI0_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
-	 HAL_GPIO_EXTI_IRQHandler(POWER_ON);
+	 HAL_GPIO_EXTI_IRQHandler(END_STOP1);
+	 HAL_GPIO_WritePin(GPIOG, POWER_ON, GPIO_PIN_SET);
+	 osDelay(5000);
+	 HAL_GPIO_WritePin(GPIOG, POWER_ON, GPIO_PIN_RESET);
+	 osDelay(5000);
+}
+
+void EXTI2_IRQHandler(void)
+{
+	 HAL_GPIO_EXTI_IRQHandler(END_STOP2);
+	 HAL_GPIO_WritePin(GPIOG, POWER_ON, GPIO_PIN_SET);
 }
 
 void end_stop_thread(void const * argument)
 {
 	pin_init();
 	EXTI1_IRQHandler();
-	EXTI2_IRQHandler();
+	//EXTI2_IRQHandler();
 	/*while (1) {
 		HAL_GPIO_WritePin(GPIOC, END_STOP_POWER, GPIO_PIN_SET);
 		osDelay(1000);
