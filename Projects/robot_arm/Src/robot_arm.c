@@ -55,6 +55,7 @@ void drawing_stage()
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
 	BSP_LCD_FillRect(396, 14, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	BSP_LCD_DrawRect(20, 30, 356, 230);
 
 	/*
 	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
@@ -120,9 +121,9 @@ void mouse_coordinate_thread(void const * argument)
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
 
 						BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
-						BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 26);
+						BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 20);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						BSP_LCD_FillCircle(save_x, save_y, 4);
+						//BSP_LCD_FillCircle(save_x, save_y, 4);
 						drawing_flag = 0;
 				}
 
@@ -157,7 +158,7 @@ void mouse_coordinate_thread(void const * argument)
 					char coordinates[100];
 					cor_x = ts_state.touchX[0];
 					cor_y = abs(ts_state.touchY[0] - 272);
-					sprintf(coordinates, "X%3d - Y%3d", cor_x, cor_y);
+					sprintf(coordinates, " X%3d - Y%3d", cor_x, cor_y);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
 			} else {
@@ -165,10 +166,10 @@ void mouse_coordinate_thread(void const * argument)
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && !drawing_flag) {
 					osDelay(500);
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
-					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 26);
+					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					osDelay(2000);
 					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 26);
+					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					save_x = ts_state.touchX[0];
 					save_y = ts_state.touchY[0];
