@@ -429,8 +429,8 @@ void touch_screen_thread(void const *argument)
 
 				if (!once_push) {
 					once_push = 1;
-					// WRITE HERE THE BUTTON FUNCTION!!!
-					LCD_UsrLog("4\n");
+					// WRITE HERE THE BUTTON FUNCTION!!! PULL UPP
+					LCD_UsrLog("4 Pull Upp\n");
 				} else {
 					once_push = 0;
 					osDelay(500);
@@ -462,8 +462,8 @@ void touch_screen_thread(void const *argument)
 
 				if (!once_push) {
 					once_push = 1;
-					// WRITE HERE THE BUTTON FUNCTION!!!
-					LCD_UsrLog("2\n");
+					// WRITE HERE THE BUTTON FUNCTION!!! PULL DOWN
+					LCD_UsrLog("2 Pull Down\n");
 				} else {
 					once_push = 0;
 					osDelay(500);
@@ -474,8 +474,8 @@ void touch_screen_thread(void const *argument)
 
 				if (!once_push) {
 					once_push = 1;
-					// WRITE HERE THE BUTTON FUNCTION!!!
-					LCD_UsrLog("1\n");
+					// WRITE HERE THE BUTTON FUNCTION!!!  STOPP BUTTON
+					LCD_UsrLog("1 Stopp Button\n");
 				} else {
 					once_push = 0;
 					osDelay(500);
