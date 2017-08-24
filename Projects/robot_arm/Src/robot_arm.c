@@ -109,6 +109,8 @@ void mouse_coordinate_thread(void const * argument)
 
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
+				BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
+				BSP_LCD_DrawCircle(cor_x, cor_y, 26);
 
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
@@ -146,9 +148,12 @@ void mouse_coordinate_thread(void const * argument)
 				}
 			} else {
 				BSP_LED_Off(LED1);
+				osDelay(500);
 				BSP_LCD_SetTextColor(LCD_COLOR_RED);
 				BSP_LCD_DrawCircle(cor_x, cor_y, 26);
-
+				osDelay(2000);
+				BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+				BSP_LCD_DrawCircle(cor_x, cor_y, 26);
 				//first_touch_detected_flag = 0;
 				if (possible_click_event) {
 					possible_click_event = 0;
