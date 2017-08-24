@@ -710,3 +710,111 @@ void set_angle_thread(void const * argument)
 		osThreadTerminate(NULL);
 	}
 }
+
+void set_pulse_thread(void const * argument)
+{
+	// Define variables
+	uint32_t current_pulse_w[SERVOS];
+	uint32_t target_pulse_w[SERVOS];
+	int32_t diff_pulse_w[SERVOS];
+	uint32_t step_size = DEFAULT_PULSE_STEP;
+	double speed = DEFAULT_PULSE_SPEED;
+	uint32_t wait_time = (step_size * 1000) / speed;
+
+	// Set thread flag to ready
+	set_position_on = 1;
+
+	while (1) {
+
+		uint8_t new_coord_ready = 0;
+		uint8_t servo_id;
+
+		// Loop until a new target pulse appears
+		while (!new_coord_ready) {
+			osMutexWait(arm_coord_mutex, osWaitForever);
+			if (next_coord_set) {
+
+				// Read in target pulse values
+				for (int i = 0; i < SERVOS; i++) {
+					target_pulse_w[i] = target_pulse[i];
+				}
+
+				// Reset next coordinate flag, so that other processes can use it
+				next_coord_set = 0;
+			}
+
+			osMutexRelease(arm_coord_mutex);
+			new_coord_ready = 1;
+			osDelay(5);
+		}
+
+		// Get current pulse values based on servo PWM parameters
+		osMutexWait(servo_pulse_mutex, osWaitForever);
+		for (int i = 0; i < SERVOS; i++) {
+			current_pulse_w[i] = servo_pulse[i];
+			diff_pulse_w[i] = target_pulse_w[i] - current_pulse_w[i];
+		}
+		osMutexRelease(servo_pulse_mutex);
+
+		// TODO: cot from here -> steps will have remainder! also check angles
+
+		for (int i = 0; i < SERVOS; i++) {
+
+		}
+
+			uint16_t steps;
+			double step0;
+			double step1;
+			double step2;
+
+
+			if (d_theta0 > MIN_THETA0_RES) {
+				steps = d_theta0 / step_size;
+				step0 = (target_ang.theta0 - current_ang.theta0) / steps;
+				step1 = 0;
+				step2 = 0;
+			} else if (d_theta1 > MIN_THETA1_RES) {
+				steps = d_theta1 / step_size;
+				step0 = 0;
+				step1 = (target_ang.theta1 - current_ang.theta1) / steps;
+				step2 = 0;
+			} else if (d_theta2 > MIN_THETA2_RES) {
+				steps = d_theta2 / step_size;
+				step0 = 0;
+				step1 = 0;
+				step2 = (target_ang.theta2 - current_ang.theta2) / steps;
+			}
+
+			// Calculate step sizes along axes and execute movement
+			for (uint16_t i = 0; i < steps; i++) {
+				angles_t interm_ang;
+				interm_ang.theta0 = current_ang.theta0 + step0 * (i + 1);
+				interm_ang.theta1 = current_ang.theta1 + step1 * (i + 1);
+				interm_ang.theta2 = current_ang.theta2 + step2 * (i + 1);
+
+				// Convert angles to motor pulse
+				if (ang_abs_to_pulse(&interm_ang) != 0) {
+					log_msg(ERROR, "Pulse out of range, set_angle_thread will terminate.\n");
+					break;
+				} else {
+					//char tmp[100];
+					//sprintf(tmp, "movement to th0:%d, :%d, z:%d\n", (int16_t) interm_pos.x, (int16_t) interm_pos.y, (int16_t) interm_pos.z);
+					//log_msg(DEBUG, tmp);
+				}
+				osDelay(wait_time);
+			}
+		}
+
+		// Quit from loop so we can terminate thread if there is no more movement
+		if (end_moving) {
+			break;
+		}
+	}
+
+	while (1) {
+		// Terminate thread
+		log_msg(USER, "set_position_thread terminated\n");
+		set_position_on = 0;
+		osThreadTerminate(NULL);
+	}
+}
