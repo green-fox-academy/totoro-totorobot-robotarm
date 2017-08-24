@@ -150,7 +150,18 @@ void write_sd_card(char* file_name, char* line_to_write)
 }
 
 uint8_t verify_file(char* file_name){
-	// TODO: write function
+
+	// Create file pointer
+	FIL file_p;
+
+	// Open the file with read access
+	if (f_open(&file_p, file_name, FA_READ) != FR_OK) {
+		return 1;
+	}
+
+	// Close file
+	f_close(&file_p);
+
 	return 0;
 }
 
