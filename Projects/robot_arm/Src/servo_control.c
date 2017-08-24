@@ -58,9 +58,16 @@ void servo_config(void)
 	servo_conf[3].max_pulse = SERVO3_MAX_PULSE;
 
 	// Position arm to middle position
+	osMutexWait(servo_pulse_mutex, osWaitForever);
 	for (int i = 0; i < SERVOS; i++) {
 		servo_pulse[i] = pwm_conf[i].pulse;
 	}
+	osMutexRelease(servo_pulse_mutex);
+
+	// Empty target display buffer
+	osMutexWait(arm_coord_mutex, osWaitForever);
+	target_display[0] = 0;
+	osMutexRelease(arm_coord_mutex);
 
 	// Load data for kinematics calculation
 	kinematics_conf();
