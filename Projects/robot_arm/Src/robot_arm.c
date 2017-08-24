@@ -116,7 +116,7 @@ void mouse_coordinate_thread(void const * argument)
 				BSP_LED_On(LED1);
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
 					BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
-					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 26);
+					BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 26);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					drawing_flag = 0;
 				}
