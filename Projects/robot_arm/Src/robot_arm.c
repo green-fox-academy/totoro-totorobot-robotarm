@@ -47,13 +47,14 @@ void drawing_stage()
 	//Create drawing area
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
-	BSP_LCD_DrawRect(396, 208, 70, 50);
+	BSP_LCD_FillRect(396, 208, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-	BSP_LCD_DrawRect(396, 144, 70, 50);
+	BSP_LCD_FillRect(396, 144, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-	BSP_LCD_DrawRect(396, 80, 70, 50);
+	BSP_LCD_FillRect(396, 80, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
-	BSP_LCD_DrawRect(396, 14, 70, 50);
+	BSP_LCD_FillRect(396, 14, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
 	/*
 	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
@@ -106,7 +107,7 @@ void mouse_coordinate_thread(void const * argument)
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
 
-				if ((67 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (340 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
+				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
 
