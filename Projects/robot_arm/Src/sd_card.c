@@ -242,10 +242,6 @@ void file_reader_thread(void const * argument)
 	char file_name[100];
 	strcpy(file_name, file_name_p);
 
-	log_msg(DEBUG, "inside file reader\n");
-	LCD_UsrLog((char*) argument);
-	LCD_UsrLog("\n");
-
 	file_reader_on = 1;
 
 	// Check other processes if they are running when needed
@@ -255,7 +251,7 @@ void file_reader_thread(void const * argument)
 	uint32_t read_pos;
 	G_code_t G_code;
 
-	// read_G_code(file_name, &read_pos, &G_code);
+	read_G_code(file_name, &read_pos, &G_code);
 
 	while (1) {
 		// Terminate thread
