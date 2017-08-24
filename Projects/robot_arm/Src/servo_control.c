@@ -301,7 +301,7 @@ double map(double input, double min_in, double max_in, double min_out, double ma
 uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 {
 	coord_polar_t pos_polar;
-	angles_t joint_angles;
+	angles_t joint_angles_rad;
 
 	// Verify if xyz coordinates are within work area
 	if (verify_xyz(pos_cart) != 0) {
@@ -313,10 +313,10 @@ uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 	cart_to_polar(pos_cart, &pos_polar);
 
 	// Calculate relative servo angles
-	calc_inverse_kinematics(&pos_polar, &joint_angles);
+	calc_inverse_kinematics(&pos_polar, &joint_angles_rad);
 
 	// Calculate and set pulse
-	if (ang_rel_to_pulse(&joint_angles) != 0) {
+	if (ang_rel_to_pulse(&joint_angles_rad) != 0) {
 		return 1;
 	}
 

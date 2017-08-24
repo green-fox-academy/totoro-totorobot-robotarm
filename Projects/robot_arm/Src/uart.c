@@ -312,20 +312,23 @@ void process_command(void)
 	if ((c_params.command == EXECUTE) && (c_params.attrib == FILE_NAME)) {
 		char* s = strtok(NULL, " ");
 
+		log_msg(DEBUG, s);
+		log_msg(DEBUG, "\n");
+
 		// Get file name
 		strcpy(c_params.file_name, s);
 
 		// Check if file exists
-		c_params.error = verify_file(c_params.file_name);
+		// c_params.error = verify_file(c_params.file_name);
 	}
 
 	// Uncomment for debug
-	//
-	//	char tmp[100];
-	//	sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
-	//				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
-	//				c_params.value_x, c_params.value_y, c_params.value_z, c_params.error);
-	//	log_msg(DEBUG, tmp);
+
+		char tmp[100];
+		sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, err: %d\n",
+					c_params.command, c_params.attrib, c_params.device_id, c_params.value,
+					c_params.value_x, c_params.value_y, c_params.value_z, c_params.error);
+		log_msg(DEBUG, tmp);
 
 	return;
 }
@@ -592,7 +595,7 @@ void set_value(void)
 				target_xyz.z = (double) c_params.value_z;
 
 				// Set display message
-				sprintf(target_display, "X:%5d  Y:%5d  Z:%5d   ", c_params.value_x, c_params.value_y, c_params.value_z);
+				sprintf(target_display, "X: %3d  Y: %3d  Z: %3d   ", c_params.value_x, c_params.value_y, c_params.value_z);
 
 				next_coord_set = 1;
 				osMutexRelease(arm_coord_mutex);
@@ -665,6 +668,10 @@ void execute_file(void)
 		stop_adc_thread();
 		UART_send("Manual control ended, ADC terminated.");
 	}
+
+	log_msg(DEBUG, "execute file: ");
+	log_msg(DEBUG, c_params.file_name);
+	log_msg(DEBUG, "\n");
 
 	// Launch G-code reader with the given file name
 	osThreadDef(FILE_READ, file_reader_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
