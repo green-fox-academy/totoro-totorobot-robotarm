@@ -17,14 +17,14 @@ void pin_init(void)
 	GPIO_Init.Pin = GPIO_PIN_6;
 	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 	GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Pull = GPIO_PULLUP;
 
 	//END_STOP2
 	//3 D2 PG6
 	GPIO_Init.Pin = GPIO_PIN_6;
 	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 	GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Pull = GPIO_PULLUP;
 
 	// POWER_ON
 	//5 D4 PB4
