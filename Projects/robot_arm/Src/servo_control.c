@@ -413,6 +413,29 @@ void pulse_to_ang_abs(angles_t* joint_angles)
 	return;
 }
 
+void any_pulse_to_ang_abs(uint32_t* pulse_width, angles_t* joint_angles)
+{
+	/*
+	 * This function calculates absolute angles, i.e.
+	 * they are measured to the XY plane
+	 */
+
+	double ang_rad[3];
+
+	// Calculate angles in radian from pulse width
+	for (int i = 0; i < 3; i++) {
+		ang_rad[i] = map(pulse_width[i], (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse,
+						 servo_conf[i].min_angle_rad, servo_conf[i].max_angle_rad);
+	}
+
+	// Feed angles into structure
+	joint_angles->theta0 = ang_rad[0];
+	joint_angles->theta1 = ang_rad[1];
+	joint_angles->theta2 = ang_rad[2];
+
+	return;
+}
+
 void pulse_to_ang_rel(angles_t* joint_angles)
 {
 	/*
@@ -609,6 +632,10 @@ void set_position_thread(void const * argument)
 
 void set_angle_thread(void const * argument)
 {
+	/*
+	 * Handles only one angle change at a time!
+	 */
+
 	// Define variables
 	angles_t current_ang;	// rad
 	angles_t target_ang;	// rad
@@ -713,11 +740,18 @@ void set_angle_thread(void const * argument)
 
 void set_pulse_thread(void const * argument)
 {
+	/*
+	 * Handles only pulse change of one servo at a time!
+	 */
+
 	// Define variables
 	uint32_t current_pulse_w[SERVOS];
 	uint32_t target_pulse_w[SERVOS];
+	uint32_t interm_pulse_w[SERVOS];
 	int32_t diff_pulse_w[SERVOS];
-	uint32_t step_size = DEFAULT_PULSE_STEP;
+	int32_t step_size = DEFAULT_PULSE_STEP;
+	int32_t step_sizes[SERVOS];
+	uint16_t steps[SERVOS];
 	double speed = DEFAULT_PULSE_SPEED;
 	uint32_t wait_time = (step_size * 1000) / speed;
 
@@ -756,53 +790,80 @@ void set_pulse_thread(void const * argument)
 		}
 		osMutexRelease(servo_pulse_mutex);
 
-		// TODO: cot from here -> steps will have remainder! also check angles
+		// TODO: cont from here -> steps will have remainder! also check angles
 
+
+		// Calculate number of interim steps
+		uint8_t index = 0;
 		for (int i = 0; i < SERVOS; i++) {
-
+			steps[i] = abs(diff_pulse_w[i]) / step_size;
+			if (diff_pulse_w[i] < 0) {
+				step_sizes[i] = -1 * step_size;
+				index = i;
+			} else if (diff_pulse_w[i] > 0) {
+				step_sizes[i] = step_size;
+				index = i;
+			} else {
+				step_sizes[i] = 0;
+			}
 		}
 
-			uint16_t steps;
-			double step0;
-			double step1;
-			double step2;
 
+		// Set pulse in increments
+		for (int j = 0; j < steps[index] + 1; j++) {
 
-			if (d_theta0 > MIN_THETA0_RES) {
-				steps = d_theta0 / step_size;
-				step0 = (target_ang.theta0 - current_ang.theta0) / steps;
-				step1 = 0;
-				step2 = 0;
-			} else if (d_theta1 > MIN_THETA1_RES) {
-				steps = d_theta1 / step_size;
-				step0 = 0;
-				step1 = (target_ang.theta1 - current_ang.theta1) / steps;
-				step2 = 0;
-			} else if (d_theta2 > MIN_THETA2_RES) {
-				steps = d_theta2 / step_size;
-				step0 = 0;
-				step1 = 0;
-				step2 = (target_ang.theta2 - current_ang.theta2) / steps;
-			}
-
-			// Calculate step sizes along axes and execute movement
-			for (uint16_t i = 0; i < steps; i++) {
-				angles_t interm_ang;
-				interm_ang.theta0 = current_ang.theta0 + step0 * (i + 1);
-				interm_ang.theta1 = current_ang.theta1 + step1 * (i + 1);
-				interm_ang.theta2 = current_ang.theta2 + step2 * (i + 1);
-
-				// Convert angles to motor pulse
-				if (ang_abs_to_pulse(&interm_ang) != 0) {
-					log_msg(ERROR, "Pulse out of range, set_angle_thread will terminate.\n");
-					break;
-				} else {
-					//char tmp[100];
-					//sprintf(tmp, "movement to th0:%d, :%d, z:%d\n", (int16_t) interm_pos.x, (int16_t) interm_pos.y, (int16_t) interm_pos.z);
-					//log_msg(DEBUG, tmp);
+			// Take care of the remaining portion too
+			if (j == steps) {
+				for (int i = 0; i < SERVOS; i++) {
+					if (current_pulse_w[i] != target_pulse_w[i]) {
+						interm_pulse_w[i] = target_pulse_w[i];
+					}
 				}
-				osDelay(wait_time);
+			} else {
+				for (int i = 0; i < SERVOS; i++) {
+					interm_pulse_w[i] = current_pulse_w[i] + j * step_size;
+				}
+
+				// Check if angles are in allowed range
+				angles_t ang_rad;
+				angles_t ang_deg;
+				any_pulse_to_ang_abs(&interm_pulse_w, &ang_rad);
+				ang_deg.theta0 = rad_to_deg(ang_rad.theta0);
+				ang_deg.theta1 = rad_to_deg(ang_rad.theta1);
+				ang_deg.theta2 = rad_to_deg(ang_rad.theta2);
+
+				if (verify_angle(&ang_deg) != 0) {
+					log_msg(ERROR, "Angles are out of range, set_pulse_thread will terminate.\n");
+					while (1) {
+						// Terminate thread
+						log_msg(USER, "set_position_thread terminated\n");
+						set_position_on = 0;
+						osThreadTerminate(NULL);
+					}
+				}
+
+				// Check if pulse values are in allowed range
+				for (int i = 0; i < SERVOS; i++) {
+					if (verify_pulse(i, interm_pulse_w[i]) != 0) {
+						log_msg(ERROR, "Pulse is out of range, set_pulse_thread will terminate.\n");
+						while (1) {
+							// Terminate thread
+							log_msg(USER, "set_position_thread terminated\n");
+							set_position_on = 0;
+							osThreadTerminate(NULL);
+						}
+					}
+				}
 			}
+
+			// All is fine if we reach here: set pulse values
+			osMutexWait(servo_pulse_mutex, osWaitForever);
+			for (int i = 0; i < SERVOS; i++) {
+				servo_pulse[i] = interm_pulse_w[i];
+			}
+			osMutexRelease(servo_pulse_mutex);
+
+			osDelay(wait_time);
 		}
 
 		// Quit from loop so we can terminate thread if there is no more movement

@@ -152,6 +152,7 @@ uint8_t xyz_to_pulse(coord_cart_t* pos_cart);
 void pulse_to_xyz(coord_cart_t* pos_cart);
 void pulse_to_ang_rel(angles_t* joint_angles);
 void pulse_to_ang_abs(angles_t* joint_angles);
+void any_pulse_to_ang_abs(uint32_t* pulse_width, angles_t* joint_angles);
 uint8_t ang_rel_to_pulse(angles_t* joint_angles);
 uint8_t ang_abs_to_pulse(angles_t* joint_angles);
 void ang_rel_to_xyz(angles_t* joint_angles, coord_cart_t* pos_cart);
