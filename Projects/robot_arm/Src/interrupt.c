@@ -53,7 +53,7 @@ void pin_init(void)
 	//5 D4 PG7
 	GPIO_Init.Pin = GPIO_PIN_7	;
 	GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 
 	// Set POWER_ON state
