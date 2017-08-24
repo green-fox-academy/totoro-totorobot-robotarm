@@ -116,8 +116,6 @@ TIM_OC_InitTypeDef pwm_oc_init[SERVOS];
 servo_conf_t servo_conf[SERVOS];
 uint32_t servo_pulse[SERVOS];
 
-coord_polar_t arm_pos_p;
-coord_cart_t arm_pos_c;
 coord_cart_t target_xyz;
 angles_t target_angles;
 uint32_t target_pulse[SERVOS];

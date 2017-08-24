@@ -827,7 +827,7 @@ void set_pulse_thread(void const * argument)
 				}
 			} else {
 				for (int i = 0; i < SERVOS; i++) {
-					interm_pulse_w[i] = current_pulse_w[i] + j * step_size;
+					interm_pulse_w[i] = current_pulse_w[i] + j * step_sizes[i];
 				}
 
 				// Check if angles are in allowed range
