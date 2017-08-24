@@ -77,11 +77,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 }
 
-void end_stop_thread(void const * argument)
-{
-	pin_init();
-	while (1) {
-		HAL_GPIO_EXTI_Callback();
-	}
-	//EXTI2_IRQHandler();
-}
+
+
+

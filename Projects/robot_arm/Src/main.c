@@ -106,6 +106,10 @@ int main(void)
 
     BSP_Config();
   
+    pin_init();
+    EXTI3_IRQHandler_Config();
+    EXTI2_IRQHandler_Config();
+
     // Init thread
     osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(Start), NULL);
@@ -167,10 +171,6 @@ static void StartThread(void const * argument)
     // Start robot arm control
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(PWM), NULL);
-
-    //Start robot arm max position control
-    osThreadDef(END_STOP, end_stop_thread, osPriorityRealtime, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(END_STOP), NULL);
 
     log_msg(USER, "TotoRobot started.\n");
 
