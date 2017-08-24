@@ -369,9 +369,19 @@ void rtc_get_time_thread(void const * argument)
 	}
 }
 
-void touch_screen(int c_socket)
+void touch_screen_thread(void const *argument)
 {
 	TS_StateTypeDef ts_state;
+
+	uint16_t PointCount;
+	pPoint Points[] = {
+	{390, 120},
+	{360, 105},
+	{330, 90},
+	{300, 75},
+	{270, 60},
+	{240, 45},
+	};
 
 	BSP_LCD_DisplayOn();
 
@@ -385,6 +395,7 @@ void touch_screen(int c_socket)
 
 	uint8_t first_touch_detected_flag = 0;
 	uint8_t possible_click_event = 0;
+	uint8_t once_push = 0;
 
 	/* Run Application (Interrupt mode) */
 	while (1) {
@@ -400,14 +411,78 @@ void touch_screen(int c_socket)
 
 		if (BSP_PB_GetState(BUTTON_KEY)) {
 			BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
-			BSP_LCD_DrawRect(390, 135, 50, 70);
+			BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+			BSP_LCD_FillRect(396, 208, 70, 50);
+			BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
+			BSP_LCD_FillRect(396, 144, 70, 50);
+			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+			BSP_LCD_FillRect(396, 80, 70, 50);
+			BSP_LCD_SetTextColor(LCD_COLOR_DARKRED);
+			BSP_LCD_FillRect(396, 14, 70, 50);
 		}
 
 		if (ts_state.touchDetected == 1) {
 
 			BSP_LED_On(LED1);
 
-			if ((7 < ts_state.touchX[0]) && (7 < ts_state.touchY[0]) && (472 > ts_state.touchX[0]) && (265 > ts_state.touchY[0])) {
+			if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
+
+				if (!once_push) {
+					once_push = 1;
+					// WRITE HERE THE BUTTON FUNCTION!!!
+					LCD_UsrLog("4\n");
+				} else {
+					once_push = 0;
+					osDelay(500);
+				}
+			}
+
+			if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
+
+				if (!once_push) {
+					once_push = 1;
+					// WRITE HERE THE BUTTON FUNCTION!!!
+					LCD_UsrLog("3\n");
+					BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+					BSP_LCD_FillRect(396, 208, 70, 50);
+					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
+					BSP_LCD_FillRect(396, 144, 70, 50);
+					BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+					BSP_LCD_FillRect(396, 80, 70, 50);
+					BSP_LCD_SetTextColor(LCD_COLOR_DARKRED);
+					BSP_LCD_FillRect(396, 14, 70, 50);
+				} else {
+					once_push = 0;
+					osDelay(500);
+				}
+			}
+
+			if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
+
+				if (!once_push) {
+					once_push = 1;
+					// WRITE HERE THE BUTTON FUNCTION!!!
+					LCD_UsrLog("2\n");
+				} else {
+					once_push = 0;
+					osDelay(500);
+				}
+			}
+
+			if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
+
+				if (!once_push) {
+					once_push = 1;
+					// WRITE HERE THE BUTTON FUNCTION!!!
+					LCD_UsrLog("1\n");
+				} else {
+					once_push = 0;
+					osDelay(500);
+				}
+			}
+
+			if ((7 < ts_state.touchX[0]) && (7 < ts_state.touchY[0]) && (390 > ts_state.touchX[0]) && (265 > ts_state.touchY[0])) {
 				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 			}
 
@@ -440,7 +515,7 @@ void touch_screen(int c_socket)
 				int16_t cor_y = abs(ts_state.touchY[0] - 272);
 				sprintf(position,"%3d - %3d", cor_x, cor_y);
 				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);*/
-				send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
+				//send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
 			}
 		} else {
 			BSP_LED_Off(LED1);
@@ -449,7 +524,6 @@ void touch_screen(int c_socket)
 				HAL_Delay(10);
 				HID_Buffer[0] = 0b001;
 				HID_Buffer[0] = 0;
-
 				possible_click_event = 0;
 			}
 		}
