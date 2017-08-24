@@ -115,10 +115,15 @@ void mouse_coordinate_thread(void const * argument)
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
-					BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
-					BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 26);
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					drawing_flag = 0;
+					if (((last_ts_coord.x - 26) < ts_state.touchX[0]) && ((last_ts_coord.y - 26) < ts_state.touchY[0]) && ((last_ts_coord.x + 26) > ts_state.touchX[0]) && ((last_ts_coord.y + 26) > ts_state.touchY[0])) {
+						BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
+						BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 26);
+						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+						ts_state.touchX[0] = ((last_ts_coord.x - 26) + (last_ts_coord.x + 26)) / 2;
+						ts_state.touchY[0] = ((last_ts_coord.y - 26) + (last_ts_coord.y + 26)) / 2;
+						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+						drawing_flag = 0;
+					}
 				}
 
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
