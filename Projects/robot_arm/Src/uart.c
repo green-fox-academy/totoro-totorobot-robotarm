@@ -482,7 +482,7 @@ void set_value(void)
 					}
 
 					// Set display message
-					sprintf(target_display, "s%d pulse %d\n", c_params.device_id, c_params.value);
+					sprintf(target_display, "s%d pulse %d          ", c_params.device_id, c_params.value);
 
 					// Reset next coordinate flag, so that other processes can use it
 					next_coord_set = 1;
@@ -548,7 +548,7 @@ void set_value(void)
 					target_angles.theta2 = targ_ang_rad.theta2;
 
 					// Set display message
-					sprintf(target_display, "s%d angle %d deg\n", c_params.device_id, (int16_t) c_params.value);
+					sprintf(target_display, "s%d angle %d deg          ", c_params.device_id, (int16_t) c_params.value);
 
 					// Reset next coordinate flag, so that other processes can use it
 					next_coord_set = 1;
@@ -592,7 +592,7 @@ void set_value(void)
 				target_xyz.z = (double) c_params.value_z;
 
 				// Set display message
-				sprintf(target_display, "X:%5d  Y:%5d  Z:%5d\n", c_params.value_x, c_params.value_y, c_params.value_z);
+				sprintf(target_display, "X:%5d  Y:%5d  Z:%5d   ", c_params.value_x, c_params.value_y, c_params.value_z);
 
 				next_coord_set = 1;
 				osMutexRelease(arm_coord_mutex);
