@@ -56,7 +56,7 @@ void UART_send_help(void);
 void UART_rx_thread(void const * argument);
 void process_command(void);
 void execute_command(void);
-
+void execute_file(void);
 void set_value(void);
 void UART_send_settings(void);
 void start_lcd_data_display(void);

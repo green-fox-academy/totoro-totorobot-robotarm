@@ -297,7 +297,7 @@ uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 	angles_t joint_angles;
 
 	// Verify if xyz coordinates are within work area
-	if (verify_xyz(&pos_cart) != 0) {
+	if (verify_xyz(pos_cart) != 0) {
 		log_msg(ERROR, "XYZ coordinates are out of allowed area!\n");
 		return 1;
 	}
@@ -761,7 +761,6 @@ void set_pulse_thread(void const * argument)
 	while (1) {
 
 		uint8_t new_coord_ready = 0;
-		uint8_t servo_id;
 
 		// Loop until a new target pulse appears
 		while (!new_coord_ready) {
@@ -813,7 +812,7 @@ void set_pulse_thread(void const * argument)
 		for (int j = 0; j < steps[index] + 1; j++) {
 
 			// Take care of the remaining portion too
-			if (j == steps) {
+			if (j == steps[index]) {
 				for (int i = 0; i < SERVOS; i++) {
 					if (current_pulse_w[i] != target_pulse_w[i]) {
 						interm_pulse_w[i] = target_pulse_w[i];
@@ -827,7 +826,7 @@ void set_pulse_thread(void const * argument)
 				// Check if angles are in allowed range
 				angles_t ang_rad;
 				angles_t ang_deg;
-				any_pulse_to_ang_abs(&interm_pulse_w, &ang_rad);
+				any_pulse_to_ang_abs(interm_pulse_w, &ang_rad);
 				ang_deg.theta0 = rad_to_deg(ang_rad.theta0);
 				ang_deg.theta1 = rad_to_deg(ang_rad.theta1);
 				ang_deg.theta2 = rad_to_deg(ang_rad.theta2);

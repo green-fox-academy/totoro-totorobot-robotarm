@@ -64,6 +64,7 @@ uint8_t FAT_fs_init(void);
 void write_sd_card(char* file_name, char* line_to_write);
 void read_sd_card(char* file_name);
 void sd_logger_thread(void const * argument);
+void file_reader_thread(void const * argument);
 void log_msg(uint8_t log_level, char* message);
 void read_G_code(char* file_name, uint32_t* read_pos, G_code_t* G_code);
 uint8_t verify_file(char* file_name);
