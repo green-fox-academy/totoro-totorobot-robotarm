@@ -88,6 +88,32 @@ void red_button_animation()
 	}
 }
 
+void blue_button_animation()
+{
+	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+	BSP_LCD_FillRect(396, 208, 70, 50);
+	for (int j = 0; j < 7; j++) {
+		BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+		BSP_LCD_DrawLine(396 + j, 208, 396 + j, 208 + 50);
+		BSP_LCD_DrawLine(396 + 70 - j, 208, 396 + 70 - j, 208 + 50);
+		BSP_LCD_DrawLine(396, 208 + j, 396 + 70, 208 + j);
+		BSP_LCD_DrawLine(396, 208 + 50 - j, 396 + 70, 208 + 50 - j);
+	}
+}
+
+void green_button_animation()
+{
+	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTGREEN);
+	BSP_LCD_FillRect(396, 144, 70, 50);
+	for (int j = 0; j < 7; j++) {
+		BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+		BSP_LCD_DrawLine(396 + j, 144, 396 + j, 144 + 50);
+		BSP_LCD_DrawLine(396 + 70 - j, 144, 396 + 70 - j, 144 + 50);
+		BSP_LCD_DrawLine(396, 144 + j, 396 + 70, 144 + j);
+		BSP_LCD_DrawLine(396, 144 + 50 - j, 396 + 70, 144 + 50 - j);
+	}
+}
+
 void mouse_coordinate_thread(void const * argument)
 {
 		LCD_UsrLog("Im in the MousE CoorD THREAD!\n");
@@ -149,11 +175,17 @@ void mouse_coordinate_thread(void const * argument)
 				}
 				//BLUE button
 				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
-					BSP_LCD_FillRect(396, 208, 70, 50);
+					blue_button_animation();
+					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+					BSP_LCD_FillRect(396, 144, 70, 50);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//GREEN button
 				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
-					BSP_LCD_FillRect(396, 144, 70, 50);
+					green_button_animation();
+					BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+					BSP_LCD_FillRect(396, 208, 70, 50);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//YELLOW button
 				if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
@@ -161,7 +193,6 @@ void mouse_coordinate_thread(void const * argument)
 				}
 				//RED button
 				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
-					//BSP_LCD_FillRect(396, 14, 70, 50);
 					red_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
 				}
@@ -194,6 +225,7 @@ void mouse_coordinate_thread(void const * argument)
 					cor_x = ts_state.touchX[0];
 					cor_y = abs(ts_state.touchY[0] - 272);
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, cor_y);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
 			} else {
