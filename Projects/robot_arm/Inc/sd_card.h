@@ -38,9 +38,9 @@ uint8_t sd_logger_on;
 uint8_t lcd_logger_on;
 uint8_t file_reader_on;
 
-static FATFS SDFatFs;  /* File system object for SD card logical drive */
-static FRESULT res;    /* FatFs function common result code */
-static char sd_path[4]; /* SD card logical drive path */
+FATFS SDFatFs;  /* File system object for SD card logical drive */
+FRESULT res;    /* FatFs function common result code */
+char sd_path[4]; /* SD card logical drive path */
 
 typedef struct {
 	uint16_t g;

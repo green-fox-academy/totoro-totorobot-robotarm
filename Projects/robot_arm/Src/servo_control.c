@@ -516,33 +516,35 @@ uint8_t verify_angle(angles_t* ang_deg) {
 	if ((ang_deg->theta0 > servo_conf[0].max_angle_deg) ||
 		(ang_deg->theta0 < servo_conf[0].min_angle_deg)) {
 		log_msg(ERROR, "Theta0 is out of allowed range!\n");
-		return 1;
+		return 10;
 	}
 
 	if ((ang_deg->theta1 > servo_conf[1].max_angle_deg) ||
 		(ang_deg->theta1 < servo_conf[1].min_angle_deg)) {
 		log_msg(ERROR, "Theta1 is out of allowed range!\n");
-		return 1;
+		return 11;
 	}
 
 	if ((ang_deg->theta2 > servo_conf[2].max_angle_deg) ||
 		(ang_deg->theta2 < servo_conf[2].min_angle_deg)) {
 		log_msg(ERROR, "Theta2 is out of allowed range!\n");
-		return 1;
+		return 12;
 	}
 
 	// 2.) 180 deg - (theta1 + theta2) > 35 deg
 	// where theta2 is the angle of link2 to horizon
 	if (180 - (ang_deg->theta1 + ang_deg->theta2) <= 35) {
 		log_msg(ERROR, "Angle between link1 and link2 is less than 35 deg!\n");
-		return 1;
+		return 13;
 	}
 
 	// 3.) theta2 <= 0.035416 * theta1^2 - 2.51917 theta1 + 48
-	// where theta2 is the angle of link2 to horizon. Angles in deg.
-	if (ang_deg->theta2 > 0.035416 * pow(ang_deg->theta1, 2.0) - 2.51917 * ang_deg->theta1 + 48) {
-		log_msg(ERROR, "Link1 and link2 angles are outside of safe range!\n");
-		return 1;
+	// where theta2 is the angle of link2 to horizon. Angles in degrees.
+	if ((ang_deg->theta1 >= 34) && (ang_deg->theta1 <= 56)) {
+		if (ang_deg->theta2 > 0.035416 * pow(ang_deg->theta1, 2.0) - 2.51917 * ang_deg->theta1 + 48) {
+			log_msg(ERROR, "Link1 and link2 angles are outside of safe range!\n");
+			return 14;
+		}
 	}
 
 	return 0;
@@ -570,6 +572,7 @@ void set_position_thread(void const * argument)
 		// Loop until a new target coordinate appears
 		while (!new_coord_ready) {
 			osMutexWait(arm_coord_mutex, osWaitForever);
+
 			if (next_coord_set) {
 
 				// Read in target position
@@ -577,12 +580,15 @@ void set_position_thread(void const * argument)
 				target_pos.y = target_xyz.y;
 				target_pos.z = target_xyz.z;
 
-				// Reset next coordinate flag, so that other processes can use it
+				// Reset next coordinate flag,
+				// so that other side can send next target
 				next_coord_set = 0;
+
+				// Quit loop when we got new target
+				new_coord_ready = 1;
 			}
 
 			osMutexRelease(arm_coord_mutex);
-			new_coord_ready = 1;
 			osDelay(5);
 		}
 
@@ -689,25 +695,13 @@ void set_angle_thread(void const * argument)
 		// Get current position based on servo PWM parameters
 		pulse_to_ang_abs(&current_ang);
 
-		printf("1\n");
-
 		// If target differs from current...
-		double d_theta0 = abs(target_ang.theta0 - current_ang.theta0);
-		double d_theta1 = abs(target_ang.theta1 - current_ang.theta1);
-		double d_theta2 = abs(target_ang.theta2 - current_ang.theta2);
-
-		printf("2\n");
-
-		printf("d_t1: %d\n", (int) rad_to_deg(d_theta1));
-		printf("target t1: %d\n", (int) rad_to_deg(target_ang.theta1));
-		printf("current t1: %d\n", (int) rad_to_deg(current_ang.theta1));
-		printf("res t1 rad: %d\n", (int) min_theta1_res_rad);
-		printf("res t1 deg: %d\n", (int) MIN_THETA1_RES);
+		double d_theta0 = fabs(target_ang.theta0 - current_ang.theta0);
+		double d_theta1 = fabs(target_ang.theta1 - current_ang.theta1);
+		double d_theta2 = fabs(target_ang.theta2 - current_ang.theta2);
 
 		if ((d_theta0 > min_theta0_res_rad) || (d_theta1 > min_theta1_res_rad) ||
 			(d_theta2 > min_theta2_res_rad)) {
-
-			printf("3\n");
 
 			uint16_t steps;
 			double step0;
@@ -731,8 +725,6 @@ void set_angle_thread(void const * argument)
 				step1 = 0;
 				step2 = (target_ang.theta2 - current_ang.theta2) / steps;
 			}
-
-			printf("step1: %d\n", (int) step1);
 
 			// Calculate step sizes along axes and execute movement
 			for (uint16_t i = 0; i < steps; i++) {
