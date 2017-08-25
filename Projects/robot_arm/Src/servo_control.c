@@ -651,6 +651,10 @@ void set_angle_thread(void const * argument)
 	angles_t target_ang;	// rad
 	double step_size = deg_to_rad(DEFAULT_ANG_STEP);
 	double speed = deg_to_rad(DEFAULT_ANG_SPEED);
+	double min_theta0_res_rad = deg_to_rad(MIN_THETA0_RES);
+	double min_theta1_res_rad = deg_to_rad(MIN_THETA1_RES);
+	double min_theta2_res_rad = deg_to_rad(MIN_THETA2_RES);
+
 	uint32_t wait_time = (step_size * 1000) / speed;
 
 	// Set thread flag to ready
@@ -672,24 +676,38 @@ void set_angle_thread(void const * argument)
 
 				// Reset next coordinate flag, so that other processes can use it
 				next_coord_set = 0;
-			}
 
+				// Exit loop
+				new_coord_ready = 1;
+			}
 			osMutexRelease(arm_coord_mutex);
-			new_coord_ready = 1;
 			osDelay(5);
 		}
 
+
+
 		// Get current position based on servo PWM parameters
 		pulse_to_ang_abs(&current_ang);
+
+		printf("1\n");
 
 		// If target differs from current...
 		double d_theta0 = abs(target_ang.theta0 - current_ang.theta0);
 		double d_theta1 = abs(target_ang.theta1 - current_ang.theta1);
 		double d_theta2 = abs(target_ang.theta2 - current_ang.theta2);
 
-		if ((d_theta0 > MIN_THETA0_RES) || (d_theta1 > MIN_THETA1_RES) ||
-			(d_theta2 > MIN_THETA2_RES)) {
+		printf("2\n");
 
+		printf("d_t1: %d\n", (int) rad_to_deg(d_theta1));
+		printf("target t1: %d\n", (int) rad_to_deg(target_ang.theta1));
+		printf("current t1: %d\n", (int) rad_to_deg(current_ang.theta1));
+		printf("res t1 rad: %d\n", (int) min_theta1_res_rad);
+		printf("res t1 deg: %d\n", (int) MIN_THETA1_RES);
+
+		if ((d_theta0 > min_theta0_res_rad) || (d_theta1 > min_theta1_res_rad) ||
+			(d_theta2 > min_theta2_res_rad)) {
+
+			printf("3\n");
 
 			uint16_t steps;
 			double step0;
@@ -697,22 +715,24 @@ void set_angle_thread(void const * argument)
 			double step2;
 
 
-			if (d_theta0 > MIN_THETA0_RES) {
+			if (d_theta0 > min_theta0_res_rad) {
 				steps = d_theta0 / step_size;
 				step0 = (target_ang.theta0 - current_ang.theta0) / steps;
 				step1 = 0;
 				step2 = 0;
-			} else if (d_theta1 > MIN_THETA1_RES) {
+			} else if (d_theta1 > min_theta1_res_rad) {
 				steps = d_theta1 / step_size;
 				step0 = 0;
 				step1 = (target_ang.theta1 - current_ang.theta1) / steps;
 				step2 = 0;
-			} else if (d_theta2 > MIN_THETA2_RES) {
+			} else if (d_theta2 > min_theta2_res_rad) {
 				steps = d_theta2 / step_size;
 				step0 = 0;
 				step1 = 0;
 				step2 = (target_ang.theta2 - current_ang.theta2) / steps;
 			}
+
+			printf("step1: %d\n", (int) step1);
 
 			// Calculate step sizes along axes and execute movement
 			for (uint16_t i = 0; i < steps; i++) {
