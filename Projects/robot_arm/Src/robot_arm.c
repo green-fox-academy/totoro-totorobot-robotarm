@@ -16,6 +16,9 @@ typedef struct {
 
 TS_StateTypeDef touch_scr;
 
+int16_t save_x;
+int16_t save_y;
+
 int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVER_IP)
 {
 	// Creating client socket
@@ -49,7 +52,7 @@ void system_stop_animation()
 	BSP_LCD_FillRect(396, 208, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 	BSP_LCD_FillRect(396, 144, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
 }
 
@@ -62,10 +65,12 @@ void drawing_stage()
 	BSP_LCD_FillRect(396, 208, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 	BSP_LCD_FillRect(396, 144, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
+	BSP_LCD_DisplayChar(428, 99, 82);
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
 	BSP_LCD_FillRect(396, 14, 70, 50);
+	BSP_LCD_DisplayChar(428, 33, 83);
 	//DRAWING area
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_DrawRect(20, 30, 356, 230);
@@ -96,6 +101,21 @@ void red_button_animation()
 		BSP_LCD_DrawLine(396 + 70 - j, 14, 396 + 70 - j, 14 + 50);
 		BSP_LCD_DrawLine(396, 14 + j, 396 + 70, 14 + j);
 		BSP_LCD_DrawLine(396, 14 + 50 - j, 396 + 70, 14 + 50 - j);
+		BSP_LCD_DisplayChar(428, 33, 83);
+	}
+}
+
+void yellow_button_animation()
+{
+	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTYELLOW);
+	BSP_LCD_FillRect(396, 80, 70, 50);
+	for (int j = 0; j < 7; j++) {
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
+		BSP_LCD_DrawLine(396 + j, 80, 396 + j, 80 + 50);
+		BSP_LCD_DrawLine(396 + 70 - j, 80, 396 + 70 - j, 80 + 50);
+		BSP_LCD_DrawLine(396, 80 + j, 396 + 70, 80 + j);
+		BSP_LCD_DrawLine(396, 80 + 50 - j, 396 + 70, 80 + 50 - j);
+		BSP_LCD_DisplayChar(428, 99, 82);
 	}
 }
 
@@ -125,11 +145,13 @@ void green_button_animation()
 	}
 }
 
-void circle_delete_animation(coordinate_t last_ts_coord)
+void circle_delete_animation(coordinate_t last_ts_coord, TS_StateTypeDef ts_state)
 {
-	BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
-	BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 20);
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
+		BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
+		BSP_LCD_DrawCircle(save_x, save_y, 20);
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	}
 }
 
 void mouse_coordinate_thread(void const * argument)
@@ -152,13 +174,12 @@ void mouse_coordinate_thread(void const * argument)
 		int drawing_flag = 0;
 
 		char sys_stop[] = "                        SYSTEM STOPPED";
+		char sys_restart[] = "                        SYSTEM RESTART";
 
 		int16_t cor_x = 0;
 		int16_t cor_y = 0;
 		ts_state.touchX[0] = 0;
 		ts_state.touchY[0] = 0;
-		int16_t save_x;
-		int16_t save_y;
 
 		//LCD_UsrLog("X:%d - Y:%d", ts_state.touchX[0], ts_state.touchY[0]);
 
@@ -182,7 +203,7 @@ void mouse_coordinate_thread(void const * argument)
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
 					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
 						//WHITE circle
-						circle_delete_animation(last_ts_coord);
+						circle_delete_animation(last_ts_coord, ts_state);
 					}
 					drawing_flag = 0;
 				}
@@ -193,6 +214,7 @@ void mouse_coordinate_thread(void const * argument)
 				//BLUE button
 				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
 					blue_button_animation();
+					circle_delete_animation(last_ts_coord, ts_state);
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 					BSP_LCD_FillRect(396, 144, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
@@ -200,19 +222,25 @@ void mouse_coordinate_thread(void const * argument)
 				//GREEN button
 				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
 					green_button_animation();
+					circle_delete_animation(last_ts_coord, ts_state);
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
 					BSP_LCD_FillRect(396, 208, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//YELLOW button
 				if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
-					BSP_LCD_FillRect(396, 80, 70, 50);
+					yellow_button_animation();
+					circle_delete_animation(last_ts_coord, ts_state);
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_restart);
+					osDelay(2000);
+					drawing_stage();
 				}
 				//RED button
 				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
+					circle_delete_animation(last_ts_coord, ts_state);
+					system_stop_animation();
 					red_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
-					system_stop_animation();
 				}
 
 				if (!first_touch_detected_flag) {
@@ -257,9 +285,9 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+						save_x = ts_state.touchX[0];
+						save_y = ts_state.touchY[0];
 					}
-					save_x = ts_state.touchX[0];
-					save_y = ts_state.touchY[0];
 					drawing_flag = 1;
 				}
 				//first_touch_detected_flag = 0;
@@ -336,11 +364,14 @@ void socket_server_thread(void const *argument)
 	if (flag < 0)
 		LCD_ErrLog("listen() ");
 
-	// Create variables which will be used in the while loop
-	struct sockaddr client_addr;    				// Client address structure
-	int slave_sock;              					// Slave socket definition, this will be used to store the incoming socket
-	char recv_buff[100];                			// Buffer for incoming and outgoing data
-	char send_buff[] = "Yeahh, I got it..";			// Buffer for feedback
+	// Client address structure
+	struct sockaddr client_addr;
+	// Slave socket definition, this will be used to store the incoming socket
+	int slave_sock;
+	// Buffer for incoming and outgoing data
+	char recv_buff[100];
+	// Buffer(s) for feedback
+	char send_buff[] = "Yeahh, I got it..";
 	char position[10];
 
 	while (1) {
