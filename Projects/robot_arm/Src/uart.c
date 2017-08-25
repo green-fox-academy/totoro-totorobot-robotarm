@@ -580,7 +580,7 @@ void set_value(void)
 			UART_send("Manual control ended, ADC terminated.");
 		}
 
-		// Read in xyz values and set pwm pulse
+		// Set xyz values
 		while(1) {
 			osMutexWait(arm_coord_mutex, osWaitForever);
 			if (!next_coord_set) {
@@ -666,11 +666,17 @@ void execute_file(void)
 	}
 
 	// Launch G-code reader with the given file name
-	osThreadDef(FILE_READ, file_reader_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
+	osThreadDef(FILE_READ, file_reader_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 10);
 	osThreadCreate (osThread(FILE_READ), c_params.file_name);
+	UART_send("G-code reader thread started.");
+	log_msg(USER, "G-code reader thread started.\n");
 
-	UART_send("G-code reader started.");
-	log_msg(USER, "G-code reader started.\n");
+	// Launch process to set pulse
+    osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(SET_POSITION), NULL);
+	UART_send("Set position thread started.");
+	log_msg(USER, "Set position thread started.\n");
+
 	return;
 }
 

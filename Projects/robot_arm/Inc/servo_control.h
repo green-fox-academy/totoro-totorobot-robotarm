@@ -5,7 +5,7 @@
 #include "cmsis_os.h"
 #include "sd_card.h"
 #include "robot_arm_conf.h"
-#include "kinematics.h"
+//#include "kinematics.h"
 #include <string.h>
 
 #define SERVOS				4

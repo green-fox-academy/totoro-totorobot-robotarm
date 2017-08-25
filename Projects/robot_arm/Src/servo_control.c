@@ -560,6 +560,9 @@ void set_position_thread(void const * argument)
 	// Set thread flag to ready
 	set_position_on = 1;
 
+	// Give time to other processes
+	osDelay(100);
+
 	while (1) {
 
 		uint8_t new_coord_ready = 0;
@@ -739,7 +742,7 @@ void set_angle_thread(void const * argument)
 
 	while (1) {
 		// Terminate thread
-		log_msg(USER, "set_position_thread terminated\n");
+		log_msg(USER, "set_angle_thread terminated\n");
 		set_position_on = 0;
 		osThreadTerminate(NULL);
 	}

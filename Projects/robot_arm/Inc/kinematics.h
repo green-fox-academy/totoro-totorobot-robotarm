@@ -2,8 +2,9 @@
 #define __KINEMATICS_H_
 
 #include "stm32f7xx_hal.h"
-#include "sd_card.h"
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 /* Robot arm geometry */
 

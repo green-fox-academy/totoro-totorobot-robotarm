@@ -109,27 +109,6 @@ uint8_t FAT_fs_init(void)
 	return 0;
 }
 
-void read_sd_card(char* file_name)
-{
-
-	// Create file pointer
-	FIL file_p;
-
-	// Open the text file object with read access
-	if (f_open(&file_p, file_name, FA_READ) != FR_OK) {
-		LCD_ErrLog((char*) "Open file has failed.\n");
-	}
-
-
-	/*## Read data from the text file ###########################*/
-	f_read(&file_p, rtext, sizeof(rtext), (UINT*)&bytesread);
-	LCD_UsrLog(rtext);
-
-
-	/*##-9- Close the open text file #############################*/
-	f_close(&file_p);
-}
-
 void write_sd_card(char* file_name, char* line_to_write)
 {
 	// Create file pointer
@@ -249,11 +228,17 @@ void file_reader_thread(void const * argument)
 	FIL file_o;
 	G_code_t G_code;
 
-	// Set on flag
+	// Set flags
 	file_reader_on = 1;
+	end_moving = 0;
 
 	// Let other processes to complete
 	osDelay(500);
+
+	// Wait for set position thread to start
+	while (!set_position_on) {
+		osDelay(100);
+	}
 
 	// Open the file with read-only access
 	if (f_open(&file_o, (char*) argument, FA_READ) != FR_OK) {
@@ -266,17 +251,46 @@ void file_reader_thread(void const * argument)
 
 			// Process G-code data
 			if (file_end < 2) {
-				printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
+				// printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
 
-				// Send G_code to set_position process
+				// Send G_code to set_position process and wait for arm movement
+				while(1) {
+					osMutexWait(arm_coord_mutex, osWaitForever);
+					if (!next_coord_set) {
 
-				// Wait while arm movement finishes
-				osDelay(100);
-			}
+						// Set xyz coordinates
+						target_xyz.x = G_code.x;
+						target_xyz.y = G_code.y;
+						target_xyz.z = G_code.z;
 
-			// If this was the last line stop thread
-			if (file_end) {
-				break;
+						// Set display message
+						sprintf(target_display, "X: %3d  Y: %3d  Z: %3d   ", (int16_t) G_code.x, (int16_t) G_code.y, (int16_t) G_code.z);
+
+						next_coord_set = 1;
+						osMutexRelease(arm_coord_mutex);
+						break;
+					}
+					osMutexRelease(arm_coord_mutex);
+					osDelay(10);
+				}
+
+				// If this was the last line, send latest data again, signal to
+				// set position thread to quit and stop this thread
+				if (file_end) {
+
+					end_moving = 1;
+
+					while(1) {
+						osMutexWait(arm_coord_mutex, osWaitForever);
+						if (!next_coord_set) {
+							next_coord_set = 1;
+							osMutexRelease(arm_coord_mutex);
+							break;
+						}
+						osMutexRelease(arm_coord_mutex);
+						osDelay(10);
+					}
+				}
 			}
 		}
 	}

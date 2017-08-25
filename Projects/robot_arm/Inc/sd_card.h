@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "kinematics.h"
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
@@ -38,14 +39,8 @@ uint8_t lcd_logger_on;
 uint8_t file_reader_on;
 
 static FATFS SDFatFs;  /* File system object for SD card logical drive */
-static FIL MyFile;     /* File object */
-static char sd_path[4]; /* SD card logical drive path */
 static FRESULT res;    /* FatFs function common result code */
-static uint32_t bytesread;      				            /* File write/read counts */
-static char wtext[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"; /* File write buffer */
-static char btext[] = "STM333.TXT";						/* Name of the file */
-static char rtext[100];
-
+static char sd_path[4]; /* SD card logical drive path */
 
 typedef struct {
 	uint16_t g;
@@ -56,13 +51,21 @@ typedef struct {
 	double f;
 } G_code_t;
 
+extern osMutexId arm_coord_mutex;
+
+extern uint8_t set_position_on;
+extern uint8_t next_coord_set;
+extern uint8_t end_moving;
+
+extern coord_cart_t target_xyz;
+extern char target_display[100];
+
 
 char msg_log[100];
 char logfile_name[100];
 
 uint8_t FAT_fs_init(void);
 void write_sd_card(char* file_name, char* line_to_write);
-void read_sd_card(char* file_name);
 void sd_logger_thread(void const * argument);
 void file_reader_thread(void const * argument);
 void log_msg(uint8_t log_level, char* message);
