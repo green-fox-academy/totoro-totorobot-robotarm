@@ -54,6 +54,7 @@ void system_stop_animation()
 	BSP_LCD_FillRect(396, 144, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
+	BSP_LCD_DisplayChar(428, 99, 82);
 }
 
 void drawing_stage()
@@ -172,6 +173,7 @@ void mouse_coordinate_thread(void const * argument)
 		uint8_t possible_click_event = 0;
 
 		int drawing_flag = 0;
+		int red_button_flag = 0;
 
 		char sys_stop[] = "                        SYSTEM STOPPED";
 		char sys_restart[] = "                        SYSTEM RESTART";
@@ -212,7 +214,7 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
 				//BLUE button
-				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
+				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0]) && !red_button_flag) {
 					blue_button_animation();
 					circle_delete_animation(last_ts_coord, ts_state);
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
@@ -220,7 +222,7 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//GREEN button
-				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
+				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
 					green_button_animation();
 					circle_delete_animation(last_ts_coord, ts_state);
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
@@ -234,13 +236,15 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_restart);
 					osDelay(2000);
 					drawing_stage();
+					red_button_flag = 0;
 				}
 				//RED button
-				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
+				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
 					circle_delete_animation(last_ts_coord, ts_state);
 					system_stop_animation();
 					red_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
+					red_button_flag = 1;
 				}
 
 				if (!first_touch_detected_flag) {
