@@ -422,7 +422,6 @@ void touch_screen_thread(void const *argument)
 		}
 
 		if (ts_state.touchDetected == 1) {
-
 			BSP_LED_On(LED1);
 
 			if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
@@ -510,12 +509,14 @@ void touch_screen_thread(void const *argument)
 				if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 					possible_click_event = 0;
 
-				/*char position[100];
-				int16_t cor_x = ts_state.touchX[0];
-				int16_t cor_y = abs(ts_state.touchY[0] - 272);
-				sprintf(position,"%3d - %3d", cor_x, cor_y);
-				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);*/
-				//send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
+				if ((7 < ts_state.touchX[0]) && (7 < ts_state.touchY[0]) && (390 > ts_state.touchX[0]) && (265 > ts_state.touchY[0])) {
+					char position[100];
+					int16_t cor_x = ts_state.touchX[0];
+					int16_t cor_y = abs(ts_state.touchY[0] - 272);
+					sprintf(position,"%3d - %3d", cor_x, cor_y);
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)position);
+					//send(c_socket, &ts_state, sizeof(TS_StateTypeDef), 0);
+				}
 			}
 		} else {
 			BSP_LED_Off(LED1);
