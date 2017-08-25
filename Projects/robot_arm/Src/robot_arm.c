@@ -52,7 +52,7 @@ void drawing_stage()
 	BSP_LCD_FillRect(396, 144, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
 	BSP_LCD_FillRect(396, 14, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_DrawRect(20, 30, 356, 230);
@@ -71,6 +71,14 @@ void drawing_stage()
 			BSP_LCD_DrawLine(j + 28, 15, j + 28, 260);
 	BSP_LCD_SetTextColor(LCD_COLOR_BROWN);
 	*/
+}
+
+void red_button()
+{
+	for (int j = 0; j < 5; j++) {
+		BSP_LCD_DrawLine(396 + j, 14, 396 + j, 14 + 50);
+		BSP_LCD_DrawLine(396 + 70 - j, 14, 396 + 70 - j, 14 + 50);
+	}
 }
 
 void mouse_coordinate_thread(void const * argument)
@@ -130,17 +138,22 @@ void mouse_coordinate_thread(void const * argument)
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
+				//BLUE button
 				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
 					BSP_LCD_FillRect(396, 208, 70, 50);
 				}
+				//GREEN button
 				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
 					BSP_LCD_FillRect(396, 144, 70, 50);
 				}
+				//YELLOW button
 				if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
 					BSP_LCD_FillRect(396, 80, 70, 50);
 				}
+				//RED button
 				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
-					BSP_LCD_FillRect(396, 14, 70, 50);
+					//BSP_LCD_FillRect(396, 14, 70, 50);
+					red_button();
 				}
 
 				if (!first_touch_detected_flag) {
