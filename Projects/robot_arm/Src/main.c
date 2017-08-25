@@ -59,6 +59,7 @@
 #include "uart.h"
 #include "sd_card.h"
 #include "rtc.h"
+#include "interrupt.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -105,6 +106,10 @@ int main(void)
 
     BSP_Config();
   
+    pin_init();
+    EXTI3_IRQHandler_Config();
+    EXTI2_IRQHandler_Config();
+
     // Init thread
     osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(Start), NULL);

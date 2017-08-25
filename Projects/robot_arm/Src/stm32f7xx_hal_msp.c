@@ -78,7 +78,6 @@ void HAL_MspInit(void)
 {
 
 }
-
 /**
   * @brief  DeInitializes the Global MSP.
   * @param  None  
@@ -89,6 +88,10 @@ void HAL_MspDeInit(void)
   /* NOTE : This function is generated automatically by STM32CubeMX and eventually  
             modified by the user
    */
+}
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
+{
+
 }
 
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
@@ -179,6 +182,46 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 	//4 A3 PF8 ADC3_IN6
 	GPIO_Init.Pin = GPIO_PIN_8;
 	HAL_GPIO_Init(GPIOF, &GPIO_Init);
+}
+
+void EXTI3_IRQHandler_Config(void)
+{
+	GPIO_InitTypeDef GPIO_Init;
+	// Enable GPIO clocks
+	__HAL_RCC_GPIOI_CLK_ENABLE();
+
+	//END_STOP1
+	//8 D7 PI3
+	GPIO_Init.Pin = GPIO_PIN_3;
+	GPIO_Init.Mode = GPIO_MODE_IT_RISING_FALLING;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOI, &GPIO_Init);
+
+	/* Set Interrupt priority */
+	HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 1);
+
+	/* Enable  in end_stop_threadterrupt */
+	HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+}
+
+void EXTI2_IRQHandler_Config(void)
+{
+	GPIO_InitTypeDef GPIO_Init;
+	// Enable GPIO clocks
+	__HAL_RCC_GPIOI_CLK_ENABLE();
+
+	//END_STOP2
+	//1 D8 PI2
+	GPIO_Init.Pin = GPIO_PIN_2;
+	GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOI, &GPIO_Init);
+
+	/* Set Interrupt priority */
+	HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 1);
+
+	/* Enable  in end_stop_threadterrupt */
+	HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
 /**
