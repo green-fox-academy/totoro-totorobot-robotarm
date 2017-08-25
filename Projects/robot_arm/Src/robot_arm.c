@@ -42,14 +42,25 @@ int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVE
 	}
 }
 
+void system_stop_animation()
+{
+	//Create BUTTONS
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
+	BSP_LCD_FillRect(396, 208, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
+	BSP_LCD_FillRect(396, 144, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+	BSP_LCD_FillRect(396, 80, 70, 50);
+}
+
 void drawing_stage()
 {
 	//Set BACKGROUND
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	//Create BUTTONS
-	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
 	BSP_LCD_FillRect(396, 208, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 	BSP_LCD_FillRect(396, 144, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
@@ -93,7 +104,7 @@ void blue_button_animation()
 	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
 	BSP_LCD_FillRect(396, 208, 70, 50);
 	for (int j = 0; j < 7; j++) {
-		BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
 		BSP_LCD_DrawLine(396 + j, 208, 396 + j, 208 + 50);
 		BSP_LCD_DrawLine(396 + 70 - j, 208, 396 + 70 - j, 208 + 50);
 		BSP_LCD_DrawLine(396, 208 + j, 396 + 70, 208 + j);
@@ -106,12 +117,19 @@ void green_button_animation()
 	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTGREEN);
 	BSP_LCD_FillRect(396, 144, 70, 50);
 	for (int j = 0; j < 7; j++) {
-		BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 		BSP_LCD_DrawLine(396 + j, 144, 396 + j, 144 + 50);
 		BSP_LCD_DrawLine(396 + 70 - j, 144, 396 + 70 - j, 144 + 50);
 		BSP_LCD_DrawLine(396, 144 + j, 396 + 70, 144 + j);
 		BSP_LCD_DrawLine(396, 144 + 50 - j, 396 + 70, 144 + 50 - j);
 	}
+}
+
+void circle_delete_animation(coordinate_t last_ts_coord)
+{
+	BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
+	BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 20);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 }
 
 void mouse_coordinate_thread(void const * argument)
@@ -162,12 +180,11 @@ void mouse_coordinate_thread(void const * argument)
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
-
-						BSP_LCD_SetTextColor(LCD_LOG_BACKGROUND_COLOR);
-						BSP_LCD_DrawCircle(last_ts_coord.x, last_ts_coord.y, 20);
-						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						//BSP_LCD_FillCircle(save_x, save_y, 4);
-						drawing_flag = 0;
+					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
+						//WHITE circle
+						circle_delete_animation(last_ts_coord);
+					}
+					drawing_flag = 0;
 				}
 
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
@@ -176,14 +193,14 @@ void mouse_coordinate_thread(void const * argument)
 				//BLUE button
 				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0])) {
 					blue_button_animation();
-					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 					BSP_LCD_FillRect(396, 144, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//GREEN button
 				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0])) {
 					green_button_animation();
-					BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
+					BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
 					BSP_LCD_FillRect(396, 208, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
@@ -195,6 +212,7 @@ void mouse_coordinate_thread(void const * argument)
 				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0])) {
 					red_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
+					system_stop_animation();
 				}
 
 				if (!first_touch_detected_flag) {
@@ -231,13 +249,15 @@ void mouse_coordinate_thread(void const * argument)
 			} else {
 				BSP_LED_Off(LED1);
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && !drawing_flag) {
-					osDelay(500);
-					BSP_LCD_SetTextColor(LCD_COLOR_RED);
-					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
-					osDelay(2000);
-					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
+						osDelay(500);
+						BSP_LCD_SetTextColor(LCD_COLOR_RED);
+						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
+						osDelay(2000);
+						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
+						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					}
 					save_x = ts_state.touchX[0];
 					save_y = ts_state.touchY[0];
 					drawing_flag = 1;
