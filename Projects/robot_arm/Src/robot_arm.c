@@ -210,7 +210,7 @@ void mouse_coordinate_thread(void const * argument)
 					drawing_flag = 0;
 				}
 
-				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
+				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
 				//BLUE button
@@ -281,7 +281,7 @@ void mouse_coordinate_thread(void const * argument)
 			} else {
 				BSP_LED_Off(LED1);
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && !drawing_flag) {
-					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
+					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
 						osDelay(500);
 						BSP_LCD_SetTextColor(LCD_COLOR_RED);
 						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
