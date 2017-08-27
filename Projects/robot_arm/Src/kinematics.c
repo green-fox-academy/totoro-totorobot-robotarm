@@ -87,8 +87,8 @@ void calc_forward_kinematics(angles_t* joint_angles, coord_polar_t* pos_polar)
 	pos_polar->angle = joint_angles->theta0;
 
 	// Correct gripper displacement and joint0 elevation, save values
-	pos_polar->r = r + r3;
-	pos_polar->z = z + z0 - z3;
+	pos_polar->r = r; //+ r3;
+	pos_polar->z = z; //+ z0 - z3;
 
 	return;
 }
@@ -101,8 +101,8 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 	 */
 
 	// Correct gripper displacement and joint0 elevation
-	double r = pos_polar->r - r3;
-	double z = pos_polar->z - z0 + z3;
+	double r = pos_polar->r; //- r3;
+	double z = pos_polar->z; //- z0 + z3;
 
 	// Calculate theta2
 	double cos_theta2 = (pow(r, 2.0) + pow(z, 2.0)
@@ -114,6 +114,11 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 	// Calculate theta1
 	double k1 = l1 + l2 * cos_theta2;
 	double k2 = l2 * sin(joint_angles->theta2);
+
+	// Debug
+	printf("k1: %f k2: %f\n", k1, k2);
+	printf("cos_t2: %f\n", cos_theta2);
+	printf("t2_rad: %f\n", joint_angles->theta2);
 
 	joint_angles->theta1 = atan2(z, r) - atan2(k2, k1);
 

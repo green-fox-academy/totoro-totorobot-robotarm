@@ -252,22 +252,34 @@ void process_command(void)
 		// Angles are in degrees, theta1 and theta2 are measured to the horizon
 		if ((c_params.command == SET_VALUE) && (c_params.attrib == ANGLE)) {
 
-			angles_t ang_deg;
-			pulse_to_ang_abs(&ang_deg);
+			// Get current angles in rad
+			angles_t targ_ang_rad;
+			angles_t targ_ang_deg;
+			pulse_to_ang_abs(&targ_ang_rad);
 
+			// Update with user data and convert to deg
 			switch (c_params.device_id) {
 			case 0:
-				ang_deg.theta0 = (double) c_params.value;
+				targ_ang_deg.theta0 = (double) c_params.value;
+				targ_ang_deg.theta1 = rad_to_deg(targ_ang_rad.theta1);
+				targ_ang_deg.theta2 = rad_to_deg(targ_ang_rad.theta2);
 				break;
 			case 1:
-				ang_deg.theta1 = (double) c_params.value;
+				targ_ang_deg.theta0 = rad_to_deg(targ_ang_rad.theta0);
+				targ_ang_deg.theta1 = (double) c_params.value;
+				targ_ang_deg.theta2 = rad_to_deg(targ_ang_rad.theta2);
 				break;
 			case 2:
-				ang_deg.theta2 = (double) c_params.value;
+				targ_ang_deg.theta0 = rad_to_deg(targ_ang_rad.theta0);
+				targ_ang_deg.theta1 = rad_to_deg(targ_ang_rad.theta1);
+				targ_ang_deg.theta2 = (double) c_params.value;
+				break;
+			default:
+				UART_send("Unrecognized command or value.");
 				break;
 			}
 
-			c_params.error = verify_angle(&ang_deg);
+			c_params.error = verify_angle(&targ_ang_deg);
 		}
 	}
 
@@ -319,11 +331,11 @@ void process_command(void)
 	}
 
 	// Uncomment for debug
-	// char tmp[100];
-	// sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, file_n: %s, err: %d\n",
-	//			c_params.command, c_params.attrib, c_params.device_id, c_params.value,
-	//			c_params.value_x, c_params.value_y, c_params.value_z, c_params.file_name, c_params.error);
-	// log_msg(DEBUG, tmp);
+	 char tmp[100];
+	 sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, file_n: %s, err: %d\n",
+				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
+				c_params.value_x, c_params.value_y, c_params.value_z, c_params.file_name, c_params.error);
+	 log_msg(DEBUG, tmp);
 
 	return;
 }

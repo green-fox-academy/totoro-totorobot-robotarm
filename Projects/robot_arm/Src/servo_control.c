@@ -312,8 +312,14 @@ uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 	// Convert xyz to polar coordinates
 	cart_to_polar(pos_cart, &pos_polar);
 
+	// Debug
+	printf("polar ang_r: %f, r: %f z: %f\n", pos_polar.angle, pos_polar.r, pos_polar.z);
+
 	// Calculate relative servo angles
 	calc_inverse_kinematics(&pos_polar, &joint_angles_rad);
+
+	// Debug
+	printf("joint ang_r t0: %f, t1: %f t2: %f\n", joint_angles_rad.theta0, joint_angles_rad.theta1, joint_angles_rad.theta2);
 
 	// Calculate and set pulse
 	if (ang_rel_to_pulse(&joint_angles_rad) != 0) {
@@ -512,22 +518,30 @@ uint8_t verify_pulse(uint8_t servo, uint32_t pulse) {
 
 uint8_t verify_angle(angles_t* ang_deg) {
 
+	char tmp[100];
 	// 1.) Check if inside min and max range
 	if ((ang_deg->theta0 > servo_conf[0].max_angle_deg) ||
 		(ang_deg->theta0 < servo_conf[0].min_angle_deg)) {
-		log_msg(ERROR, "Theta0 is out of allowed range!\n");
+		sprintf(tmp, "Theta0 is out of allowed range!: %f\n", ang_deg->theta0);
+		log_msg(ERROR, tmp);
+		//log_msg(ERROR, "Theta0 is out of allowed range!\n");
+
 		return 10;
 	}
 
 	if ((ang_deg->theta1 > servo_conf[1].max_angle_deg) ||
 		(ang_deg->theta1 < servo_conf[1].min_angle_deg)) {
-		log_msg(ERROR, "Theta1 is out of allowed range!\n");
+		sprintf(tmp, "Theta1 is out of allowed range!: %f\n", ang_deg->theta1);
+		log_msg(ERROR, tmp);
+		// log_msg(ERROR, "Theta1 is out of allowed range!\n");
 		return 11;
 	}
 
 	if ((ang_deg->theta2 > servo_conf[2].max_angle_deg) ||
 		(ang_deg->theta2 < servo_conf[2].min_angle_deg)) {
-		log_msg(ERROR, "Theta2 is out of allowed range!\n");
+		sprintf(tmp, "Theta2 is out of allowed range!: %f\n", ang_deg->theta2);
+		log_msg(ERROR, tmp);
+		// log_msg(ERROR, "Theta2 is out of allowed range!\n");
 		return 12;
 	}
 
@@ -595,6 +609,11 @@ void set_position_thread(void const * argument)
 		// Get current position based on servo PWM parameters
 		pulse_to_xyz(&current_pos);
 
+		// Debug
+		printf("current x: %f y %f z: %f\n", current_pos.x, current_pos.y, current_pos.z);
+		printf("target x: %f y %f z: %f\n", target_pos.x, target_pos.y, target_pos.z);
+
+
 		// If target differs from current...
 		if ((abs(target_pos.x - current_pos.x) > MIN_X_RES) ||
 			(abs(target_pos.y - current_pos.y) > MIN_Y_RES) ||
@@ -617,6 +636,9 @@ void set_position_thread(void const * argument)
 				interm_pos.x = current_pos.x + step_x * (i + 1);
 				interm_pos.y = current_pos.y + step_y * (i + 1);
 				interm_pos.z = current_pos.z + step_z * (i + 1);
+
+				// Debug
+				printf("interm x: %f y: %f z %f\n", interm_pos.x, interm_pos.y, interm_pos.z);
 
 				// Convert steps to motor pulse.
 				// In case of error terminate the thread
