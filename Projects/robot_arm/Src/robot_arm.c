@@ -59,6 +59,8 @@ void system_stop_animation()
 
 void drawing_stage()
 {
+	//Ez azért szükséges, mert ha nem a történik érintés a négyzeten belül, fagy
+	char sys_opening_scr[] = "                        START DRAWING!";
 	//Set BACKGROUND
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	//Create BUTTONS
@@ -75,7 +77,9 @@ void drawing_stage()
 	//DRAWING area
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_DrawRect(20, 30, 356, 230);
+	BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
 
+	//Alternate DRAWING area
 	/*
 	BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
 	BSP_LCD_FillCircle(420, 50, 26);
@@ -209,7 +213,6 @@ void mouse_coordinate_thread(void const * argument)
 					}
 					drawing_flag = 0;
 				}
-
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
@@ -275,8 +278,12 @@ void mouse_coordinate_thread(void const * argument)
 					cor_x = ts_state.touchX[0];
 					cor_y = abs(ts_state.touchY[0] - 272);
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, cor_y);
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+
+					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
+						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+					}
 				}
 			} else {
 				BSP_LED_Off(LED1);
@@ -551,6 +558,7 @@ uint8_t get_degrees(void)
 
 	return degrees;
 }
+
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -154,7 +154,7 @@ static void StartThread(void const * argument)
      */
 
 
-    osThreadDef(MOUSE, mouse_coordinate_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadDef(MOUSE, mouse_coordinate_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(MOUSE), NULL);
 
 
