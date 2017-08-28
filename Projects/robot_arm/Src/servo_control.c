@@ -349,6 +349,10 @@ uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 	joint_angles_deg.theta0 = rad_to_deg(joint_angles->theta0);
 	joint_angles_deg.theta1 = rad_to_deg(joint_angles->theta1);
 	joint_angles_deg.theta2 = rad_to_deg(joint_angles->theta2);
+
+	// Debug
+	printf("abs ang deg t0: %f t1: %f, t2: %f\n", joint_angles_deg.theta0, joint_angles_deg.theta1, joint_angles_deg.theta2);
+
 	if (verify_angle(&joint_angles_deg) != 0) {
 		return 1;
 	}
@@ -386,6 +390,9 @@ uint8_t ang_rel_to_pulse(angles_t* joint_angles)
 {
 	// Convert angles from relative to absolute values
 	rel_to_abs_angle(joint_angles);
+
+	// Debug
+	printf("abs angle rad t0: %f t1: %f, t2: %f\n", joint_angles->theta0, joint_angles->theta1, joint_angles->theta2);
 
 	// Calculate and set pulse
 	if (ang_abs_to_pulse(joint_angles) != 0) {
