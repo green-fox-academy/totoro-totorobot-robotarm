@@ -118,9 +118,9 @@ void calc_inverse_kinematics(coord_polar_t* pos_polar, angles_t* joint_angles)
 	double k2 = l2 * sin(joint_angles->theta2);
 
 	// Debug
-	printf("k1: %f k2: %f\n", k1, k2);
-	printf("cos_t2: %f\n", cos_theta2);
-	printf("t2_rad: %f\n", joint_angles->theta2);
+	// printf("k1: %f k2: %f\n", k1, k2);
+	// printf("cos_t2: %f\n", cos_theta2);
+	// printf("t2_rad: %f\n", joint_angles->theta2);
 
 	joint_angles->theta1 = atan2(z, r) - atan2(k2, k1);
 

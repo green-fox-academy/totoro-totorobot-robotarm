@@ -313,13 +313,13 @@ uint8_t xyz_to_pulse(coord_cart_t* pos_cart)
 	cart_to_polar(pos_cart, &pos_polar);
 
 	// Debug
-	printf("polar ang_r: %f, r: %f z: %f\n", pos_polar.angle, pos_polar.r, pos_polar.z);
+	// printf("polar ang_r: %f, r: %f z: %f\n", pos_polar.angle, pos_polar.r, pos_polar.z);
 
 	// Calculate relative servo angles
 	calc_inverse_kinematics(&pos_polar, &joint_angles_rad);
 
 	// Debug
-	printf("joint ang_r t0: %f, t1: %f t2: %f\n", joint_angles_rad.theta0, joint_angles_rad.theta1, joint_angles_rad.theta2);
+	// printf("joint ang_r t0: %f, t1: %f t2: %f\n", joint_angles_rad.theta0, joint_angles_rad.theta1, joint_angles_rad.theta2);
 
 	// Calculate and set pulse
 	if (ang_rel_to_pulse(&joint_angles_rad) != 0) {
@@ -351,7 +351,7 @@ uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 	joint_angles_deg.theta2 = rad_to_deg(joint_angles->theta2);
 
 	// Debug
-	printf("abs ang deg t0: %f t1: %f, t2: %f\n", joint_angles_deg.theta0, joint_angles_deg.theta1, joint_angles_deg.theta2);
+	// printf("abs ang deg t0: %f t1: %f, t2: %f\n", joint_angles_deg.theta0, joint_angles_deg.theta1, joint_angles_deg.theta2);
 
 	if (verify_angle(&joint_angles_deg) != 0) {
 		return 1;
@@ -392,7 +392,7 @@ uint8_t ang_rel_to_pulse(angles_t* joint_angles)
 	rel_to_abs_angle(joint_angles);
 
 	// Debug
-	printf("abs angle rad t0: %f t1: %f, t2: %f\n", joint_angles->theta0, joint_angles->theta1, joint_angles->theta2);
+	// printf("abs angle rad t0: %f t1: %f, t2: %f\n", joint_angles->theta0, joint_angles->theta1, joint_angles->theta2);
 
 	// Calculate and set pulse
 	if (ang_abs_to_pulse(joint_angles) != 0) {
@@ -531,7 +531,6 @@ uint8_t verify_angle(angles_t* ang_deg) {
 		(ang_deg->theta0 < servo_conf[0].min_angle_deg)) {
 		sprintf(tmp, "Theta0 is out of allowed range!: %f\n", ang_deg->theta0);
 		log_msg(ERROR, tmp);
-		//log_msg(ERROR, "Theta0 is out of allowed range!\n");
 
 		return 10;
 	}
@@ -540,7 +539,6 @@ uint8_t verify_angle(angles_t* ang_deg) {
 		(ang_deg->theta1 < servo_conf[1].min_angle_deg)) {
 		sprintf(tmp, "Theta1 is out of allowed range!: %f\n", ang_deg->theta1);
 		log_msg(ERROR, tmp);
-		// log_msg(ERROR, "Theta1 is out of allowed range!\n");
 		return 11;
 	}
 
@@ -548,7 +546,6 @@ uint8_t verify_angle(angles_t* ang_deg) {
 		(ang_deg->theta2 < servo_conf[2].min_angle_deg)) {
 		sprintf(tmp, "Theta2 is out of allowed range!: %f\n", ang_deg->theta2);
 		log_msg(ERROR, tmp);
-		// log_msg(ERROR, "Theta2 is out of allowed range!\n");
 		return 12;
 	}
 
@@ -617,8 +614,8 @@ void set_position_thread(void const * argument)
 		pulse_to_xyz(&current_pos);
 
 		// Debug
-		printf("current x: %f y %f z: %f\n", current_pos.x, current_pos.y, current_pos.z);
-		printf("target x: %f y %f z: %f\n", target_pos.x, target_pos.y, target_pos.z);
+		// printf("current x: %f y %f z: %f\n", current_pos.x, current_pos.y, current_pos.z);
+		// printf("target x: %f y %f z: %f\n", target_pos.x, target_pos.y, target_pos.z);
 
 
 		// If target differs from current...
@@ -645,7 +642,7 @@ void set_position_thread(void const * argument)
 				interm_pos.z = current_pos.z + step_z * (i + 1);
 
 				// Debug
-				printf("interm x: %f y: %f z %f\n", interm_pos.x, interm_pos.y, interm_pos.z);
+				// printf("interm x: %f y: %f z %f\n", interm_pos.x, interm_pos.y, interm_pos.z);
 
 				// Convert steps to motor pulse.
 				// In case of error terminate the thread
@@ -662,6 +659,9 @@ void set_position_thread(void const * argument)
 		}
 
 		// Quit from loop so we can terminate thread if there is no more movement
+		// Debug
+		printf("end_moving: %d\n", end_moving);
+
 		if (end_moving) {
 			break;
 		}
@@ -719,8 +719,6 @@ void set_angle_thread(void const * argument)
 			osDelay(5);
 		}
 
-
-
 		// Get current position based on servo PWM parameters
 		pulse_to_ang_abs(&current_ang);
 
@@ -767,9 +765,9 @@ void set_angle_thread(void const * argument)
 					log_msg(ERROR, "Pulse out of range, set_angle_thread will terminate.\n");
 					break;
 				} else {
-					//char tmp[100];
-					//sprintf(tmp, "movement to th0:%d, :%d, z:%d\n", (int16_t) interm_pos.x, (int16_t) interm_pos.y, (int16_t) interm_pos.z);
-					//log_msg(DEBUG, tmp);
+					char tmp[100];
+					sprintf(tmp, "movement to t0: %f, t1: %f, t2: %f\n", interm_ang.theta0, interm_ang.theta1, interm_ang.theta2);
+					log_msg(DEBUG, tmp);
 				}
 				osDelay(wait_time);
 			}

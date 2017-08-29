@@ -34,11 +34,11 @@
 #define MIN_PULSE_RES	50 // pulse
 
 /* MAXIMUM ALLOWED SPEEDS */
-#define DEFAULT_SPEED			4  // mm/sec
+#define DEFAULT_SPEED			50  // mm/sec
 #define DEFAULT_ANG_SPEED		2  // deg/sec
 #define DEFAULT_PULSE_SPEED		60 // pulse/sec
 
-#define DEFAULT_STEP		2  // mm
+#define DEFAULT_STEP		4  // mm
 #define DEFAULT_ANG_STEP	2  // deg
 #define DEFAULT_PULSE_STEP	60 // pulse
 
