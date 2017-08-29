@@ -215,7 +215,7 @@ void mouse_coordinate_thread(void const * argument)
 					}
 					drawing_flag = 0;
 				}
-				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
+				if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
 				//BLUE button
@@ -259,11 +259,10 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
 					BSP_LCD_FillRect(396, 14, 70, 50);
 					BSP_LCD_DisplayChar(428, 33, 83);
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
 					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 					BSP_LCD_DrawCircle(save_x, save_y, 20);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
 					sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 					red_button_flag = 0;
@@ -298,7 +297,7 @@ void mouse_coordinate_thread(void const * argument)
 					cor_y = ts_state.touchY[0];
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
 
-					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
+					if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
 						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
@@ -317,8 +316,6 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						save_x = ts_state.touchX[0];
 						save_y = ts_state.touchY[0];
-						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
-						BSP_LCD_DisplayStringAtLine(2, (uint8_t *)coordinates);
 					}
 					drawing_flag = 1;
 				}
