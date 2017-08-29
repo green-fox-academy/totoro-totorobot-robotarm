@@ -16,8 +16,8 @@ typedef struct {
 
 TS_StateTypeDef touch_scr;
 
-int16_t save_x;
-int16_t save_y;
+int16_t save_x = 0;
+int16_t save_y = 0;
 
 int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVER_IP)
 {
@@ -183,16 +183,8 @@ void mouse_coordinate_thread(void const * argument)
 		last_ts_coord.x = 0;
 		last_ts_coord.y = 0;
 
-		coordinate_t first_ts_coord;
-		first_ts_coord.x = 0;
-		first_ts_coord.y = 0;
-
-		uint8_t first_touch_detected_flag = 0;
-		uint8_t possible_click_event = 0;
-
-		int drawing_flag = 0;
-		int red_button_flag = 0;
-
+		int static drawing_flag = 0;
+		int static red_button_flag = 0;
 		//Ez azért szükséges, mert ha nem a történik érintés a négyzeten belül, fagy
 		char sys_opening_scr[] = "                        START DRAWING!";
 		char sys_stop[] = "                        SYSTEM STOPPED";
@@ -209,12 +201,6 @@ void mouse_coordinate_thread(void const * argument)
 		while (1) {
 			// Get touch screen state
 			BSP_TS_GetState(&ts_state);
-			// Reset USB HID buffer
-			//HID_Buffer[0] = 0;
-			HID_Buffer[1] = 0;
-			HID_Buffer[2] = 0;
-
-			osDelay(10);
 
 			if (BSP_PB_GetState(BUTTON_KEY)) {
 				drawing_stage(sys_opening_scr);
@@ -222,33 +208,28 @@ void mouse_coordinate_thread(void const * argument)
 
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
-				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && drawing_flag) {
-					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0])) {
-						//WHITE circle
-						circle_delete_animation(last_ts_coord, ts_state);
-					}
+
+				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && drawing_flag) {
+					//WHITE circle
+					circle_delete_animation(last_ts_coord, ts_state);
 					drawing_flag = 0;
 				}
-				if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
-					border_limit_settings(ts_state);
-					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
-				}
 				//BLUE button
-				if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0]) && !red_button_flag) {
+				else if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0]) && !red_button_flag) {
 					blue_button_animation();
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 					BSP_LCD_FillRect(396, 144, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//GREEN button
-				if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
+				else if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
 					green_button_animation();
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
 					BSP_LCD_FillRect(396, 208, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 				}
 				//YELLOW button
-				if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
+				else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
 					yellow_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_restart);
 					osDelay(2000);
@@ -256,9 +237,10 @@ void mouse_coordinate_thread(void const * argument)
 					red_button_flag = 0;
 				}
 				//RED button ON
-				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
+				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
 					red_button_animation();
 					system_stop_animation();
+					BSP_LCD_SetTextColor(LCD_COLOR_RED);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
 					red_button_flag = 1;
 					osDelay(100);
@@ -268,50 +250,30 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
 					BSP_LCD_FillRect(396, 14, 70, 50);
 					BSP_LCD_DisplayChar(428, 33, 83);
-					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-					BSP_LCD_DrawCircle(save_x, save_y, 20);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
-					sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+					if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0])) {
+						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+						BSP_LCD_DrawCircle(save_x, save_y, 20);
+						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
+						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+					}
 					red_button_flag = 0;
-					osDelay(100);
+					osDelay(200);
 				}
-
-				if (!first_touch_detected_flag) {
-					first_touch_detected_flag = 1;
-					possible_click_event = 1;
-					last_ts_coord.x = ts_state.touchX[0];
-					last_ts_coord.y = ts_state.touchY[0];
-					first_ts_coord.x = ts_state.touchX[0];
-					first_ts_coord.y = ts_state.touchY[0];
-				} else {
-					int8_t diff_x = ts_state.touchX[0] - last_ts_coord.x;
-					int8_t diff_y = ts_state.touchY[0] - last_ts_coord.y;
-
-					HID_Buffer[1] = diff_x * 3;
-					HID_Buffer[2] = diff_y * 3;
-
-					last_ts_coord.x = ts_state.touchX[0];
-					last_ts_coord.y = ts_state.touchY[0];
-
-					// Check if the user finger left a predefined area
-					// This means that this is not a clicking, just a cursor movement
-					int32_t click_diff_x = ts_state.touchX[0] - first_ts_coord.x;
-					int32_t click_diff_y = ts_state.touchY[0] - first_ts_coord.y;
-					if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
-						possible_click_event = 0;
-
+				else if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
 					cor_x = ts_state.touchX[0];
 					cor_y = ts_state.touchY[0];
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
-
-					if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
-						border_limit_settings(ts_state);
-						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
-						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
-					}
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+				}
+				else {
+					cor_x = ts_state.touchX[0];
+					cor_y = ts_state.touchY[0];
+					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
 			} else {
 				BSP_LED_Off(LED1);
@@ -328,10 +290,6 @@ void mouse_coordinate_thread(void const * argument)
 						save_y = ts_state.touchY[0];
 					}
 					drawing_flag = 1;
-				}
-				//first_touch_detected_flag = 0;
-				if (possible_click_event) {
-					possible_click_event = 0;
 				}
 			}
 		}
@@ -586,5 +544,6 @@ uint8_t get_degrees(void)
 
 	return degrees;
 }
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
