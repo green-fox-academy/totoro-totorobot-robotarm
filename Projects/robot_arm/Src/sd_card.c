@@ -256,8 +256,8 @@ void file_reader_thread(void const * argument)
 			if (file_end < 2) {
 
 				// Debug
-				printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
-				printf("file_end: %d\n", file_end);
+				// printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
+				// printf("file_end: %d\n", file_end);
 
 				// Send G_code to set_position process and wait for arm movement
 				while(1) {
