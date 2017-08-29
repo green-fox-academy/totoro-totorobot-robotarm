@@ -157,6 +157,22 @@ void circle_delete_animation(coordinate_t last_ts_coord, TS_StateTypeDef ts_stat
 	}
 }
 
+void border_limit_settings(TS_StateTypeDef ts_state)
+{
+	if (ts_state.touchX[0] < 22 ) {
+		ts_state.touchX[0] = 22;
+	}
+	if (ts_state.touchX[0] > 373 ) {
+		ts_state.touchX[0] = 373;
+	}
+	if (ts_state.touchY[0] < 33 ) {
+		ts_state.touchY[0] = 33;
+	}
+	if (ts_state.touchY[0] > 257 ) {
+		ts_state.touchY[0] = 257;
+	}
+}
+
 void mouse_coordinate_thread(void const * argument)
 {
 		LCD_UsrLog("Im in the MousE CoorD THREAD!\n");
@@ -216,6 +232,7 @@ void mouse_coordinate_thread(void const * argument)
 					drawing_flag = 0;
 				}
 				if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
+					border_limit_settings(ts_state);
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 				}
 				//BLUE button
@@ -298,6 +315,7 @@ void mouse_coordinate_thread(void const * argument)
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
 
 					if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
+						border_limit_settings(ts_state);
 						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
