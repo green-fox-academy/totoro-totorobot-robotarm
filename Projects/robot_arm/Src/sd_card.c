@@ -23,7 +23,7 @@ void log_msg(uint8_t log_level, char* message)
 		strcpy(log_data->string, message);
 		log_data->log_level = log_level;
 
-		// Send the pointer through the mail queue to the loggre thread
+		// Send the pointer through the mail queue to the logger thread
 		osMailPut(msg_log_q, log_data);
 	}
 

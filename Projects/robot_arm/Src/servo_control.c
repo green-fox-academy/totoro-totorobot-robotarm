@@ -660,9 +660,6 @@ void set_position_thread(void const * argument)
 		}
 
 		// Quit from loop so we can terminate thread if there is no more movement
-		// Debug
-		printf("end_moving: %d\n", end_moving);
-
 		if (end_moving) {
 			flash_on = 0;
 			break;
@@ -693,6 +690,7 @@ void set_angle_thread(void const * argument)
 	double min_theta2_res_rad = deg_to_rad(MIN_THETA2_RES);
 
 	uint32_t wait_time = (step_size * 1000) / speed;
+	flash_on = 1;
 
 	// Set thread flag to ready
 	set_position_on = 1;
@@ -777,6 +775,7 @@ void set_angle_thread(void const * argument)
 
 		// Quit from loop so we can terminate thread if there is no more movement
 		if (end_moving) {
+			flash_on = 0;
 			break;
 		}
 	}
@@ -805,6 +804,7 @@ void set_pulse_thread(void const * argument)
 	uint16_t steps[SERVOS];
 	double speed = DEFAULT_PULSE_SPEED;
 	uint32_t wait_time = (step_size * 1000) / speed;
+	flash_on = 1;
 
 	// Set thread flag to ready
 	set_position_on = 1;
@@ -918,6 +918,7 @@ void set_pulse_thread(void const * argument)
 
 		// Quit from loop so we can terminate thread if there is no more movement
 		if (end_moving) {
+			flash_on = 0;
 			break;
 		}
 	}
@@ -950,7 +951,7 @@ void m_led_init(void)
 
 void m_led_flash_thread(void const * argument)
 {
-	// Fash led
+	// Flash led
 
 	while (1) {
 		if (flash_on) {
