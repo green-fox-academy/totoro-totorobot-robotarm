@@ -204,9 +204,9 @@ void EXTI_IRQHandler(void)
   * @param  None
   * @retval None
   */
-void EXTI3_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
 }
 
 /**
@@ -217,6 +217,11 @@ void EXTI3_IRQHandler(void)
 void EXTI2_IRQHandler(void)
 {
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
+void EXTI3_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
 }
 
 void DMA2_Stream0_IRQHandler(void)

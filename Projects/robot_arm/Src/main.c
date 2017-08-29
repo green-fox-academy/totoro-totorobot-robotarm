@@ -109,6 +109,7 @@ int main(void)
     pin_init();
     EXTI3_IRQHandler_Config();
     EXTI2_IRQHandler_Config();
+    EXTI1_IRQHandler_Config();
 
     // Init thread
     osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);

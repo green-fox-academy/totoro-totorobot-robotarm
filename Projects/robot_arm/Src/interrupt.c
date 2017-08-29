@@ -19,7 +19,7 @@ void pin_init(void)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if ((GPIO_Pin == GPIO_PIN_3) || (GPIO_Pin == GPIO_PIN_2)) {
+	if ((GPIO_Pin == GPIO_PIN_3) || (GPIO_Pin == GPIO_PIN_2) || (GPIO_Pin == GPIO_PIN_1)) {
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
 	}
 }

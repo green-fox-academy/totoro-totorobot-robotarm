@@ -224,6 +224,26 @@ void EXTI2_IRQHandler_Config(void)
 	HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
+void EXTI1_IRQHandler_Config(void)
+{
+	GPIO_InitTypeDef GPIO_Init;
+	// Enable GPIO clocks
+	__HAL_RCC_GPIOI_CLK_ENABLE();
+
+	//END_STOP3
+	//6 D13 PI1
+	GPIO_Init.Pin = GPIO_PIN_1;
+	GPIO_Init.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOI, &GPIO_Init);
+
+	/* Set Interrupt priority */
+	HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 1);
+
+	/* Enable  in end_stop_threadterrupt */
+	HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+}
+
 /**
   * @}
   */
