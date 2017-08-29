@@ -94,7 +94,7 @@
 #define M_LED_PIN	GPIO_PIN_6
 #define M_LED_PORT	GPIOC
 #define __M_LED_CLOCK_ENABLE()	__HAL_RCC_GPIOC_CLK_ENABLE()
-#define FLASH_ON_TIME	200
+#define FLASH_ON_TIME	500
 
 typedef struct {
 	TIM_TypeDef* instance;

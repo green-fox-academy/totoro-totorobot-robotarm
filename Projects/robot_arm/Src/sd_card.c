@@ -211,6 +211,7 @@ uint8_t read_G_code(FIL* file_o, G_code_t* G_code)
 
 		// Exit from function when we reach file end
 		if (file_o->fptr >= file_o->fsize) {
+
 			if (is_G_code) {
 				return 1;
 			} else {
@@ -247,11 +248,16 @@ void file_reader_thread(void const * argument)
 
 		// Read lines one-by-one
 		while(1) {
+
+			// Read one line
 			uint8_t file_end = read_G_code(&file_o, &G_code);
 
 			// Process G-code data
 			if (file_end < 2) {
-				// printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
+
+				// Debug
+				printf("G: %d, X: %d, Y: %d Z: %d\n", G_code.g, (int) G_code.x, (int) G_code.y, (int) G_code.z);
+				printf("file_end: %d\n", file_end);
 
 				// Send G_code to set_position process and wait for arm movement
 				while(1) {
@@ -291,6 +297,10 @@ void file_reader_thread(void const * argument)
 						osDelay(10);
 					}
 				}
+			} else {
+				// file reached end + last line is not G-code
+				end_moving = 1;
+				break;
 			}
 		}
 	}
