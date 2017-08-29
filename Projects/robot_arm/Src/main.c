@@ -110,6 +110,7 @@ int main(void)
     EXTI3_IRQHandler_Config();
     EXTI2_IRQHandler_Config();
     EXTI1_IRQHandler_Config();
+    m_led_init();
 
     // Init thread
     osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
@@ -146,6 +147,10 @@ static void StartThread(void const * argument)
 
 	lcd_log_level = DEBUG;
 	file_log_level = DEBUG;
+
+	// Led flashing thread.
+    osThreadDef(M_LED_FLASH, m_led_flash_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 1);
+	osThreadCreate (osThread(M_LED_FLASH), NULL);
 
     osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(SD_LOGGER), NULL);

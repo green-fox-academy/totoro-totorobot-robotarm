@@ -576,6 +576,7 @@ void set_position_thread(void const * argument)
 	double step_size = DEFAULT_STEP;
 	double speed = DEFAULT_SPEED;
 	uint32_t wait_time = (step_size * 1000) / speed;
+	flash_on = 1;
 
 	// Set thread flag to ready
 	set_position_on = 1;
@@ -663,6 +664,7 @@ void set_position_thread(void const * argument)
 		printf("end_moving: %d\n", end_moving);
 
 		if (end_moving) {
+			flash_on = 0;
 			break;
 		}
 	}
@@ -924,6 +926,43 @@ void set_pulse_thread(void const * argument)
 		// Terminate thread
 		log_msg(USER, "set_position_thread terminated\n");
 		set_position_on = 0;
+		osThreadTerminate(NULL);
+	}
+}
+
+void m_led_init(void)
+{
+	GPIO_InitTypeDef GPIO_Init;
+
+	// MOVEMENT_LED pin
+	__M_LED_CLOCK_ENABLE();
+
+	GPIO_Init.Pin = M_LED_PIN;
+	GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_Init.Speed = GPIO_SPEED_FAST;
+	HAL_GPIO_Init(M_LED_PORT, &GPIO_Init);
+	HAL_GPIO_WritePin(M_LED_PORT, M_LED_PIN, GPIO_PIN_RESET);
+
+	flash_on = 0;
+
+	return;
+}
+
+void m_led_flash_thread(void const * argument)
+{
+	// Fash led
+
+	while (1) {
+		if (flash_on) {
+			HAL_GPIO_WritePin(M_LED_PORT, M_LED_PIN, GPIO_PIN_SET);
+		}
+		osDelay(FLASH_ON_TIME);
+		HAL_GPIO_WritePin(M_LED_PORT, M_LED_PIN, GPIO_PIN_RESET);
+		osDelay(FLASH_ON_TIME);
+	}
+
+	// Terminate thread
+	while (1) {
 		osThreadTerminate(NULL);
 	}
 }

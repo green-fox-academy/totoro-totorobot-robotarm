@@ -87,6 +87,15 @@
 #define SERVO3_ADC_PIN		GPIO_PIN_8
 #define SERVO3_ADC_CHANNEL	ADC_CHANNEL_6
 
+/* LED Configuration */
+
+// MOVEMENT LED pin
+// D1 PC6
+#define M_LED_PIN	GPIO_PIN_6
+#define M_LED_PORT	GPIOC
+#define __M_LED_CLOCK_ENABLE()	__HAL_RCC_GPIOC_CLK_ENABLE()
+#define FLASH_ON_TIME	200
+
 typedef struct {
 	TIM_TypeDef* instance;
 	uint32_t period;
@@ -135,6 +144,7 @@ uint8_t arm_is_moving;
 uint8_t set_position_on;
 uint8_t next_coord_set;
 uint8_t end_moving;
+uint8_t flash_on;
 
 void servo_config(void);
 void pwm_init(void);
@@ -162,5 +172,7 @@ uint8_t verify_angle(angles_t* ang_deg);
 void set_position_thread(void const * argument);
 void set_angle_thread(void const * argument);
 void set_pulse_thread(void const * argument);
+void m_led_flash_thread(void const * argument);
+void m_led_init(void);
 
 #endif /* __SERVO_CONTROL_H_ */
