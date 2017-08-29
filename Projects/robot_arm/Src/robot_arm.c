@@ -57,10 +57,8 @@ void system_stop_animation()
 	BSP_LCD_DisplayChar(428, 99, 82);
 }
 
-void drawing_stage()
+void drawing_stage(char *sys_opening_scr)
 {
-	//Ez azért szükséges, mert ha nem a történik érintés a négyzeten belül, fagy
-	char sys_opening_scr[] = "                        START DRAWING!";
 	//Set BACKGROUND
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
 	//Create BUTTONS
@@ -179,6 +177,8 @@ void mouse_coordinate_thread(void const * argument)
 		int drawing_flag = 0;
 		int red_button_flag = 0;
 
+		//Ez azért szükséges, mert ha nem a történik érintés a négyzeten belül, fagy
+		char sys_opening_scr[] = "                        START DRAWING!";
 		char sys_stop[] = "                        SYSTEM STOPPED";
 		char sys_restart[] = "                        SYSTEM RESTART";
 
@@ -201,7 +201,7 @@ void mouse_coordinate_thread(void const * argument)
 			osDelay(10);
 
 			if (BSP_PB_GetState(BUTTON_KEY)) {
-				drawing_stage();
+				drawing_stage(sys_opening_scr);
 			}
 
 			if (ts_state.touchDetected) {
@@ -238,16 +238,27 @@ void mouse_coordinate_thread(void const * argument)
 					circle_delete_animation(last_ts_coord, ts_state);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_restart);
 					osDelay(2000);
-					drawing_stage();
+					drawing_stage(sys_opening_scr);
 					red_button_flag = 0;
 				}
-				//RED button
+				//RED button ON
 				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
 					circle_delete_animation(last_ts_coord, ts_state);
 					system_stop_animation();
 					red_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
 					red_button_flag = 1;
+				}
+				//RED button OFF
+				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && red_button_flag) {
+					circle_delete_animation(last_ts_coord, ts_state);
+					//system_stop_animation();
+					BSP_LCD_SetTextColor(LCD_COLOR_RED);
+					BSP_LCD_FillRect(396, 14, 70, 50);
+					BSP_LCD_DisplayChar(428, 33, 83);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
+					red_button_flag = 0;
 				}
 
 				if (!first_touch_detected_flag) {
