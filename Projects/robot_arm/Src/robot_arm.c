@@ -187,6 +187,8 @@ void mouse_coordinate_thread(void const * argument)
 		ts_state.touchX[0] = 0;
 		ts_state.touchY[0] = 0;
 
+		char coordinates[100];
+
 		//LCD_UsrLog("X:%d - Y:%d", ts_state.touchX[0], ts_state.touchY[0]);
 
 		/* Run Application (Interrupt mode) */
@@ -248,9 +250,10 @@ void mouse_coordinate_thread(void const * argument)
 					red_button_animation();
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
 					red_button_flag = 1;
+					osDelay(100);
 				}
 				//RED button OFF
-				if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && red_button_flag) {
+				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && red_button_flag){
 					circle_delete_animation(last_ts_coord, ts_state);
 					//system_stop_animation();
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
@@ -258,7 +261,13 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_DisplayChar(428, 33, 83);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
+					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+					BSP_LCD_DrawCircle(save_x, save_y, 20);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
+					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 					red_button_flag = 0;
+					osDelay(100);
 				}
 
 				if (!first_touch_detected_flag) {
@@ -285,10 +294,9 @@ void mouse_coordinate_thread(void const * argument)
 					if (abs(click_diff_x) > TS_CLICK_THRESHOLD || abs(click_diff_y) > TS_CLICK_THRESHOLD)
 						possible_click_event = 0;
 
-					char coordinates[100];
 					cor_x = ts_state.touchX[0];
-					cor_y = abs(ts_state.touchY[0] - 272);
-					sprintf(coordinates, " X%3d - Y%3d", cor_x, cor_y);
+					cor_y = ts_state.touchY[0];
+					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
 
 					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
 						BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
@@ -309,6 +317,8 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						save_x = ts_state.touchX[0];
 						save_y = ts_state.touchY[0];
+						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
+						BSP_LCD_DisplayStringAtLine(2, (uint8_t *)coordinates);
 					}
 					drawing_flag = 1;
 				}
