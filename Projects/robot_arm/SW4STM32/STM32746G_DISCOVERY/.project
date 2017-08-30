@@ -91,6 +91,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/servo_control.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/socket_server.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/socket_server.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/stm32f7xx_hal_msp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Src/stm32f7xx_hal_msp.c</locationURI>
