@@ -11,6 +11,8 @@
 #define SERVOS				4
 #define MIN_ADC_VALUE		0
 #define MAX_ADC_VALUE		4095
+#define MIN_ADC_P			0
+#define MAX_ADC_P			400
 
 /* SERVO 0 Configuration */
 

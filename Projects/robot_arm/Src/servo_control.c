@@ -167,13 +167,20 @@ void adc_measure(void)
 		HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
 		// Measure
-		HAL_ADC_Start(&adc);
-		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
-		uint32_t adc_measurement = HAL_ADC_GetValue(&adc);
+		uint32_t adc_measurement = 0;
+		for (int j = 0; j < 8; j++) {
+			HAL_ADC_Start(&adc);
+			HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
+			adc_measurement += HAL_ADC_GetValue(&adc);
+		}
+		adc_measurement /= 8;
+
+		// Convert to percentage
+		uint32_t adc_p = (uint32_t) map(adc_measurement, MIN_ADC_VALUE, MAX_ADC_VALUE, MIN_ADC_P, MAX_ADC_P);
 
 		// Update global storage of ADC data
 		osMutexWait(servo_adc_mutex, osWaitForever);
-		adc_values[i] = adc_measurement;
+		adc_values[i] = adc_p;	// adc_measurement;
 		osMutexRelease(servo_adc_mutex);
 
 		osDelay(5);
@@ -270,7 +277,7 @@ void adc_thread(void const * argument)
 
 			// Calculate PMW pulse width
 			osMutexWait(servo_adc_mutex, osWaitForever);
-			uint32_t adc_pulse = (uint32_t) map((double) adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
+			uint32_t adc_pulse = (uint32_t) map((double) adc_values[i], MIN_ADC_P, MAX_ADC_P,
 							                    (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
 			osMutexRelease(servo_adc_mutex);
 
@@ -280,7 +287,7 @@ void adc_thread(void const * argument)
 			osMutexRelease(servo_pulse_mutex);
 		}
 
-		osDelay(100);
+		osDelay(150);
 	}
 
 	while (1) {
