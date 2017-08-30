@@ -45,33 +45,34 @@ int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVE
 	}
 }
 
-void create_buttons_BGY()
+void create_buttons_YGB()
 {
 	//Create BUTTONS
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
-	BSP_LCD_FillRect(396, 208, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
-	BSP_LCD_FillRect(396, 144, 70, 50);
 	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
 	BSP_LCD_DisplayChar(428, 99, 82);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
+	BSP_LCD_FillRect(396, 144, 70, 50);
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
+	BSP_LCD_FillRect(396, 208, 70, 50);
+}
+
+void create_button_R()
+{
+	//Create BUTTONS
+	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_FillRect(396, 14, 70, 50);
+	BSP_LCD_DisplayChar(428, 33, 83);
 }
 
 void drawing_stage(char *sys_opening_scr)
 {
 	//Set BACKGROUND
 	BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);
-	//Create BUTTONS
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
-	BSP_LCD_FillRect(396, 208, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
-	BSP_LCD_FillRect(396, 144, 70, 50);
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKYELLOW);
-	BSP_LCD_FillRect(396, 80, 70, 50);
-	BSP_LCD_DisplayChar(428, 99, 82);
-	BSP_LCD_SetTextColor(LCD_COLOR_RED);
-	BSP_LCD_FillRect(396, 14, 70, 50);
-	BSP_LCD_DisplayChar(428, 33, 83);
+	//Create BUTTONS YELLOW+GREEN+BLUE
+	create_buttons_YGB();
+	//Create RED button
+	create_button_R();
 	//DRAWING area
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_DrawRect(20, 30, 356, 230);
@@ -94,7 +95,7 @@ void drawing_stage(char *sys_opening_scr)
 	*/
 }
 
-void red_button_animation()
+void red_button_animation(char *sys_stop)
 {
 	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
 	BSP_LCD_FillRect(396, 14, 70, 50);
@@ -105,10 +106,11 @@ void red_button_animation()
 		BSP_LCD_DrawLine(396, 14 + j, 396 + 70, 14 + j);
 		BSP_LCD_DrawLine(396, 14 + 50 - j, 396 + 70, 14 + 50 - j);
 		BSP_LCD_DisplayChar(428, 33, 83);
+		BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
 	}
 }
 
-void yellow_button_animation()
+void yellow_button_animation(char *sys_restart)
 {
 	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTYELLOW);
 	BSP_LCD_FillRect(396, 80, 70, 50);
@@ -119,19 +121,7 @@ void yellow_button_animation()
 		BSP_LCD_DrawLine(396, 80 + j, 396 + 70, 80 + j);
 		BSP_LCD_DrawLine(396, 80 + 50 - j, 396 + 70, 80 + 50 - j);
 		BSP_LCD_DisplayChar(428, 99, 82);
-	}
-}
-
-void blue_button_animation()
-{
-	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-	BSP_LCD_FillRect(396, 208, 70, 50);
-	for (int j = 0; j < 7; j++) {
-		BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
-		BSP_LCD_DrawLine(396 + j, 208, 396 + j, 208 + 50);
-		BSP_LCD_DrawLine(396 + 70 - j, 208, 396 + 70 - j, 208 + 50);
-		BSP_LCD_DrawLine(396, 208 + j, 396 + 70, 208 + j);
-		BSP_LCD_DrawLine(396, 208 + 50 - j, 396 + 70, 208 + 50 - j);
+		BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_restart);
 	}
 }
 
@@ -145,6 +135,19 @@ void green_button_animation()
 		BSP_LCD_DrawLine(396 + 70 - j, 144, 396 + 70 - j, 144 + 50);
 		BSP_LCD_DrawLine(396, 144 + j, 396 + 70, 144 + j);
 		BSP_LCD_DrawLine(396, 144 + 50 - j, 396 + 70, 144 + 50 - j);
+	}
+}
+
+void blue_button_animation()
+{
+	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+	BSP_LCD_FillRect(396, 208, 70, 50);
+	for (int j = 0; j < 7; j++) {
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
+		BSP_LCD_DrawLine(396 + j, 208, 396 + j, 208 + 50);
+		BSP_LCD_DrawLine(396 + 70 - j, 208, 396 + 70 - j, 208 + 50);
+		BSP_LCD_DrawLine(396, 208 + j, 396 + 70, 208 + j);
+		BSP_LCD_DrawLine(396, 208 + 50 - j, 396 + 70, 208 + 50 - j);
 	}
 }
 
@@ -186,7 +189,6 @@ void mouse_coordinate_thread(void const * argument)
 		int static drawing_flag = 0;
 		int static red_button_flag = 0;
 
-		//Ez azért szükséges, mert ha nem a történik érintés a négyzeten belül, fagy
 		char sys_opening_scr[] = "                        START DRAWING!";
 		char sys_stop[] = "                        SYSTEM STOPPED";
 		char sys_restart[] = "                        SYSTEM RESTART";
@@ -198,8 +200,9 @@ void mouse_coordinate_thread(void const * argument)
 
 		char coordinates[100];
 
-		/* Run Application (Interrupt mode) */
+		/* Run the APP infinite loop */
 		while (1) {
+
 			// Get touch screen state
 			BSP_TS_GetState(&ts_state);
 
@@ -234,26 +237,21 @@ void mouse_coordinate_thread(void const * argument)
 				}
 				//YELLOW button
 				else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
-					yellow_button_animation();
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_restart);
+					yellow_button_animation(sys_restart);
 					osDelay(2000);
 					drawing_stage(sys_opening_scr);
 					red_button_flag = 0;
 				}
 				//RED button ON
 				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
-					red_button_animation();
-					create_buttons_BGY();
-					BSP_LCD_SetTextColor(LCD_COLOR_RED);
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
+					red_button_animation(sys_stop);
+					//create_buttons_YGB();
 					red_button_flag = 1;
 					osDelay(300);
 				}
 				//RED button OFF
 				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && red_button_flag){
-					BSP_LCD_SetTextColor(LCD_COLOR_RED);
-					BSP_LCD_FillRect(396, 14, 70, 50);
-					BSP_LCD_DisplayChar(428, 33, 83);
+					create_button_R();
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
 					if ((0 < save_x) && (0 < save_y)) {
@@ -278,6 +276,8 @@ void mouse_coordinate_thread(void const * argument)
 				}
 			} else {
 				BSP_LED_Off(LED1);
+				//Dupla védelem arra, hogy ez a rész csak akkor hívódjon meg
+				//*HA már volt érintés a négyzeten belül
 				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && !drawing_flag) {
 					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
 						osDelay(500);
@@ -287,7 +287,7 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						save_x = ts_state.touchX[0]; //??
+						save_x = ts_state.touchX[0];
 						save_y = ts_state.touchY[0];
 						drawing_flag = 1;
 					}
