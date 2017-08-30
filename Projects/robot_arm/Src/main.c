@@ -186,6 +186,10 @@ static void StartThread(void const * argument)
 
     log_msg(USER, "TotoRobot started.\n");
 
+    osDelay(1000);
+
+    start_lcd_data_display();
+
     while (1) {
         /* Delete the Init Thread */
         osThreadTerminate(NULL);

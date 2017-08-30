@@ -19,7 +19,7 @@ void start_lcd_data_display(void)
 	BSP_LCD_DisplayStringAtLine(1, (uint8_t*) "       *** TotoRobot ***");
 	BSP_LCD_DisplayStringAtLine(2, (uint8_t*) "       runtime parameters");
 	BSP_LCD_DisplayStringAtLine(4, (uint8_t*) "           X    Y    Z");
-	BSP_LCD_DisplayStringAtLine(8, (uint8_t*) "          Srv0   Srv1   Srv2");
+	BSP_LCD_DisplayStringAtLine(8, (uint8_t*) "          srv0   srv1   srv2");
 
 	draw_buttons();
 
@@ -56,13 +56,22 @@ void stop_lcd_data_display(void)
 
 void lcd_data_display_thread(void const * argument)
 {
+
+	touch_t touch_current;
+	uint8_t finger_down = 0;
+	uint8_t changed = 0;
+
+	uint32_t pulse[SERVOS];
+	angles_t ang_servos_rad;
+	uint32_t adc[SERVOS];
+	coord_cart_t arm_position;
+	char target_text[100];
+
 	while (lcd_data_display_on) {
 
-		uint32_t pulse[SERVOS];
-		angles_t ang_servos_rad;
-		uint32_t adc[SERVOS];
-		coord_cart_t arm_position;
-		char target_text[100];
+		/*
+		 * Calculate values
+		 */
 
 		// Get PWM values
 		osMutexWait(servo_pulse_mutex, osWaitForever);
@@ -89,6 +98,10 @@ void lcd_data_display_thread(void const * argument)
 		strcpy(target_text, target_display);
 		osMutexRelease(arm_coord_mutex);
 
+		/*
+		 * Display values
+		 */
+
 		// Print target info
 		sprintf(lcd_data_buff, "  target  %s", target_text);
 		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
@@ -114,7 +127,106 @@ void lcd_data_display_thread(void const * argument)
 		sprintf(lcd_data_buff, "  ADC:    %4lu   %4lu   %4lu /%d", adc[0], adc[1], adc[2], MAX_ADC_P);
 		BSP_LCD_DisplayStringAtLine(11, (uint8_t*) lcd_data_buff);
 
-		osDelay(500);
+		/*
+		 * Handle touch screen
+		 */
+
+		// Read touch values
+		BSP_TS_GetState(&TS_State);
+		if (TS_State.touchDetected) {
+
+			// Get touch coordinates
+			touch_current.x = TS_State.touchX[0];
+			touch_current.y = TS_State.touchY[0];
+
+			// We only care about touches over the touchable buttons
+			for (int i = 0; i < BUTTONS; i++) {
+
+				// Check only touchable buttons
+				if (finger_down && !changed && buttons[i].touchable &&
+				    (touch_current.x >= buttons[i].x) &&
+					(touch_current.x <= buttons[i].x + buttons[i].width) &&
+					(touch_current.y >= buttons[i].y) &&
+					(touch_current.y <= buttons[i].y + buttons[i].height)) {
+
+					// Execute button function based on actual state
+					if (buttons[i].state == 0) {
+
+						switch (i) {
+						case 0: // STOP
+							// TODO set stop flag
+							break;
+						case 1: // G-code
+							// TODO start G-code reader thread
+							break;
+						case 2: // Draw
+							// TODO start draw TCP server thread
+							break;
+						case 3: // ADC
+							// TODO start ADC thread
+							break;
+						case 8: // Gripper open
+							// TODO start gripper open thread
+							break;
+						case 9: // Gripper close
+							// TODO start gripper close thread
+							break;
+						}
+
+					} else {
+
+						switch (i) {
+						case 0: // Reset
+							// TODO send arm to middle position
+							break;
+						case 1: // G-code
+							// TODO stop G-code reader thread
+							break;
+						case 2: // Draw
+							// TODO stop draw TCP server thread
+							break;
+						case 3: // ADC
+							// TODO stop ADC thread
+							break;
+						case 8: // Gripper open
+							// TODO stop gripper open thread
+							break;
+						case 9: // Gripper close
+							// TODO stop gripper close thread
+							break;
+						}
+					}
+
+					// Set new button state
+					buttons[i].state = !buttons[i].state;
+
+					// Set sticky touch
+					changed = 1;
+
+					// Break after first occurrence as we only expect one button
+					// to be pressed at a time
+					break;
+				}
+
+			} // end for
+
+			finger_down = 1;
+
+		} else {
+
+			// No touch
+			finger_down = 0;
+			changed = 0;
+		}
+
+		/*
+		 * Display buttons
+		 */
+
+		// Draw updated buttons
+		draw_buttons();
+
+		osDelay(50);
 	}
 
 	while (1) {
@@ -123,20 +235,30 @@ void lcd_data_display_thread(void const * argument)
     }
 }
 
-// sizeof(buttons) / sizeof(buttons[0])
-
 void draw_buttons(void)
 {
-	for (int i = 0; i < 10; i++) {
-		BSP_LCD_SetTextColor(buttons[i].btn_color1);
-		BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
-		BSP_LCD_SetBackColor(buttons[i].btn_color1);
-		BSP_LCD_SetTextColor(buttons[i].text_color1);
-		BSP_LCD_DisplayStringAt(buttons[i].text_x1, buttons[i].text_y, (uint8_t*) buttons[i].text1, LEFT_MODE);
+	for (int i = 0; i < BUTTONS; i++) {
+
+		// Set color and text based on button state
+		if (buttons[i].state == 0) {
+			BSP_LCD_SetTextColor(buttons[i].btn_color0);
+			BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+			BSP_LCD_SetBackColor(buttons[i].btn_color0);
+			BSP_LCD_SetTextColor(buttons[i].text_color0);
+			BSP_LCD_DisplayStringAt(buttons[i].text_x0, buttons[i].text_y, (uint8_t*) buttons[i].text0, LEFT_MODE);
+		} else {
+			BSP_LCD_SetTextColor(buttons[i].btn_color1);
+			BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+			BSP_LCD_SetBackColor(buttons[i].btn_color1);
+			BSP_LCD_SetTextColor(buttons[i].text_color1);
+			BSP_LCD_DisplayStringAt(buttons[i].text_x1, buttons[i].text_y, (uint8_t*) buttons[i].text1, LEFT_MODE);
+		}
 	}
 
 	BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+
+	return;
 }
 
 void init_buttons(void)
@@ -146,158 +268,170 @@ void init_buttons(void)
 	buttons[0].y = 14;
 	buttons[0].width = 70;
 	buttons[0].height = 50;
-	buttons[0].btn_color1 = LCD_COLOR_RED;
-	buttons[0].btn_color2 = LCD_COLOR_YELLOW;
+	buttons[0].btn_color0 = LCD_COLOR_RED;
+	buttons[0].btn_color1 = LCD_COLOR_YELLOW;
 	buttons[0].text_y = buttons[0].y + 18;
-	buttons[0].text_x1 = 408;
-	buttons[0].text_color1 = LCD_COLOR_WHITE;
-	strcpy(buttons[0].text1, "STOP");
-	buttons[0].text_x2 = 403;
-	buttons[0].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[0].text2, "Reset");
-	buttons[0].touch = 1;
+	buttons[0].text_x0 = 408;
+	buttons[0].text_color0 = LCD_COLOR_WHITE;
+	strcpy(buttons[0].text0, "STOP");
+	buttons[0].text_x1 = 403;
+	buttons[0].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[0].text1, "Reset");
+	buttons[0].touchable = 1;
+	buttons[0].state = 0;
 
 	// G-code button
 	buttons[1].x = 396;
 	buttons[1].y = 80;
 	buttons[1].width = 70;
 	buttons[1].height = 50;
-	buttons[1].btn_color1 = LCD_COLOR_LIGHTGRAY;
-	buttons[1].btn_color2 = LCD_COLOR_GREEN;
+	buttons[1].btn_color0 = LCD_COLOR_LIGHTGRAY;
+	buttons[1].btn_color1 = LCD_COLOR_GREEN;
 	buttons[1].text_y = buttons[1].y + 18;
+	buttons[1].text_x0 = 398;
+	buttons[1].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[1].text0, "G-code");
 	buttons[1].text_x1 = 398;
 	buttons[1].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[1].text1, "G-code");
-	buttons[1].text_x2 = 398;
-	buttons[1].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[1].text2, "G-code");
-	buttons[1].touch = 1;
+	buttons[1].touchable = 1;
+	buttons[1].state = 0;
 
 	// Drawing button
 	buttons[2].x = 396;
 	buttons[2].y = 146;
 	buttons[2].width = 70;
 	buttons[2].height = 50;
-	buttons[2].btn_color1 = LCD_COLOR_LIGHTGRAY;
-	buttons[2].btn_color2 = LCD_COLOR_GREEN;
+	buttons[2].btn_color0 = LCD_COLOR_LIGHTGRAY;
+	buttons[2].btn_color1 = LCD_COLOR_GREEN;
 	buttons[2].text_y = buttons[2].y + 18;
+	buttons[2].text_x0 = 408;
+	buttons[2].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[2].text0, "Draw");
 	buttons[2].text_x1 = 408;
 	buttons[2].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[2].text1, "Draw");
-	buttons[2].text_x2 = 408;
-	buttons[2].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[2].text2, "Draw");
-	buttons[2].touch = 1;
+	buttons[2].touchable = 1;
+	buttons[2].state = 0;
 
 	// ADC button
 	buttons[3].x = 396;
 	buttons[3].y = 212;
 	buttons[3].width = 70;
 	buttons[3].height = 50;
-	buttons[3].btn_color1 = LCD_COLOR_LIGHTGRAY;
-	buttons[3].btn_color2 = LCD_COLOR_GREEN;
+	buttons[3].btn_color0 = LCD_COLOR_LIGHTGRAY;
+	buttons[3].btn_color1 = LCD_COLOR_GREEN;
 	buttons[3].text_y = buttons[3].y + 18;
+	buttons[3].text_x0 = 414;
+	buttons[3].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[3].text0, "ADC");
 	buttons[3].text_x1 = 414;
 	buttons[3].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[3].text1, "ADC");
-	buttons[3].text_x2 = 414;
-	buttons[3].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[3].text2, "ADC");
-	buttons[3].touch = 1;
+	buttons[3].touchable = 1;
+	buttons[3].state = 0;
 
 	// End position switch C
 	buttons[4].x = 332;
 	buttons[4].y = 212;
 	buttons[4].width = 48;
 	buttons[4].height = 50;
-	buttons[4].btn_color1 = LCD_COLOR_GREEN;
-	buttons[4].btn_color2 = LCD_COLOR_RED;
+	buttons[4].btn_color0 = LCD_COLOR_LIGHTGREEN;
+	buttons[4].btn_color1 = LCD_COLOR_RED;
 	buttons[4].text_y = buttons[4].y + 18;
+	buttons[4].text_x0 = buttons[4].x + 18;
+	buttons[4].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[4].text0, "C");
 	buttons[4].text_x1 = buttons[4].x + 18;
-	buttons[4].text_color1 = LCD_COLOR_BLACK;
+	buttons[4].text_color1 = LCD_COLOR_WHITE;
 	strcpy(buttons[4].text1, "C");
-	buttons[4].text_x2 = buttons[4].x + 18;
-	buttons[4].text_color2 = LCD_COLOR_WHITE;
-	strcpy(buttons[4].text2, "C");
-	buttons[4].touch = 0;
+	buttons[4].touchable = 0;
+	buttons[4].state = 0;
 
 	// End position switch B
 	buttons[5].x = 268;
 	buttons[5].y = 212;
 	buttons[5].width = 48;
 	buttons[5].height = 50;
-	buttons[5].btn_color1 = LCD_COLOR_GREEN;
-	buttons[5].btn_color2 = LCD_COLOR_RED;
+	buttons[5].btn_color0 = LCD_COLOR_LIGHTGREEN;
+	buttons[5].btn_color1 = LCD_COLOR_RED;
 	buttons[5].text_y = buttons[5].y + 18;
-	buttons[5].text_x1 = buttons[5].x +18;
-	buttons[5].text_color1 = LCD_COLOR_BLACK;
+	buttons[5].text_x0 = buttons[5].x +18;
+	buttons[5].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[5].text0, "B");
+	buttons[5].text_x1 = buttons[5].x + 18;
+	buttons[5].text_color1 = LCD_COLOR_WHITE;
 	strcpy(buttons[5].text1, "B");
-	buttons[5].text_x2 = buttons[5].x + 18;
-	buttons[5].text_color2 = LCD_COLOR_WHITE;
-	strcpy(buttons[5].text2, "B");
-	buttons[5].touch = 0;
+	buttons[5].touchable = 0;
+	buttons[5].state = 0;
 
 	// End position switch A
 	buttons[6].x = 204;
 	buttons[6].y = 212;
 	buttons[6].width = 48;
 	buttons[6].height = 50;
-	buttons[6].btn_color1 = LCD_COLOR_GREEN;
-	buttons[6].btn_color2 = LCD_COLOR_RED;
+	buttons[6].btn_color0 = LCD_COLOR_LIGHTGREEN;
+	buttons[6].btn_color1 = LCD_COLOR_RED;
 	buttons[6].text_y = buttons[6].y + 18;
+	buttons[6].text_x0 = buttons[6].x + 18;
+	buttons[6].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[6].text0, "A");
 	buttons[6].text_x1 = buttons[6].x + 18;
-	buttons[6].text_color1 = LCD_COLOR_BLACK;
+	buttons[6].text_color1 = LCD_COLOR_WHITE;
 	strcpy(buttons[6].text1, "A");
-	buttons[6].text_x2 = buttons[6].x + 18;
-	buttons[6].text_color2 = LCD_COLOR_WHITE;
-	strcpy(buttons[6].text2, "A");
-	buttons[6].touch = 0;
+	buttons[6].touchable = 0;
+	buttons[6].state = 0;
 
 	// Empty button
 	buttons[7].x = 140;
 	buttons[7].y = 212;
 	buttons[7].width = 48;
 	buttons[7].height = 50;
+	buttons[7].btn_color0 = LCD_COLOR_WHITE;
 	buttons[7].btn_color1 = LCD_COLOR_WHITE;
-	buttons[7].btn_color2 = LCD_COLOR_WHITE;
 	buttons[7].text_y = buttons[7].y + 18;
+	buttons[7].text_x0 = buttons[7].x + 18;
+	buttons[7].text_color0 = LCD_COLOR_BLACK;
+	strcpy(buttons[7].text0, "");
 	buttons[7].text_x1 = buttons[7].x + 18;
 	buttons[7].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[7].text1, "");
-	buttons[7].text_x2 = buttons[7].x + 18;
-	buttons[7].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[7].text2, "");
-	buttons[7].touch = 0;
+	buttons[7].touchable = 0;
+	buttons[7].state = 0;
 
 	// Gripper close
 	buttons[8].x = 76;
 	buttons[8].y = 212;
 	buttons[8].width = 48;
 	buttons[8].height = 50;
-	buttons[8].btn_color1 = LCD_COLOR_DARKGRAY;
-	buttons[8].btn_color2 = LCD_COLOR_GREEN;
+	buttons[8].btn_color0 = LCD_COLOR_DARKGRAY;
+	buttons[8].btn_color1 = LCD_COLOR_GREEN;
 	buttons[8].text_y = buttons[8].y + 18;
+	buttons[8].text_x0 = buttons[8].x + 13;
+	buttons[8].text_color0 = LCD_COLOR_WHITE;
+	strcpy(buttons[8].text0, "<>");
 	buttons[8].text_x1 = buttons[8].x + 13;
-	buttons[8].text_color1 = LCD_COLOR_WHITE;
+	buttons[8].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[8].text1, "<>");
-	buttons[8].text_x2 = buttons[8].x + 13;
-	buttons[8].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[8].text2, "");
-	buttons[8].touch = 1;
+	buttons[8].touchable = 1;
+	buttons[8].state = 0;
 
 	// Gripper open
 	buttons[9].x = 12;
 	buttons[9].y = 212;
 	buttons[9].width = 48;
 	buttons[9].height = 50;
-	buttons[9].btn_color1 = LCD_COLOR_DARKGRAY;
-	buttons[9].btn_color2 = LCD_COLOR_GREEN;
+	buttons[9].btn_color0 = LCD_COLOR_DARKGRAY;
+	buttons[9].btn_color1 = LCD_COLOR_GREEN;
 	buttons[9].text_y = buttons[9].y + 18;
+	buttons[9].text_x0 = buttons[9].x + 13;
+	buttons[9].text_color0 = LCD_COLOR_WHITE;
+	strcpy(buttons[9].text0, "><");
 	buttons[9].text_x1 = buttons[9].x + 13;
-	buttons[9].text_color1 = LCD_COLOR_WHITE;
+	buttons[9].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[9].text1, "><");
-	buttons[9].text_x2 = buttons[9].x + 13;
-	buttons[9].text_color2 = LCD_COLOR_BLACK;
-	strcpy(buttons[9].text2, "");
-	buttons[9].touch = 1;
+	buttons[9].touchable = 1;
+	buttons[9].state = 0;
+
+	return;
 }

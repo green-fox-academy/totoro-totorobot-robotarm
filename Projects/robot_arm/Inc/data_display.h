@@ -2,39 +2,40 @@
 #define __DATA_DISPLAY_H_
 
 #include "stm32f7xx_hal.h"
+#include "stm32746g_discovery_ts.h"
 #include "cmsis_os.h"
 #include "sd_card.h"
 #include "robot_arm_conf.h"
 #include "servo_control.h"
 #include <string.h>
 
-#define BUTTON_WIDTH		70
-#define BUTTON_2_WIDTH		48
-#define BUTTON_HEIGHT		50
-#define BUTTON_X_START_VERT	396
-#define BUTTON_Y_START_VERT	14
-#define BUTTON_DIST_Y		16
-#define BUTTON_DIST_X		16
+#define BUTTONS		10
 
 typedef struct {
 	uint16_t x;
 	uint16_t y;
 	uint8_t width;
 	uint8_t height;
+	uint32_t btn_color0;
 	uint32_t btn_color1;
-	uint32_t btn_color2;
+	uint32_t text_color0;
 	uint32_t text_color1;
-	uint32_t text_color2;
+	uint16_t text_x0;
 	uint16_t text_x1;
-	uint16_t text_x2;
 	uint16_t text_y;
+	char text0[10];
 	char text1[10];
-	char text2[10];
-	uint8_t touch;
+	uint8_t touchable;
+	uint8_t state;
 } button_t;
 
-button_t buttons[10];
+typedef struct {
+	uint16_t x;
+	uint16_t y;
+} touch_t;
 
+TS_StateTypeDef TS_State;
+button_t buttons[BUTTONS];
 extern uint8_t debug;
 uint8_t lcd_data_display_on;
 char lcd_data_buff[70];
