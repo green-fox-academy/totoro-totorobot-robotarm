@@ -13,9 +13,13 @@ void start_lcd_data_display(void)
 
 	BSP_LCD_Clear(LCD_COLOR_WHITE);
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-	BSP_LCD_SetFont(&Font20);
-	BSP_LCD_DisplayStringAtLine(0, (uint8_t*) "   TotoRobot runtime parameters   ");
-	BSP_LCD_DisplayStringAtLine(7, (uint8_t*) "       Serv0  Serv1  Serv2  Serv3");
+	BSP_LCD_SetFont(&Font16);
+	BSP_LCD_DisplayStringAtLine(1, (uint8_t*) "       *** TotoRobot ***");
+	BSP_LCD_DisplayStringAtLine(2, (uint8_t*) "       runtime parameters");
+	BSP_LCD_DisplayStringAtLine(4, (uint8_t*) "           X    Y    Z");
+	BSP_LCD_DisplayStringAtLine(8, (uint8_t*) "         Serv0  Serv1  Serv2");
+
+	draw_buttons();
 
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
@@ -53,10 +57,9 @@ void lcd_data_display_thread(void const * argument)
 	while (lcd_data_display_on) {
 
 		uint32_t pulse[SERVOS];
-		angles_t servo_angles;
+		angles_t ang_servos_rad;
 		uint32_t adc[SERVOS];
 		coord_cart_t arm_position;
-		coord_polar_t arm_polar;
 		char target_text[100];
 
 		// Get PWM values
@@ -66,14 +69,11 @@ void lcd_data_display_thread(void const * argument)
 		}
 		osMutexRelease(servo_pulse_mutex);
 
-		// Calculate relative angles
-		pulse_to_ang_rel(&servo_angles);
-
-		// Calculate polar coordinates
-		calc_forward_kinematics(&servo_angles, &arm_polar);
-
 		// Calculate XYZ
-		ang_rel_to_xyz(&servo_angles, &arm_position);
+		pulse_to_xyz(&arm_position);
+
+		// Calculate servo absolute angles
+		pulse_to_ang_abs(&ang_servos_rad);
 
 		// Get ADC data
 		osMutexWait(servo_adc_mutex, osWaitForever);
@@ -87,47 +87,30 @@ void lcd_data_display_thread(void const * argument)
 		strcpy(target_text, target_display);
 		osMutexRelease(arm_coord_mutex);
 
-		// Print and log target info
-		sprintf(lcd_data_buff, "target  %s", target_text);
-		BSP_LCD_DisplayStringAtLine(2, (uint8_t*) lcd_data_buff);
-		log_msg(DEBUG, lcd_data_buff);
-
-		// Print and log polar coordinates
-		sprintf(lcd_data_buff, "actual  R: %3d  A: %3d  Z: %3d  ", (int16_t) arm_polar.r, (int16_t) rad_to_deg(arm_polar.angle), (int16_t) arm_polar.z);
-		BSP_LCD_DisplayStringAtLine(4, (uint8_t*) lcd_data_buff);
-		log_msg(DEBUG, lcd_data_buff);
-
-		// Print and log coordinates
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		sprintf(lcd_data_buff, "actual  X: %3d  Y: %3d  Z: %3d  ", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
+		// Print target info
+		sprintf(lcd_data_buff, "  target  %s", target_text);
 		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) lcd_data_buff);
-		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-		log_msg(DEBUG, lcd_data_buff);
 
-		// Print and log relative servo angles
-		sprintf(lcd_data_buff, "ang R:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
-				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
-		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
-		log_msg(DEBUG, lcd_data_buff);
-
-		// Print and log absolute servo angles
+		// Print actual XYZ coordinates
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		rel_to_abs_angle(&servo_angles);
-		sprintf(lcd_data_buff, "ang A:  %4d   %4d   %4d", rad_to_deg(servo_angles.theta0),
-				rad_to_deg(servo_angles.theta1), rad_to_deg(servo_angles.theta2));
-		BSP_LCD_DisplayStringAtLine(10, (uint8_t*) lcd_data_buff);
+		sprintf(lcd_data_buff, "  actual  %3d  %3d  %3d  ", (int16_t) arm_position.x, (int16_t) arm_position.y, (int16_t) arm_position.z);
+		BSP_LCD_DisplayStringAtLine(6, (uint8_t*) lcd_data_buff);
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-		log_msg(DEBUG, lcd_data_buff);
 
-		// Print and log pulse values
-		sprintf(lcd_data_buff, "pulse:  %4lu   %4lu   %4lu   %4lu", pulse[0], pulse[1], pulse[2], pulse[3]);
+		// Print absolute servo angles
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		sprintf(lcd_data_buff, "  ang A:  %4d   %4d   %4d", rad_to_deg(ang_servos_rad.theta0),
+				rad_to_deg(ang_servos_rad.theta1), rad_to_deg(ang_servos_rad.theta2));
+		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+
+		// Print pulse values
+		sprintf(lcd_data_buff, "  pulse:  %4lu   %4lu   %4lu", pulse[0], pulse[1], pulse[2]);
+		BSP_LCD_DisplayStringAtLine(10, (uint8_t*) lcd_data_buff);
+
+		// Print ADC values
+		sprintf(lcd_data_buff, "  ADC:    %4lu   %4lu   %4lu /%d", adc[0], adc[1], adc[2], MAX_ADC_P);
 		BSP_LCD_DisplayStringAtLine(11, (uint8_t*) lcd_data_buff);
-		log_msg(DEBUG, lcd_data_buff);
-
-		// Print and log ADC values
-		sprintf(lcd_data_buff, "ADC:    %4lu   %4lu   %4lu   %4lu", adc[0], adc[1], adc[2], adc[3]);
-		BSP_LCD_DisplayStringAtLine(12, (uint8_t*) lcd_data_buff);
-		log_msg(DEBUG, lcd_data_buff);
 
 		osDelay(500);
 	}
@@ -136,4 +119,61 @@ void lcd_data_display_thread(void const * argument)
 		log_msg(USER, "LCD data display thread terminated\n");
 		osThreadTerminate(NULL);
     }
+}
+
+void draw_buttons(void)
+{
+	uint8_t i = 0;
+	uint8_t j = 0;
+
+	// Stop/Reset position button
+	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
+	i++;
+
+	// G-code button
+	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
+	i++;
+
+	// Drawing button
+	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
+	i++;
+
+	// ADC button
+	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
+	j++;
+
+	// End position switch C
+	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
+	j++;
+
+	// End position switch B
+	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
+	j++;
+
+	// End position switch A
+	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
+	j++;
+
+	// Empty button
+	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
+	j++;
+
+	// Gripper close
+	BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
+	j++;
+
+	// Gripper open
+	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
+
+
 }

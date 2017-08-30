@@ -203,6 +203,7 @@ void start_adc_thread(void)
 {
 	adc_init();
 	adc_on = 1;
+	flash_on = 1;
 
 	log_msg(USER, "ADC thread started\n");
 
@@ -217,6 +218,7 @@ void stop_adc_thread(void)
 	adc_on = 0;
 	osDelay(100);
 	adc_deinit();
+	flash_on = 0;
 
 	return;
 }
