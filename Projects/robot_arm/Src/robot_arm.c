@@ -45,7 +45,7 @@ int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVE
 	}
 }
 
-void system_stop_animation()
+void create_buttons_BGY()
 {
 	//Create BUTTONS
 	BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
@@ -185,6 +185,7 @@ void mouse_coordinate_thread(void const * argument)
 
 		int static drawing_flag = 0;
 		int static red_button_flag = 0;
+
 		//Ez azért szükséges, mert ha nem a történik érintés a négyzeten belül, fagy
 		char sys_opening_scr[] = "                        START DRAWING!";
 		char sys_stop[] = "                        SYSTEM STOPPED";
@@ -209,6 +210,9 @@ void mouse_coordinate_thread(void const * argument)
 			if (ts_state.touchDetected) {
 				BSP_LED_On(LED1);
 
+				//Ez a négyzet területe, amiben rajzolni tudunk
+				//Dupla védelem - kattintás a területen belül ÉS a flag is legyen 1
+				//*Vagyis csak akkor hívodik meg, ha volt már kattintás a négyzeten belül
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && drawing_flag) {
 					//WHITE circle
 					circle_delete_animation(last_ts_coord, ts_state);
@@ -239,7 +243,7 @@ void mouse_coordinate_thread(void const * argument)
 				//RED button ON
 				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
 					red_button_animation();
-					system_stop_animation();
+					create_buttons_BGY();
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_stop);
 					red_button_flag = 1;
@@ -256,20 +260,17 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 						BSP_LCD_DrawCircle(save_x, save_y, 20);
 						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
+						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 					}
 					red_button_flag = 0;
 					osDelay(300);
 				}
+				//Ez a terület felel azért, hogy rajzolásnál a pötty ne lógjon ki
+				//*Valamint itt rajzol a program ÉS itt írja ki a koordinátákat a területen
 				else if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
-					cor_x = ts_state.touchX[0];
-					cor_y = ts_state.touchY[0];
-					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
-				}
-				else {
 					cor_x = ts_state.touchX[0];
 					cor_y = ts_state.touchY[0];
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
@@ -286,10 +287,10 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						save_x = ts_state.touchX[0];
+						save_x = ts_state.touchX[0]; //??
 						save_y = ts_state.touchY[0];
+						drawing_flag = 1;
 					}
-					drawing_flag = 1;
 				}
 			}
 		}
