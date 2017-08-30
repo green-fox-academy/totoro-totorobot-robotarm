@@ -5,6 +5,8 @@ void start_lcd_data_display(void)
 	log_msg(USER, "Stopping LCD log utility\n");
 	log_msg(USER, "Starting LCD data display thread\n");
 
+	init_buttons();
+
 	// Disable logging to LCD screen
 	lcd_logger_on = 0;
 
@@ -17,14 +19,14 @@ void start_lcd_data_display(void)
 	BSP_LCD_DisplayStringAtLine(1, (uint8_t*) "       *** TotoRobot ***");
 	BSP_LCD_DisplayStringAtLine(2, (uint8_t*) "       runtime parameters");
 	BSP_LCD_DisplayStringAtLine(4, (uint8_t*) "           X    Y    Z");
-	BSP_LCD_DisplayStringAtLine(8, (uint8_t*) "         Serv0  Serv1  Serv2");
+	BSP_LCD_DisplayStringAtLine(8, (uint8_t*) "          Srv0   Srv1   Srv2");
 
 	draw_buttons();
 
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
 
-    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(LCD_DATA_DISPLAY), NULL);
 
 	return;
@@ -99,7 +101,7 @@ void lcd_data_display_thread(void const * argument)
 
 		// Print absolute servo angles
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		sprintf(lcd_data_buff, "  ang A:  %4d   %4d   %4d", rad_to_deg(ang_servos_rad.theta0),
+		sprintf(lcd_data_buff, "  angle:  %4d   %4d   %4d [deg]", rad_to_deg(ang_servos_rad.theta0),
 				rad_to_deg(ang_servos_rad.theta1), rad_to_deg(ang_servos_rad.theta2));
 		BSP_LCD_DisplayStringAtLine(9, (uint8_t*) lcd_data_buff);
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
@@ -121,59 +123,181 @@ void lcd_data_display_thread(void const * argument)
     }
 }
 
+// sizeof(buttons) / sizeof(buttons[0])
+
 void draw_buttons(void)
 {
-	uint8_t i = 0;
-	uint8_t j = 0;
+	for (int i = 0; i < 10; i++) {
+		BSP_LCD_SetTextColor(buttons[i].btn_color1);
+		BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+		BSP_LCD_SetBackColor(buttons[i].btn_color1);
+		BSP_LCD_SetTextColor(buttons[i].text_color1);
+		BSP_LCD_DisplayStringAt(buttons[i].text_x1, buttons[i].text_y, (uint8_t*) buttons[i].text1, LEFT_MODE);
+	}
 
+	BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+}
+
+void init_buttons(void)
+{
 	// Stop/Reset position button
-	BSP_LCD_SetTextColor(LCD_COLOR_RED);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
-	i++;
+	buttons[0].x = 396;
+	buttons[0].y = 14;
+	buttons[0].width = 70;
+	buttons[0].height = 50;
+	buttons[0].btn_color1 = LCD_COLOR_RED;
+	buttons[0].btn_color2 = LCD_COLOR_YELLOW;
+	buttons[0].text_y = buttons[0].y + 18;
+	buttons[0].text_x1 = 408;
+	buttons[0].text_color1 = LCD_COLOR_WHITE;
+	strcpy(buttons[0].text1, "STOP");
+	buttons[0].text_x2 = 403;
+	buttons[0].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[0].text2, "Reset");
+	buttons[0].touch = 1;
 
 	// G-code button
-	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
-	i++;
+	buttons[1].x = 396;
+	buttons[1].y = 80;
+	buttons[1].width = 70;
+	buttons[1].height = 50;
+	buttons[1].btn_color1 = LCD_COLOR_LIGHTGRAY;
+	buttons[1].btn_color2 = LCD_COLOR_GREEN;
+	buttons[1].text_y = buttons[1].y + 18;
+	buttons[1].text_x1 = 398;
+	buttons[1].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[1].text1, "G-code");
+	buttons[1].text_x2 = 398;
+	buttons[1].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[1].text2, "G-code");
+	buttons[1].touch = 1;
 
 	// Drawing button
-	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
-	i++;
+	buttons[2].x = 396;
+	buttons[2].y = 146;
+	buttons[2].width = 70;
+	buttons[2].height = 50;
+	buttons[2].btn_color1 = LCD_COLOR_LIGHTGRAY;
+	buttons[2].btn_color2 = LCD_COLOR_GREEN;
+	buttons[2].text_y = buttons[2].y + 18;
+	buttons[2].text_x1 = 408;
+	buttons[2].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[2].text1, "Draw");
+	buttons[2].text_x2 = 408;
+	buttons[2].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[2].text2, "Draw");
+	buttons[2].touch = 1;
 
 	// ADC button
-	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_WIDTH, BUTTON_HEIGHT);
-	j++;
+	buttons[3].x = 396;
+	buttons[3].y = 212;
+	buttons[3].width = 70;
+	buttons[3].height = 50;
+	buttons[3].btn_color1 = LCD_COLOR_LIGHTGRAY;
+	buttons[3].btn_color2 = LCD_COLOR_GREEN;
+	buttons[3].text_y = buttons[3].y + 18;
+	buttons[3].text_x1 = 414;
+	buttons[3].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[3].text1, "ADC");
+	buttons[3].text_x2 = 414;
+	buttons[3].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[3].text2, "ADC");
+	buttons[3].touch = 1;
 
 	// End position switch C
-	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
-	j++;
+	buttons[4].x = 332;
+	buttons[4].y = 212;
+	buttons[4].width = 48;
+	buttons[4].height = 50;
+	buttons[4].btn_color1 = LCD_COLOR_GREEN;
+	buttons[4].btn_color2 = LCD_COLOR_RED;
+	buttons[4].text_y = buttons[4].y + 18;
+	buttons[4].text_x1 = buttons[4].x + 18;
+	buttons[4].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[4].text1, "C");
+	buttons[4].text_x2 = buttons[4].x + 18;
+	buttons[4].text_color2 = LCD_COLOR_WHITE;
+	strcpy(buttons[4].text2, "C");
+	buttons[4].touch = 0;
 
 	// End position switch B
-	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
-	j++;
+	buttons[5].x = 268;
+	buttons[5].y = 212;
+	buttons[5].width = 48;
+	buttons[5].height = 50;
+	buttons[5].btn_color1 = LCD_COLOR_GREEN;
+	buttons[5].btn_color2 = LCD_COLOR_RED;
+	buttons[5].text_y = buttons[5].y + 18;
+	buttons[5].text_x1 = buttons[5].x +18;
+	buttons[5].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[5].text1, "B");
+	buttons[5].text_x2 = buttons[5].x + 18;
+	buttons[5].text_color2 = LCD_COLOR_WHITE;
+	strcpy(buttons[5].text2, "B");
+	buttons[5].touch = 0;
 
 	// End position switch A
-	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
-	j++;
+	buttons[6].x = 204;
+	buttons[6].y = 212;
+	buttons[6].width = 48;
+	buttons[6].height = 50;
+	buttons[6].btn_color1 = LCD_COLOR_GREEN;
+	buttons[6].btn_color2 = LCD_COLOR_RED;
+	buttons[6].text_y = buttons[6].y + 18;
+	buttons[6].text_x1 = buttons[6].x + 18;
+	buttons[6].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[6].text1, "A");
+	buttons[6].text_x2 = buttons[6].x + 18;
+	buttons[6].text_color2 = LCD_COLOR_WHITE;
+	strcpy(buttons[6].text2, "A");
+	buttons[6].touch = 0;
 
 	// Empty button
-	BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
-	j++;
+	buttons[7].x = 140;
+	buttons[7].y = 212;
+	buttons[7].width = 48;
+	buttons[7].height = 50;
+	buttons[7].btn_color1 = LCD_COLOR_WHITE;
+	buttons[7].btn_color2 = LCD_COLOR_WHITE;
+	buttons[7].text_y = buttons[7].y + 18;
+	buttons[7].text_x1 = buttons[7].x + 18;
+	buttons[7].text_color1 = LCD_COLOR_BLACK;
+	strcpy(buttons[7].text1, "");
+	buttons[7].text_x2 = buttons[7].x + 18;
+	buttons[7].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[7].text2, "");
+	buttons[7].touch = 0;
 
 	// Gripper close
-	BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
-	j++;
+	buttons[8].x = 76;
+	buttons[8].y = 212;
+	buttons[8].width = 48;
+	buttons[8].height = 50;
+	buttons[8].btn_color1 = LCD_COLOR_DARKGRAY;
+	buttons[8].btn_color2 = LCD_COLOR_GREEN;
+	buttons[8].text_y = buttons[8].y + 18;
+	buttons[8].text_x1 = buttons[8].x + 13;
+	buttons[8].text_color1 = LCD_COLOR_WHITE;
+	strcpy(buttons[8].text1, "<>");
+	buttons[8].text_x2 = buttons[8].x + 13;
+	buttons[8].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[8].text2, "");
+	buttons[8].touch = 1;
 
 	// Gripper open
-	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-	BSP_LCD_FillRect(BUTTON_X_START_VERT - j * (BUTTON_2_WIDTH + BUTTON_DIST_X), BUTTON_Y_START_VERT + i * (BUTTON_HEIGHT + BUTTON_DIST_Y), BUTTON_2_WIDTH, BUTTON_HEIGHT);
-
-
+	buttons[9].x = 12;
+	buttons[9].y = 212;
+	buttons[9].width = 48;
+	buttons[9].height = 50;
+	buttons[9].btn_color1 = LCD_COLOR_DARKGRAY;
+	buttons[9].btn_color2 = LCD_COLOR_GREEN;
+	buttons[9].text_y = buttons[9].y + 18;
+	buttons[9].text_x1 = buttons[9].x + 13;
+	buttons[9].text_color1 = LCD_COLOR_WHITE;
+	strcpy(buttons[9].text1, "><");
+	buttons[9].text_x2 = buttons[9].x + 13;
+	buttons[9].text_color2 = LCD_COLOR_BLACK;
+	strcpy(buttons[9].text2, "");
+	buttons[9].touch = 1;
 }

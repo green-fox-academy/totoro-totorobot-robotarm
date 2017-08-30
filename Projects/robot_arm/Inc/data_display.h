@@ -16,6 +16,25 @@
 #define BUTTON_DIST_Y		16
 #define BUTTON_DIST_X		16
 
+typedef struct {
+	uint16_t x;
+	uint16_t y;
+	uint8_t width;
+	uint8_t height;
+	uint32_t btn_color1;
+	uint32_t btn_color2;
+	uint32_t text_color1;
+	uint32_t text_color2;
+	uint16_t text_x1;
+	uint16_t text_x2;
+	uint16_t text_y;
+	char text1[10];
+	char text2[10];
+	uint8_t touch;
+} button_t;
+
+button_t buttons[10];
+
 extern uint8_t debug;
 uint8_t lcd_data_display_on;
 char lcd_data_buff[70];
@@ -24,5 +43,6 @@ void start_lcd_data_display(void);
 void stop_lcd_data_display(void);
 void lcd_data_display_thread(void const * argument);
 void draw_buttons(void);
+void init_buttons(void);
 
 #endif /* __DATA_DISPLAY_H_ */
