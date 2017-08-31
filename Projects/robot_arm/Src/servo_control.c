@@ -594,7 +594,7 @@ void set_position_thread(void const * argument)
 	// Give time to other processes
 	osDelay(100);
 
-	while (!stop) {
+	while (set_position_on) {
 
 		uint8_t new_coord_ready = 0;
 
@@ -609,12 +609,10 @@ void set_position_thread(void const * argument)
 				target_pos.y = target_xyz.y;
 				target_pos.z = target_xyz.z;
 
-				// Reset next coordinate flag,
-				// so that other side can send next target
-				next_coord_set = 0;
-
 				// Check if this is the last coordinate in this series
-				stop = end_moving;
+				if (end_moving) {
+					set_position_on = 0;
+				}
 
 				// Quit loop when we got new target
 				new_coord_ready = 1;
@@ -671,6 +669,13 @@ void set_position_thread(void const * argument)
 				osDelay(wait_time);
 			}
 		}
+
+		// Reset next coordinate flag,
+		// so that other side can send next target
+		osMutexWait(arm_coord_mutex, osWaitForever);
+		next_coord_set = 0;
+		osMutexRelease(arm_coord_mutex);
+
 	}
 
 	while (1) {
