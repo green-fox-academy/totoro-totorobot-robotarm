@@ -19,6 +19,8 @@ TS_StateTypeDef touch_scr;
 int16_t save_x = 0;
 int16_t save_y = 0;
 
+uint8_t send_command[8];
+
 int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVER_IP)
 {
 	// Creating client socket
@@ -193,12 +195,16 @@ void mouse_coordinate_thread(void const * argument)
 		char sys_stop[] = "                        SYSTEM STOPPED";
 		char sys_restart[] = "                        SYSTEM RESTART";
 
+		uint8_t x_Lp;
+		uint8_t x_Hp;
+		uint8_t y_Lp;
+		uint8_t y_Hp;
 		int16_t cor_x = 0;
 		int16_t cor_y = 0;
 		ts_state.touchX[0] = 0;
 		ts_state.touchY[0] = 0;
 
-		char coordinates[100];
+		char coordinates[20];
 
 		/* Run the APP infinite loop */
 		while (1) {
@@ -227,6 +233,9 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
 					BSP_LCD_FillRect(396, 144, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					send_command[0] = 0;
+					//Grip OPEN
+					send_command[1] = 3;
 				}
 				//GREEN button
 				else if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
@@ -234,6 +243,9 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
 					BSP_LCD_FillRect(396, 208, 70, 50);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					send_command[0] = 0;
+					//Grip CLOSE
+					send_command[1] = 4;
 				}
 				//YELLOW button
 				else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
@@ -241,12 +253,18 @@ void mouse_coordinate_thread(void const * argument)
 					osDelay(2000);
 					drawing_stage(sys_opening_scr);
 					red_button_flag = 0;
+					send_command[0] = 0;
+					//RESET position
+					send_command[1] = 2;
 				}
 				//RED button ON
 				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
 					red_button_animation(sys_stop);
 					//create_buttons_YGB();
 					red_button_flag = 1;
+					send_command[0] = 0;
+					//Emergency STOP
+					send_command[1] = 0;
 					osDelay(300);
 				}
 				//RED button OFF
@@ -262,6 +280,9 @@ void mouse_coordinate_thread(void const * argument)
 						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 					}
 					red_button_flag = 0;
+					send_command[0] = 0;
+					//RESTART any process
+					send_command[1] = 1;
 					osDelay(300);
 				}
 				//Ez a terület felel azért, hogy rajzolásnál a pötty ne lógjon ki
@@ -271,6 +292,16 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
 					cor_x = ts_state.touchX[0];
 					cor_y = ts_state.touchY[0];
+					//COORDINATES
+					send_command[0] = 1;
+					x_Hp = cor_x >> 8;
+					x_Lp = (uint8_t)cor_x;
+					y_Hp = cor_y >> 8;
+					y_Lp = (uint8_t)cor_y;
+					send_command[2] = x_Hp;
+					send_command[3] = x_Lp;
+					send_command[4] = y_Hp;
+					send_command[5] = y_Lp;
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
@@ -543,8 +574,7 @@ uint8_t get_degrees(void)
 	uint16_t adc_value = adc_measure();
 	uint8_t degrees = (uint32_t) ( adc_value * (MAX_DEGREE - MIN_DEGREE)) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
 
-	return degrees;
-}
+	return degrees;}
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
