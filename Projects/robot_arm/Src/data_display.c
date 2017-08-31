@@ -154,20 +154,51 @@ void lcd_data_display_thread(void const * argument)
 
 						switch (i) {
 						case 0: // STOP
-							// TODO set stop flag
+							// Turn off power
+							HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
+
+							// Stop G-code reader
+							end_moving = 1;
+							file_reader_on = 0;
+
+							// Stop drawer
+
+							// Stop ADC
+							stop_adc_thread();
+
+							// Disable all touch buttons
+							for (int i = 0; i < BUTTONS; i++) {
+								buttons[i].touchable = 0;
+							}
 							break;
+
 						case 1: // G-code
 							// TODO start G-code reader thread
+							{
+								// Launch G-code reader with the given file name
+								osThreadDef(G_FILE_READ, file_reader_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 10);
+								osThreadCreate (osThread(G_FILE_READ), "test1.g");
+								log_msg(USER, "G-code reader thread started.\n");
+
+								// Launch process to set pulse
+								osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
+								osThreadCreate (osThread(SET_POSITION), NULL);
+								log_msg(USER, "Set position thread started.\n");
+							}
 							break;
+
 						case 2: // Draw
 							// TODO start draw TCP server thread
 							break;
-						case 3: // ADC
-							// TODO start ADC thread
+
+						case 3: // Start ADC
+							start_adc_thread();
 							break;
+
 						case 8: // Gripper open
 							// TODO start gripper open thread
 							break;
+
 						case 9: // Gripper close
 							// TODO start gripper close thread
 							break;
@@ -176,23 +207,14 @@ void lcd_data_display_thread(void const * argument)
 					} else {
 
 						switch (i) {
-						case 0: // Reset
-							// TODO send arm to middle position
-							break;
 						case 1: // G-code
 							// TODO stop G-code reader thread
 							break;
 						case 2: // Draw
 							// TODO stop draw TCP server thread
 							break;
-						case 3: // ADC
-							// TODO stop ADC thread
-							break;
-						case 8: // Gripper open
-							// TODO stop gripper open thread
-							break;
-						case 9: // Gripper close
-							// TODO stop gripper close thread
+						case 3: // Stop ADC
+							stop_adc_thread();
 							break;
 						}
 					}
@@ -222,6 +244,14 @@ void lcd_data_display_thread(void const * argument)
 		/*
 		 * Display buttons
 		 */
+
+		// Reset G-code button if the file reader thread is not running
+		//if (file_reader_on == 0) {
+		//	buttons[1].state = 0;
+		//	buttons[1].touchable = 1;
+		//}
+
+		// Reset draw button
 
 		// Draw updated buttons
 		draw_buttons();

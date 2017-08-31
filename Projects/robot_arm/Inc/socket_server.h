@@ -14,7 +14,15 @@
 
 #define SERVER_PORT			54545
 #define SERVER_QUEUE_SIZE	2
-#define SERVER_BUFF_LEN		98
+#define SERVER_BUFF_LEN		8
+
+typedef struct {
+	uint8_t command_type;
+	uint8_t button_value;
+	uint16_t x;
+	uint16_t y;
+	uint16_t z;
+} draw_command_t;
 
 typedef struct {
 	char text[100];
@@ -25,6 +33,7 @@ osMailQId  mail_q_id;
 
 /* Exported functions ------------------------------------------------------- */
 void socket_server_thread(void const *argument);
+void deserialize(char* buffer, draw_command_t* command);
 
 #endif /* __SOCKET_SERVER_H */
 

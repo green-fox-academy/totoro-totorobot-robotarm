@@ -176,5 +176,6 @@ void set_angle_thread(void const * argument);
 void set_pulse_thread(void const * argument);
 void m_led_flash_thread(void const * argument);
 void m_led_init(void);
+void set_position_nsc_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */

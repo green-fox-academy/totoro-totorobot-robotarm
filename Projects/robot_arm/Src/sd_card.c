@@ -246,11 +246,13 @@ void file_reader_thread(void const * argument)
 		log_msg(ERROR, "Failed to open G-code file.\n");
 	} else {
 
+		uint8_t file_end = 0;
+
 		// Read lines one-by-one
-		while(1) {
+		while(file_reader_on) {
 
 			// Read one line
-			uint8_t file_end = read_G_code(&file_o, &G_code);
+			file_end = read_G_code(&file_o, &G_code);
 
 			// Process G-code data
 			if (file_end < 2) {
@@ -270,7 +272,15 @@ void file_reader_thread(void const * argument)
 						target_xyz.z = G_code.z;
 
 						// Set display message
-						sprintf(target_display, "X: %3d  Y: %3d  Z: %3d   ", (int16_t) G_code.x, (int16_t) G_code.y, (int16_t) G_code.z);
+						sprintf(target_display, "%3d  %3d  %3d   ", (int16_t) G_code.x, (int16_t) G_code.y, (int16_t) G_code.z);
+
+						// If last line, signal end of movement
+						if (file_end) {
+							end_moving = 1;
+							file_reader_on = 0;
+						} else {
+							end_moving = 0;
+						}
 
 						next_coord_set = 1;
 						osMutexRelease(arm_coord_mutex);
@@ -280,34 +290,29 @@ void file_reader_thread(void const * argument)
 					osDelay(10);
 				}
 
-				// If this was the last line, send latest data again, signal to
-				// set position thread to quit and stop this thread
-				if (file_end) {
-
-					end_moving = 1;
-
-					while(1) {
-						osMutexWait(arm_coord_mutex, osWaitForever);
-						if (!next_coord_set) {
-							next_coord_set = 1;
-							osMutexRelease(arm_coord_mutex);
-							break;
-						}
-						osMutexRelease(arm_coord_mutex);
-						osDelay(10);
-					}
-				}
 			} else {
 				// file reached end + last line is not G-code
-				end_moving = 1;
-				break;
+				while(1) {
+					osMutexWait(arm_coord_mutex, osWaitForever);
+					if (!next_coord_set) {
+
+						// Signal end of movement
+						end_moving = 1;
+
+						next_coord_set = 1;
+						osMutexRelease(arm_coord_mutex);
+						break;
+					}
+					osMutexRelease(arm_coord_mutex);
+					osDelay(10);
+				}
+				file_reader_on = 0;
 			}
 		}
 	}
 
 	while (1) {
 		// Terminate thread
-		file_reader_on = 0;
 		log_msg(USER, "File reader thread terminated\n");
 		osThreadTerminate(NULL);
 	}

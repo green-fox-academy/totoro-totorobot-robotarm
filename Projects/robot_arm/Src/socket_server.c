@@ -50,13 +50,37 @@ void socket_server_thread(void const *argument)
 	    // Accept connection
 	    client_socket = lwip_accept(server_socket, (struct sockaddr*) &client_addr, (socklen_t*) &client_addr_len);
 
-	    // Receive message
+	    // Keep receiving messages
 	    if (client_socket > 0) {
-	   // 	do {
-	    		received_bytes = lwip_recv(client_socket, buffer, sizeof(buffer),0);
-	    		buffer[received_bytes] = ' ';
-	    		buffer[received_bytes + 1] = '\0';
-	    //	} while (received_bytes > 0);
+	    do {
+	    	draw_command_t command;
+
+	    	// Receive a command
+			received_bytes = lwip_recv(client_socket, buffer, sizeof(buffer),0);
+
+			// Deserialize buffer into command structure
+			deserialize(buffer, &command);
+
+			// Interpret command
+			if (command.command_type == 0) {
+
+				// Button sent, do action
+
+
+
+			} else {
+
+				// Coordinates sent, set position without speed control if dist < 2 cm else with speed control
+				// Check if thread is running. If not, launch it. If other thread needed, kill original.
+
+
+			}
+
+			// After command ran, send acknowledge byte
+			uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
+
+
+	    } while (received_bytes > 0);
 
 	    	// Close client connection
 	    	lwip_close(client_socket);
@@ -75,8 +99,15 @@ void socket_server_thread(void const *argument)
 		log_msg(USER, "TCP server socket thread terminating.\n");
 		osThreadTerminate(NULL);
 	}
-
-
 }
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+void deserialize(char* buffer, draw_command_t* command)
+{
+	command->command_type = buffer[0];
+	command->button_value = buffer[1];
+	command->x = buffer[2] << 8 | buffer[3];
+	command->y = buffer[4] << 8 | buffer[5];
+	command->z = buffer[6] << 8 | buffer[7];
+
+	return;
+}
