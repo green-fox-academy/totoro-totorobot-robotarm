@@ -216,6 +216,7 @@ void start_adc_thread(void)
 void stop_adc_thread(void)
 {
 	adc_on = 0;
+	buttons[2].state = 0;
 	osDelay(100);
 	adc_deinit();
 	flash_on = 0;
@@ -586,7 +587,6 @@ void set_position_thread(void const * argument)
 	double speed = DEFAULT_SPEED;
 	uint32_t wait_time = (step_size * 1000) / speed;
 	flash_on = 1;
-	uint8_t stop = 0;
 
 	// Set thread flag to ready
 	set_position_on = 1;

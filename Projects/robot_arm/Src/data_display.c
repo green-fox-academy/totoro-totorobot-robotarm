@@ -167,9 +167,12 @@ void lcd_data_display_thread(void const * argument)
 							// Stop ADC
 							stop_adc_thread();
 
-							// Disable all touch buttons
+							// Disable all touch buttons and reset their state
 							for (int i = 0; i < BUTTONS; i++) {
 								buttons[i].touchable = 0;
+								if (i != 0) {
+									buttons[i].state = 0;
+								}
 							}
 							break;
 
