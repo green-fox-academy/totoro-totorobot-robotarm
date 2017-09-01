@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "kinematics.h"
+#include "robot_arm_conf.h"
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
@@ -37,6 +38,7 @@ uint8_t http_log_level;
 uint8_t sd_logger_on;
 uint8_t lcd_logger_on;
 uint8_t file_reader_on;
+extern button_t buttons[BUTTONS];
 
 FATFS SDFatFs;  /* File system object for SD card logical drive */
 FRESULT res;    /* FatFs function common result code */

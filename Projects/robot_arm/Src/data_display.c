@@ -153,6 +153,7 @@ void lcd_data_display_thread(void const * argument)
 					if (buttons[i].state == 0) {
 
 						switch (i) {
+
 						case 0: // STOP
 							// Turn off power
 							HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
@@ -173,6 +174,7 @@ void lcd_data_display_thread(void const * argument)
 							break;
 
 						case 1: // G-code
+
 							// TODO start G-code reader thread
 							{
 								// Launch G-code reader with the given file name
@@ -184,6 +186,8 @@ void lcd_data_display_thread(void const * argument)
 								osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
 								osThreadCreate (osThread(SET_POSITION), NULL);
 								log_msg(USER, "Set position thread started.\n");
+
+								buttons[i].touchable = 0;
 							}
 							break;
 
@@ -244,12 +248,6 @@ void lcd_data_display_thread(void const * argument)
 		/*
 		 * Display buttons
 		 */
-
-		// Reset G-code button if the file reader thread is not running
-		//if (file_reader_on == 0) {
-		//	buttons[1].state = 0;
-		//	buttons[1].touchable = 1;
-		//}
 
 		// Reset draw button
 

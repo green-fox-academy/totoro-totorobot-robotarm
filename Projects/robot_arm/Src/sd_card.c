@@ -313,6 +313,11 @@ void file_reader_thread(void const * argument)
 
 	while (1) {
 		// Terminate thread
+
+		// Reset G-code button on the display
+		buttons[1].state = 0;
+		buttons[1].touchable = 1;
+
 		log_msg(USER, "File reader thread terminated\n");
 		osThreadTerminate(NULL);
 	}
