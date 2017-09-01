@@ -207,6 +207,10 @@ void start_adc_thread(void)
 
 	log_msg(USER, "ADC thread started\n");
 
+	osMutexWait(arm_coord_mutex, osWaitForever);
+	sprintf(target_display, "                ");
+	osMutexRelease(arm_coord_mutex);
+
     osThreadDef(ADC_MEASURE, adc_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(ADC_MEASURE), NULL);
 
