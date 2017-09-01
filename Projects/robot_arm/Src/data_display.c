@@ -152,9 +152,12 @@ void lcd_data_display_thread(void const * argument)
 					// Execute button function based on actual state
 					if (buttons[i].state == 0) {
 
+						// Turn ON
+
 						switch (i) {
 
 						case 0: // STOP
+
 							// Turn off power
 							HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
 
@@ -189,38 +192,61 @@ void lcd_data_display_thread(void const * argument)
 								osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
 								osThreadCreate (osThread(SET_POSITION), NULL);
 								log_msg(USER, "Set position thread started.\n");
-
-								buttons[i].touchable = 0;
 							}
+							// Disable buttons
+							buttons[1].touchable = 0;
+							buttons[2].touchable = 0;
+							buttons[3].touchable = 0;
 							break;
 
 						case 2: // Draw
+
 							// TODO start draw TCP server thread
+							// Disable buttons
+							buttons[1].touchable = 0;
+							buttons[3].touchable = 0;
+
 							break;
 
 						case 3: // Start ADC
+
 							start_adc_thread();
+							// Disable buttons
+							buttons[1].touchable = 0;
+							buttons[2].touchable = 0;
 							break;
 
 						case 8: // Gripper open
+
 							// TODO start gripper open thread
 							break;
 
 						case 9: // Gripper close
+
 							// TODO start gripper close thread
 							break;
 						}
 
 					} else {
 
+						// Turn OFF
+
 						switch (i) {
-						case 1: // G-code
-							// TODO stop G-code reader thread
-							break;
+
 						case 2: // Draw
 							// TODO stop draw TCP server thread
+
+							// Enable buttons
+							buttons[1].touchable = 1;
+							buttons[3].touchable = 1;
+
 							break;
+
 						case 3: // Stop ADC
+							// Enable buttons
+							buttons[1].touchable = 1;
+							buttons[2].touchable = 1;
+
 							stop_adc_thread();
 							break;
 						}
