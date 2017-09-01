@@ -223,9 +223,11 @@ void mouse_coordinate_thread(void const * argument)
 				//Dupla védelem - kattintás a területen belül ÉS a flag is legyen 1
 				//*Vagyis csak akkor hívodik meg, ha volt már kattintás a négyzeten belül
 				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && drawing_flag) {
+					if (!red_button_flag){
 					//WHITE circle
 					circle_delete_animation(last_ts_coord, ts_state);
 					drawing_flag = 0;
+					}
 				}
 				//BLUE button
 				else if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0]) && !red_button_flag) {
@@ -273,8 +275,8 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
 					if ((0 < save_x) && (0 < save_y)) {
-						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-						BSP_LCD_DrawCircle(save_x, save_y, 20);
+						//BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+						//BSP_LCD_DrawCircle(save_x, save_y, 20);
 						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
