@@ -53,22 +53,8 @@ void udp_server_thread(void const *argument)
 
         recvbuff[message] = 0;	// insert end of string terminator
 
-        if(message > SERVICE_ID_SIZE) {
-
-        	// Check if message for us
-        	int msg_valid = 1;
-        	for (int i = 0; i < SERVICE_ID_SIZE; i++) {
-        		if (recvbuff[i] != SERVICE_ID[i]) {
-        			msg_valid = 0;
-        			break;
-        		}
-        	}
-
-        	if (msg_valid) {
-        		// process msg
-        	}
-            // printf("%s> received from %s %d %s\n", service, inet_ntoa(client_addr.sin_addr), client_addr.sin_port, recvbuff);
-        }
+        printf("UDP received from %s %d %s\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port, recvbuff);
+        
 
     } // END while
 
