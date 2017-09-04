@@ -360,7 +360,7 @@ void init_buttons(void)
 	buttons[2].width = 70;
 	buttons[2].height = 50;
 	buttons[2].btn_color0 = LCD_COLOR_LIGHTGRAY;
-	buttons[2].btn_color1 = LCD_COLOR_GREEN;
+	buttons[2].btn_color1 = LCD_COLOR_ORANGE;
 	buttons[2].text_y = buttons[2].y + 18;
 	buttons[2].text_x0 = 408;
 	buttons[2].text_color0 = LCD_COLOR_BLACK;
