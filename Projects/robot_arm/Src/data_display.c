@@ -201,11 +201,20 @@ void lcd_data_display_thread(void const * argument)
 
 						case 2: // Draw
 
-							// TODO start draw TCP server thread
+							// Start UDP broadcaster
+							{
+								osThreadDef(UDP_CLIENT, udp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
+								osThreadCreate (osThread(UDP_CLIENT), NULL);
+								log_msg(USER, "UDP client start from button press.\n");
+
+								osThreadDef(TCP_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
+								osThreadCreate (osThread(TCP_SERVER), NULL);
+								log_msg(USER, "TCP server start from button press.\n");
+							}
+
 							// Disable buttons
 							buttons[1].touchable = 0;
 							buttons[3].touchable = 0;
-
 							break;
 
 						case 3: // Start ADC

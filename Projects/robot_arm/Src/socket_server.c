@@ -50,6 +50,10 @@ void socket_server_thread(void const *argument)
 	    // Accept connection
 	    client_socket = lwip_accept(server_socket, (struct sockaddr*) &client_addr, (socklen_t*) &client_addr_len);
 
+	    // Change draw button color to green
+	    buttons[2].btn_color1 = LCD_COLOR_GREEN;
+
+
 	    // Keep receiving messages
 	    if (client_socket > 0) {
 	    do {
@@ -84,6 +88,9 @@ void socket_server_thread(void const *argument)
 
 	    	// Close client connection
 	    	lwip_close(client_socket);
+
+	    	// Change button color to orange
+	    	buttons[2].btn_color1 = LCD_COLOR_ORANGE;
 
 	        // Send buffer content to another thread via mail queue
 	        mail_t* mail;
