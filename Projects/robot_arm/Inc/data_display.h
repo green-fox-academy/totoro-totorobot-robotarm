@@ -27,6 +27,7 @@ void stop_lcd_data_display(void);
 void lcd_data_display_thread(void const * argument);
 void draw_buttons(void);
 void init_buttons(void);
+void stop_device(void);
 
 extern void udp_client_thread(void const *argument);
 extern void socket_server_thread(void const *argument);

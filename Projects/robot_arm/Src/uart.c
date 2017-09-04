@@ -600,7 +600,7 @@ void set_value(void)
 				target_xyz.z = (double) c_params.value_z;
 
 				// Set display message
-				sprintf(target_display, "X: %3d  Y: %3d  Z: %3d   ", c_params.value_x, c_params.value_y, c_params.value_z);
+				sprintf(target_display, "%3d  %3d  %3d   ", c_params.value_x, c_params.value_y, c_params.value_z);
 
 				next_coord_set = 1;
 				osMutexRelease(arm_coord_mutex);

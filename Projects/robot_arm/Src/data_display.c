@@ -161,22 +161,7 @@ void lcd_data_display_thread(void const * argument)
 							// Turn off power
 							HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
 
-							// Stop G-code reader
-							end_moving = 1;
-							file_reader_on = 0;
-
-							// Stop drawer
-
-							// Stop ADC
-							stop_adc_thread();
-
-							// Disable all touch buttons and reset their state
-							for (int i = 0; i < BUTTONS; i++) {
-								buttons[i].touchable = 0;
-								if (i != 0) {
-									buttons[i].state = 0;
-								}
-							}
+							stop_device();
 							break;
 
 						case 1: // G-code
@@ -326,6 +311,26 @@ void draw_buttons(void)
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
 	return;
+}
+
+void stop_device(void)
+{
+	// Stop G-code reader
+	end_moving = 1;
+	file_reader_on = 0;
+
+	// Stop drawer
+
+	// Stop ADC
+	stop_adc_thread();
+
+	// Disable all touch buttons and reset their state
+	for (int i = 0; i < BUTTONS; i++) {
+		buttons[i].touchable = 0;
+		if (i != 0) {
+			buttons[i].state = 0;
+		}
+	}
 }
 
 void init_buttons(void)

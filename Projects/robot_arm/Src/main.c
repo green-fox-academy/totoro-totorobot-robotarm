@@ -112,21 +112,6 @@ int main(void)
     EXTI1_IRQHandler_Config();
     m_led_init();
 
-    // Init thread
-    osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
-    osThreadCreate (osThread(Start), NULL);
-  
-    // Start scheduler
-    osKernelStart();
-}
-
-/**
-  * @brief  Start Thread 
-  * @param  argument not used
-  * @retval None
-  */
-static void StartThread(void const * argument)
-{ 
 	osMutexDef(SERVO_PULSE);
 	servo_pulse_mutex = osMutexCreate(osMutex(SERVO_PULSE));
 
@@ -148,6 +133,27 @@ static void StartThread(void const * argument)
 	lcd_log_level = DEBUG;
 	file_log_level = DEBUG;
 
+    // Configure servos
+    servo_config();
+
+
+    // Init thread
+    osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(Start), NULL);
+
+    // Start scheduler
+    osKernelStart();
+}
+
+/**
+  * @brief  Start Thread
+  * @param  argument not used
+  * @retval None
+  */
+static void StartThread(void const * argument)
+{
+
+
 	// Led flashing thread.
     osThreadDef(M_LED_FLASH, m_led_flash_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 1);
 	osThreadCreate (osThread(M_LED_FLASH), NULL);
@@ -156,19 +162,19 @@ static void StartThread(void const * argument)
     osThreadCreate (osThread(SD_LOGGER), NULL);
 
 // Comment from here
-/*
+
     // Create tcp_ip stack thread
-    tcpip_init(NULL, NULL);
-  
+//    tcpip_init(NULL, NULL);
+
     // Initialize the LwIP stack
-    Netif_Config();
+//    Netif_Config();
 
     // Notify user about the network interface config
-    User_notification(&gnetif);
-  
+//    User_notification(&gnetif);
+
     // Start DHCPClient
-    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(DHCP), &gnetif);
+ //   osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+ //   osThreadCreate (osThread(DHCP), &gnetif);
 
     // Wait for IP address
 //	while(!is_ip_ok()) {
@@ -176,8 +182,8 @@ static void StartThread(void const * argument)
 //		osDelay(100);
 //	}
 
-	LCD_UsrLog((char*) "Received IP address.\n");
-*/
+//	LCD_UsrLog((char*) "Received IP address.\n");
+
 // Until here
 
 
@@ -185,12 +191,13 @@ static void StartThread(void const * argument)
     // osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(NTP), NULL);
 
-    // Configure servos
-    servo_config();
+	osDelay(100);
 
     // Start UART RX interface
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(UART_RX), NULL);
+
+    osDelay(100);
 
     // Start robot arm control
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);

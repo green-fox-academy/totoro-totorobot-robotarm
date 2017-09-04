@@ -7,6 +7,7 @@
 #include "stm32746g_discovery.h"
 #include "stm32f7xx_it.h"
 #include "robot_arm_conf.h"
+#include "data_display.h"
 
 void pin_init(void);
 void EXTI1_IRQHandler_Config(void);
