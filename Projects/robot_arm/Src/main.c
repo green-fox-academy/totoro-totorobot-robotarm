@@ -138,25 +138,23 @@ static void StartThread(void const * argument)
     osThreadCreate (osThread(DHCP), &gnetif);
     osDelay(2000);
 
-    /*
-    osThreadDef(SERVO_CONTROL, servo_control_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(SERVO_CONTROL), NULL);
-    */
+    osThreadDef(UDP_server, udp_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(UDP_server), NULL);
 
 /*
     osThreadDef(SOCKET_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(SOCKET_SERVER), NULL);
 */
 
-    /*
+/*
     osThreadDef(TOUCH, touch_screen_test_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     osThreadCreate (osThread(TOUCH), NULL);
-     */
+*/
 
-
+/*
     osThreadDef(MOUSE, mouse_coordinate_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(MOUSE), NULL);
-
+*/
 
     LCD_UsrLog((char*) "\nTotoRobot started.\n\n");
 

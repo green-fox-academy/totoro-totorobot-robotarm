@@ -43,7 +43,8 @@ void yellow_button_animation(char *sys_restart);
 void green_button_animation(void);
 void blue_button_animation(void);
 
-void mouse_coordinate_thread(void const *argument);
+//void mouse_coordinate_thread(void const *argument);
+void the_drawing_function(void);
 
 void string_splitter(void);
 

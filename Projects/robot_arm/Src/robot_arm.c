@@ -14,8 +14,24 @@ int16_t save_x = 0;
 int16_t save_y = 0;
 
 uint8_t send_command[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t recieving_arm_feedback[1];
 
 /* Functions -----------------------------------------------------------------*/
+
+void catching_answer(void)
+{
+	uint8_t catcher = 2;
+
+	while (catcher != 0) {
+		osDelay(1);
+		if (catcher) {
+			closesocket(client_sock);
+		} else {
+		recv(client_sock, recieving_arm_feedback, strlen((char *)recieving_arm_feedback), 0);
+		catcher = recieving_arm_feedback[0];
+		}
+	}
+}
 
 void sending_packet(void)
 {
@@ -48,27 +64,13 @@ void socket_client_thread(void const *argument)
 		LCD_UsrLog("Socket client - connected to server\n");
 	}
 
-	char sending_buff[100];
-	char recieving_buff[100];
-
-	int sent_bytes;
-	int recv_bytes;
-
 	LCD_UsrLog("Socket client - startup...\n");
 	LCD_UsrLog("Socket client - waiting for IP address...\n");
 
 	// Try to connect to the server
-	do {
-		recv_bytes = recv(client_sock, recieving_buff, strlen(sending_buff), 0);
-		if (recv_bytes >= 0) {
-			recieving_buff[recv_bytes] = '\0';
-
-			LCD_UsrLog("Client server - message:");
-			LCD_UsrLog(recieving_buff);
-			LCD_UsrLog("\n");
-		}
-		closesocket(client_sock);
-	} while (recv_bytes > 0);
+	while (1) {
+		the_drawing_function();
+	}
 
 	LCD_UsrLog("Socket client - terminating...\n");
 
@@ -208,166 +210,167 @@ void border_limit_settings(TS_StateTypeDef ts_state)
 	}
 }
 
-void mouse_coordinate_thread(void const * argument)
+void the_drawing_function(void)
 {
-		LCD_UsrLog("Im in the MousE CoorD THREAD!\n");
+	LCD_UsrLog("Im in the MousE CoorD THREAD!\n");
 
-		TS_StateTypeDef ts_state;
+	TS_StateTypeDef ts_state;
 
-		coordinate_t last_ts_coord;
-		last_ts_coord.x = 0;
-		last_ts_coord.y = 0;
+	coordinate_t last_ts_coord;
+	last_ts_coord.x = 0;
+	last_ts_coord.y = 0;
 
-		int static drawing_flag = 0;
-		int static red_button_flag = 0;
+	int static drawing_flag = 0;
+	int static red_button_flag = 0;
 
-		char sys_opening_scr[] = "                        START DRAWING!";
-		char sys_stop[] = "                        SYSTEM STOPPED";
-		char sys_restart[] = "                        SYSTEM RESTART";
+	char sys_opening_scr[] = "                        START DRAWING!";
+	char sys_stop[] = "                        SYSTEM STOPPED";
+	char sys_restart[] = "                        SYSTEM RESTART";
 
-		uint8_t x_Lp;
-		uint8_t x_Hp;
-		uint8_t y_Lp;
-		uint8_t y_Hp;
-		int16_t cor_x = 0;
-		int16_t cor_y = 0;
-		ts_state.touchX[0] = 0;
-		ts_state.touchY[0] = 0;
+	uint8_t x_Lp;
+	uint8_t x_Hp;
+	uint8_t y_Lp;
+	uint8_t y_Hp;
+	int16_t cor_x = 0;
+	int16_t cor_y = 0;
+	ts_state.touchX[0] = 0;
+	ts_state.touchY[0] = 0;
 
-		char coordinates[20];
+	char coordinates[20];
 
-		// Run the APP infinite loop
-		while (1) {
+	// Run the APP infinite loop
+	while (1) {
 
-			// Get touch screen state
-			BSP_TS_GetState(&ts_state);
+		// Get touch screen state
+		BSP_TS_GetState(&ts_state);
 
-			if (BSP_PB_GetState(BUTTON_KEY)) {
-				drawing_stage(sys_opening_scr);
+		if (BSP_PB_GetState(BUTTON_KEY)) {
+			drawing_stage(sys_opening_scr);
+		}
+
+		if (ts_state.touchDetected) {
+			BSP_LED_On(LED1);
+
+			// Ez a négyzet területe, amiben rajzolni tudunk
+			// Dupla védelem - kattintás a területen belül ÉS a flag is legyen 1
+			// Vagyis csak akkor hívodik meg, ha volt már kattintás a négyzeten belül
+			if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && drawing_flag) {
+				if (!red_button_flag){
+				//WHITE circle
+				circle_delete_animation(last_ts_coord, ts_state);
+				drawing_flag = 0;
+				}
 			}
-
-			if (ts_state.touchDetected) {
-				BSP_LED_On(LED1);
-
-				//Ez a négyzet területe, amiben rajzolni tudunk
-				//Dupla védelem - kattintás a területen belül ÉS a flag is legyen 1
-				// Vagyis csak akkor hívodik meg, ha volt már kattintás a négyzeten belül
-				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && drawing_flag) {
-					if (!red_button_flag){
-					//WHITE circle
-					circle_delete_animation(last_ts_coord, ts_state);
-					drawing_flag = 0;
-					}
-				}
-				//BLUE button
-				else if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0]) && !red_button_flag) {
-					blue_button_animation();
-					BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
-					BSP_LCD_FillRect(396, 144, 70, 50);
+			//BLUE button
+			else if ((396 < ts_state.touchX[0]) && (208 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (258 > ts_state.touchY[0]) && !red_button_flag) {
+				blue_button_animation();
+				BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
+				BSP_LCD_FillRect(396, 144, 70, 50);
+				BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+				send_command[0] = 0;
+				//Grip OPEN
+				send_command[1] = 3;
+				sending_packet();
+			}
+			//GREEN button
+			else if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
+				green_button_animation();
+				BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
+				BSP_LCD_FillRect(396, 208, 70, 50);
+				BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+				send_command[0] = 0;
+				//Grip CLOSE
+				send_command[1] = 4;
+				sending_packet();
+			}
+			//YELLOW button
+			else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
+				yellow_button_animation(sys_restart);
+				osDelay(2000);
+				drawing_stage(sys_opening_scr);
+				red_button_flag = 0;
+				send_command[0] = 0;
+				//RESET position
+				send_command[1] = 2;
+				//SET the arm to 0,0,0 position
+				send_command[2] = 0;
+				send_command[3] = 0;
+				send_command[4] = 0;
+				send_command[5] = 0;
+				send_command[6] = 0;
+				send_command[7] = 0;
+				sending_packet();
+			}
+			//RED button ON
+			else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
+				red_button_animation(sys_stop);
+				//create_buttons_YGB();
+				red_button_flag = 1;
+				send_command[0] = 0;
+				//Emergency STOP
+				send_command[1] = 0;
+				sending_packet();
+				osDelay(300);
+			}
+			//RED button OFF
+			else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && red_button_flag){
+				create_button_R();
+				BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
+				if ((0 < save_x) && (0 < save_y)) {
+					sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					send_command[0] = 0;
-					//Grip OPEN
-					send_command[1] = 3;
-					sending_packet();
-				}
-				//GREEN button
-				else if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
-					green_button_animation();
-					BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
-					BSP_LCD_FillRect(396, 208, 70, 50);
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					send_command[0] = 0;
-					//Grip CLOSE
-					send_command[1] = 4;
-					sending_packet();
-				}
-				//YELLOW button
-				else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
-					yellow_button_animation(sys_restart);
-					osDelay(2000);
-					drawing_stage(sys_opening_scr);
-					red_button_flag = 0;
-					send_command[0] = 0;
-					//RESET position
-					send_command[1] = 2;
-					//SET the arm to 0,0,0 position
-					send_command[2] = 0;
-					send_command[3] = 0;
-					send_command[4] = 0;
-					send_command[5] = 0;
-					send_command[6] = 0;
-					send_command[7] = 0;
-					sending_packet();
-				}
-				//RED button ON
-				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
-					red_button_animation(sys_stop);
-					//create_buttons_YGB();
-					red_button_flag = 1;
-					send_command[0] = 0;
-					//Emergency STOP
-					send_command[1] = 0;
-					sending_packet();
-					osDelay(300);
-				}
-				//RED button OFF
-				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && red_button_flag){
-					create_button_R();
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
-					if ((0 < save_x) && (0 < save_y)) {
-						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
-						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
-					}
-					red_button_flag = 0;
-					send_command[0] = 0;
-					//RESTART any process
-					send_command[1] = 1;
-					sending_packet();
-					osDelay(300);
-				}
-				//Ez a terület felel azért, hogy rajzolásnál a pötty ne lógjon ki
-				//Valamint itt rajzol a program ÉS itt írja ki a koordinátákat a területen
-				else if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
-					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-					BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
-					cor_x = ts_state.touchX[0];
-					cor_y = ts_state.touchY[0];
-					//COORDINATES
-					send_command[0] = 1;
-					x_Hp = cor_x >> 8;
-					x_Lp = (uint8_t)cor_x;
-					y_Hp = cor_y >> 8;
-					y_Lp = (uint8_t)cor_y;
-					send_command[2] = x_Hp;
-					send_command[3] = x_Lp;
-					send_command[4] = y_Hp;
-					send_command[5] = y_Lp;
-					sending_packet();
-					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
-			} else {
-				BSP_LED_Off(LED1);
-				//Dupla védelem arra, hogy ez a rész csak akkor hívódjon meg
-				//HA már volt érintés a négyzeten belül
-				if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && !drawing_flag) {
-					if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
-						osDelay(500);
-						BSP_LCD_SetTextColor(LCD_COLOR_RED);
-						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
-						osDelay(2000);
-						BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-						BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
-						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-						save_x = ts_state.touchX[0];
-						save_y = ts_state.touchY[0];
-						drawing_flag = 1;
-					}
+				red_button_flag = 0;
+				send_command[0] = 0;
+				//RESTART any process
+				send_command[1] = 1;
+				sending_packet();
+				osDelay(300);
+			}
+			//Ez a terület felel azért, hogy rajzolásnál a pötty ne lógjon ki
+			//Valamint itt rajzol a program ÉS itt írja ki a koordinátákat a területen
+			else if ((22 < ts_state.touchX[0]) && (33 < ts_state.touchY[0]) && (373 > ts_state.touchX[0]) && (257 > ts_state.touchY[0]) && !red_button_flag) {
+				BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+				BSP_LCD_FillCircle(ts_state.touchX[0], ts_state.touchY[0], 4);
+				cor_x = ts_state.touchX[0];
+				cor_y = ts_state.touchY[0];
+				//COORDINATES
+				send_command[0] = 1;
+				x_Hp = cor_x >> 8;
+				x_Lp = (uint8_t)cor_x;
+				y_Hp = cor_y >> 8;
+				y_Lp = (uint8_t)cor_y;
+				send_command[2] = x_Hp;
+				send_command[3] = x_Lp;
+				send_command[4] = y_Hp;
+				send_command[5] = y_Lp;
+				sending_packet();
+				sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
+				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+			}
+		} else {
+			BSP_LED_Off(LED1);
+			//Dupla védelem arra, hogy ez a rész csak akkor hívódjon meg
+			//HA már volt érintés a négyzeten belül
+			if ((ts_state.touchX[0] > 0) && (ts_state.touchY[0] > 0) && !drawing_flag) {
+				if ((20 < ts_state.touchX[0]) && (30 < ts_state.touchY[0]) && (376 > ts_state.touchX[0]) && (260 > ts_state.touchY[0]) && !red_button_flag) {
+					osDelay(500);
+					BSP_LCD_SetTextColor(LCD_COLOR_RED);
+					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
+					//Vár amíg nem jön jelzés a robottól, hogy mehet tovább
+					catching_answer();
+					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
+					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+					save_x = ts_state.touchX[0];
+					save_y = ts_state.touchY[0];
+					drawing_flag = 1;
 				}
 			}
 		}
+	}
 }
 
 void string_splitter(void)
