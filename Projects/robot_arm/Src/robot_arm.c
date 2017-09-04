@@ -19,31 +19,71 @@ TS_StateTypeDef touch_scr;
 int16_t save_x = 0;
 int16_t save_y = 0;
 
-uint8_t send_command[8];
+uint8_t send_command[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-int connect_to_server(int *client_sock, uint16_t SERVER_PORT, char *CLIENT_SERVER_IP)
+void sending_packet()
 {
+	int sent_bytes = send(client_sock, send_command, strlen((char*) send_command), 0);
+	if (sent_bytes > 0) {
+		LCD_UsrLog("Socket client - data sent\n");
+}
+
+void socket_client_thread(void const *argument)
+{
+	printf("Initialised.\n");
+
 	// Creating client socket
-	(*client_sock) = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
-	if (*client_sock < 0) {
+	client_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
+	if (client_sock < 0) {
 		LCD_ErrLog("Socket client - can't create socket\n");
-		return -1;
 	}
 
 	// Creating server address structure
 	struct sockaddr_in addr_in;
 	addr_in.sin_family = AF_INET;
-	addr_in.sin_port = htons(SERVER_PORT);
-	addr_in.sin_addr.s_addr = inet_addr(CLIENT_SERVER_IP);
+	addr_in.sin_port = htons( 54003 );
+	addr_in.sin_addr.s_addr = inet_addr((char *)client_ip);
 
 	// Connecting the client socket to the server
-	int connect_retval = connect(*client_sock, (struct sockaddr *)&addr_in, sizeof(addr_in));
+	int connect_retval = connect(client_sock, (struct sockaddr *)&addr_in, sizeof(addr_in));
 	if (connect_retval < 0) {
 		LCD_ErrLog("Socket client - can't connect to server\n");
-		return -1;
 	} else {
 		LCD_UsrLog("Socket client - connected to server\n");
-		return 0;
+	}
+
+	char sending_buff[100];
+	char recieving_buff[100];
+
+	int sent_bytes;
+	int recv_bytes;
+
+	LCD_UsrLog("Socket client - startup...\n");
+	LCD_UsrLog("Socket client - waiting for IP address...\n");
+
+	// Try to connect to the server
+	do {
+		sent_bytes = send(client_sock, sending_buff, strlen(sending_buff), 0);
+		if (sent_bytes > 0) {
+
+			LCD_UsrLog("Socket client - data sent\n");
+
+			recv_bytes = recv(client_sock, recieving_buff, strlen(sending_buff), 0);
+			if (recv_bytes >= 0) {
+				recieving_buff[recv_bytes] = '\0';
+
+				LCD_UsrLog("Client server - message:");
+				LCD_UsrLog(recieving_buff);
+				LCD_UsrLog("\n");
+			}
+		}
+		closesocket(client_sock);
+	} while (sent_bytes > 0);
+
+	LCD_UsrLog("Socket client - terminating...\n");
+
+	while (1) {
+		osThreadTerminate(NULL);
 	}
 }
 
@@ -238,6 +278,7 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[0] = 0;
 					//Grip OPEN
 					send_command[1] = 3;
+					sending_packet();
 				}
 				//GREEN button
 				else if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
@@ -248,6 +289,7 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[0] = 0;
 					//Grip CLOSE
 					send_command[1] = 4;
+					sending_packet();
 				}
 				//YELLOW button
 				else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
@@ -258,6 +300,7 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[0] = 0;
 					//RESET position
 					send_command[1] = 2;
+					sending_packet();
 				}
 				//RED button ON
 				else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
@@ -267,6 +310,7 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[0] = 0;
 					//Emergency STOP
 					send_command[1] = 0;
+					sending_packet();
 					osDelay(300);
 				}
 				//RED button OFF
@@ -275,8 +319,6 @@ void mouse_coordinate_thread(void const * argument)
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)sys_opening_scr);
 					if ((0 < save_x) && (0 < save_y)) {
-						//BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-						//BSP_LCD_DrawCircle(save_x, save_y, 20);
 						sprintf(coordinates, " X%3d - Y%3d", save_x, abs(save_y - 272));
 						BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 						BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
@@ -285,6 +327,7 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[0] = 0;
 					//RESTART any process
 					send_command[1] = 1;
+					sending_packet();
 					osDelay(300);
 				}
 				//Ez a terület felel azért, hogy rajzolásnál a pötty ne lógjon ki
@@ -304,6 +347,7 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[3] = x_Lp;
 					send_command[4] = y_Hp;
 					send_command[5] = y_Lp;
+					sending_packet();
 					sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
 					BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				}
@@ -366,6 +410,78 @@ void touch_screen_test_thread(void const * argument)
 		} else
 			BSP_LED_Off(LED1);
 	} while (1 > 0);
+}
+
+void udp_server_thread(void const *argument)
+{
+	udp_server_ready = 0;
+
+    // Create a new socket to listen for client connections.
+    int udp_server_socket;
+
+	udp_server_socket = lwip_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (udp_server_socket < 0) {
+		LCD_ErrLog((char*) "Cannot create UDP server socket\n");
+		LCD_ErrLog((char*) "Closing application\n");
+		osThreadTerminate(NULL);
+	} else {
+		LCD_UsrLog((char*) "UDP server socket is up.\n");
+	}
+
+	// Create server address structure
+	struct sockaddr_in udp_server_addr;
+	udp_server_addr.sin_family = AF_INET;
+	udp_server_addr.sin_addr.s_addr = INADDR_ANY;
+	udp_server_addr.sin_port = htons(UDP_SERVER_PORT);
+
+	// Bind the server address info to socket
+	if (lwip_bind(udp_server_socket, (struct sockaddr*) &udp_server_addr,
+			      (socklen_t) sizeof(udp_server_addr)) < 0) {
+		LCD_ErrLog((char*) "UDP server socket bind failed.\n");
+		LCD_ErrLog((char*) "Closing application\n");
+		lwip_close(udp_server_socket);
+		osThreadTerminate(NULL);
+	} else {
+		LCD_UsrLog((char*) "UDP server bind successful.\n");
+	}
+
+	udp_server_ready = 1;
+
+	LCD_UsrLog((char*) "UDP server is ready.\n");
+
+    while(1) {
+
+    	osDelay(15);
+
+        struct sockaddr_in udp_client_addr;
+        int udp_client_addr_size = sizeof(udp_client_addr);
+        char recvbuff[1024];
+
+        int message = recvfrom(udp_server_socket, recvbuff, sizeof(recvbuff),
+        			  	  	   0, (struct sockaddr*) &udp_client_addr,
+							   (socklen_t*) &udp_client_addr_size);
+
+        recvbuff[message] = 0;	// insert end of string terminator
+
+        client_ip = inet_ntoa(udp_client_addr.sin_addr);
+
+        if (strcmp(recvbuff, "totorobot") == 0) {
+        	osThreadDef(CLIENT, socket_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+        	osThreadCreate (osThread(CLIENT), NULL);
+        	osDelay(3000);
+        }
+
+        //printf("UDP received from %s %d %s\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port, recvbuff);
+
+    } // END while
+
+    // Close socket
+    lwip_close(udp_server_socket);
+
+    // Close thread
+    while (1) {
+    	osThreadTerminate(NULL);
+    }
 }
 
 void socket_server_thread(void const *argument)
@@ -577,6 +693,6 @@ uint8_t get_degrees(void)
 	uint8_t degrees = (uint32_t) ( adc_value * (MAX_DEGREE - MIN_DEGREE)) / (MAX_ADC_VALUE - MIN_ADC_VALUE);
 
 	return degrees;}
-
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
