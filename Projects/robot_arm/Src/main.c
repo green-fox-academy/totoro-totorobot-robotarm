@@ -155,27 +155,30 @@ static void StartThread(void const * argument)
     osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(SD_LOGGER), NULL);
 
+// Comment from here
+/*
     // Create tcp_ip stack thread
-    // tcpip_init(NULL, NULL);
+    tcpip_init(NULL, NULL);
   
     // Initialize the LwIP stack
-    // Netif_Config();
+    Netif_Config();
 
     // Notify user about the network interface config
-    // User_notification(&gnetif);
+    User_notification(&gnetif);
   
-    // Enable for networking
     // Start DHCPClient
-    // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    // osThreadCreate (osThread(DHCP), &gnetif);
+    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(DHCP), &gnetif);
 
     // Wait for IP address
-//      LCD_UsrLog((char*) "Waiting for IP address.\n");
-//      while(!is_ip_ok()){
-//    	  osDelay(100);
-//      }
+//	while(!is_ip_ok()) {
+//		LCD_UsrLog((char*) "Waiting for IP address.\n");
+//		osDelay(100);
+//	}
 
-
+	LCD_UsrLog((char*) "Received IP address.\n");
+*/
+// Until here
 
 
     // Start NTP client, set RTC time
@@ -230,7 +233,7 @@ static void Netif_Config(void)
         netif_set_up(&gnetif);
     else
         /* When the netif link is down this function must be called */
-    netif_set_down(&gnetif);
+    	netif_set_down(&gnetif);
 }
 
 /**
