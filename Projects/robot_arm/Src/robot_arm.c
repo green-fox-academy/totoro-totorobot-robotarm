@@ -8,7 +8,6 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-
 TS_StateTypeDef touch_scr;
 
 int16_t save_x = 0;
@@ -16,9 +15,11 @@ int16_t save_y = 0;
 
 uint8_t send_command[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
+/* Functions -----------------------------------------------------------------*/
+
 void sending_packet(void)
 {
-	int sent_bytes = send(client_sock, send_command, strlen((char*) send_command), 0);
+	int sent_bytes = send(client_sock, send_command, strlen((char *)send_command), 0);
 	if (sent_bytes > 0)
 		LCD_UsrLog("Socket client - data sent\n");
 }
@@ -58,22 +59,16 @@ void socket_client_thread(void const *argument)
 
 	// Try to connect to the server
 	do {
-		sent_bytes = send(client_sock, sending_buff, strlen(sending_buff), 0);
-		if (sent_bytes > 0) {
+		recv_bytes = recv(client_sock, recieving_buff, strlen(sending_buff), 0);
+		if (recv_bytes >= 0) {
+			recieving_buff[recv_bytes] = '\0';
 
-			LCD_UsrLog("Socket client - data sent\n");
-
-			recv_bytes = recv(client_sock, recieving_buff, strlen(sending_buff), 0);
-			if (recv_bytes >= 0) {
-				recieving_buff[recv_bytes] = '\0';
-
-				LCD_UsrLog("Client server - message:");
-				LCD_UsrLog(recieving_buff);
-				LCD_UsrLog("\n");
-			}
+			LCD_UsrLog("Client server - message:");
+			LCD_UsrLog(recieving_buff);
+			LCD_UsrLog("\n");
 		}
 		closesocket(client_sock);
-	} while (sent_bytes > 0);
+	} while (recv_bytes > 0);
 
 	LCD_UsrLog("Socket client - terminating...\n");
 
@@ -295,6 +290,13 @@ void mouse_coordinate_thread(void const * argument)
 					send_command[0] = 0;
 					//RESET position
 					send_command[1] = 2;
+					//SET the arm to 0,0,0 position
+					send_command[2] = 0;
+					send_command[3] = 0;
+					send_command[4] = 0;
+					send_command[5] = 0;
+					send_command[6] = 0;
+					send_command[7] = 0;
 					sending_packet();
 				}
 				//RED button ON
@@ -370,7 +372,6 @@ void mouse_coordinate_thread(void const * argument)
 
 void string_splitter(void)
 {
-
 	char str[] = "This a sample string1.This a sample string2.This a sample string3.\n";
 	char buff[3][50];
 	char * pch;
@@ -410,9 +411,7 @@ void touch_screen_test_thread(void const * argument)
 
 void udp_server_thread(void const *argument)
 {
-	udp_server_ready = 0;
-
-    // Create a new socket to listen for client connections.
+	// Create 'an UDP' new socket to listen for client connections.
     int udp_server_socket;
 
 	udp_server_socket = lwip_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -431,8 +430,7 @@ void udp_server_thread(void const *argument)
 	udp_server_addr.sin_port = htons(UDP_SERVER_PORT);
 
 	// Bind the server address info to socket
-	if (lwip_bind(udp_server_socket, (struct sockaddr*) &udp_server_addr,
-			      (socklen_t) sizeof(udp_server_addr)) < 0) {
+	if (lwip_bind(udp_server_socket, (struct sockaddr *)&udp_server_addr, (socklen_t)sizeof(udp_server_addr)) < 0) {
 		LCD_ErrLog((char*) "UDP server socket bind failed.\n");
 		LCD_ErrLog((char*) "Closing application\n");
 		lwip_close(udp_server_socket);
@@ -440,8 +438,6 @@ void udp_server_thread(void const *argument)
 	} else {
 		LCD_UsrLog((char*) "UDP server bind successful.\n");
 	}
-
-	udp_server_ready = 1;
 
 	LCD_UsrLog((char*) "UDP server is ready.\n");
 
@@ -454,8 +450,8 @@ void udp_server_thread(void const *argument)
         char recvbuff[1024];
 
         int message = recvfrom(udp_server_socket, recvbuff, sizeof(recvbuff),
-        			  	  	   0, (struct sockaddr*) &udp_client_addr,
-							   (socklen_t*) &udp_client_addr_size);
+        			  	  	   0, (struct sockaddr *)&udp_client_addr,
+							   (socklen_t *)&udp_client_addr_size);
 
         recvbuff[message] = 0;	// insert end of string terminator
 
