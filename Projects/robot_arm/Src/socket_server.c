@@ -5,6 +5,7 @@ void socket_server_thread(void const *argument)
 	// Define params
 	int server_socket;
 	struct sockaddr_in server_addr;
+	socket_server_on = 1;
 
 	// Create server socket
 	server_socket = lwip_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -35,7 +36,7 @@ void socket_server_thread(void const *argument)
 	} else
 
 	// Accept incoming connection -> client socket
-	while (1) {
+	while (socket_server_on) {
 
 		// Define client params
 		int client_socket;
@@ -50,12 +51,16 @@ void socket_server_thread(void const *argument)
 	    // Accept connection
 	    client_socket = lwip_accept(server_socket, (struct sockaddr*) &client_addr, (socklen_t*) &client_addr_len);
 
+	    // Turn off UDP client
+	    udp_client_on = 0;
+
+
 	    // Change draw button color to green
 	    buttons[2].btn_color1 = LCD_COLOR_GREEN;
 
 
 	    // Keep receiving messages
-	    if (client_socket > 0) {
+	    if ((client_socket > 0) && socket_server_on) {
 	    do {
 	    	draw_command_t command;
 
@@ -84,7 +89,7 @@ void socket_server_thread(void const *argument)
 			uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
 
 
-	    } while (received_bytes > 0);
+	    } while ((received_bytes > 0) && socket_server_on);
 
 	    	// Close client connection
 	    	lwip_close(client_socket);

@@ -26,7 +26,7 @@ void start_lcd_data_display(void)
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
 
-    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 30);
     osThreadCreate (osThread(LCD_DATA_DISPLAY), NULL);
 
 	return;
@@ -202,7 +202,7 @@ void lcd_data_display_thread(void const * argument)
 						case 2: // Draw
 
 							// Start UDP broadcaster
-							{
+							if (is_ip_ok()) {
 								osThreadDef(UDP_CLIENT, udp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
 								osThreadCreate (osThread(UDP_CLIENT), NULL);
 								log_msg(USER, "UDP client start from button press.\n");
@@ -243,12 +243,13 @@ void lcd_data_display_thread(void const * argument)
 						switch (i) {
 
 						case 2: // Draw
-							// TODO stop draw TCP server thread
+
+							// Stop draw TCP server thread
+							socket_server_on = 0;
 
 							// Enable buttons
 							buttons[1].touchable = 1;
 							buttons[3].touchable = 1;
-
 							break;
 
 						case 3: // Stop ADC

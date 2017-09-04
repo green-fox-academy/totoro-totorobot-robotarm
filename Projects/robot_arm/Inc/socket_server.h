@@ -30,10 +30,14 @@ typedef struct {
 
 osMailQId  mail_q_id;
 
+uint8_t socket_server_on;
+
 
 /* Exported functions ------------------------------------------------------- */
 void socket_server_thread(void const *argument);
 void deserialize(char* buffer, draw_command_t* command);
+
+extern uint8_t udp_client_on;
 
 #endif /* __SOCKET_SERVER_H */
 

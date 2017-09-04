@@ -169,6 +169,15 @@ static void StartThread(void const * argument)
     // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(DHCP), &gnetif);
 
+    // Wait for IP address
+//      LCD_UsrLog((char*) "Waiting for IP address.\n");
+//      while(!is_ip_ok()){
+//    	  osDelay(100);
+//      }
+
+
+
+
     // Start NTP client, set RTC time
     // osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
     // osThreadCreate (osThread(NTP), NULL);

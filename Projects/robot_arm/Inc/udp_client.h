@@ -9,7 +9,7 @@
 #include "sd_card.h"
 #include "udp_server.h"
 
-#define SERVICE_ID	"totorobot 54003"
+#define SERVICE_ID	"totorobot"
 #define UDP_SERVER_PORT		54002
 
 uint8_t udp_client_ready;

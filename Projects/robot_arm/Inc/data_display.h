@@ -19,6 +19,8 @@ button_t buttons[BUTTONS];
 extern uint8_t debug;
 uint8_t lcd_data_display_on;
 char lcd_data_buff[70];
+extern uint8_t socket_server_on;
+
 
 void start_lcd_data_display(void);
 void stop_lcd_data_display(void);
@@ -28,5 +30,7 @@ void init_buttons(void);
 
 extern void udp_client_thread(void const *argument);
 extern void socket_server_thread(void const *argument);
+extern uint8_t is_ip_ok(void);
+
 
 #endif /* __DATA_DISPLAY_H_ */
