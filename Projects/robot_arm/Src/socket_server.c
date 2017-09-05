@@ -8,6 +8,7 @@ void socket_server_thread(void const *argument)
 	socket_server_on = 1;
 	coord_cart_t draw;
 	char tmp[100];
+	uint8_t clear_field = 1;
 
 	// Send arm to starting position
 	while(1) {
@@ -38,12 +39,6 @@ void socket_server_thread(void const *argument)
 	// Launch process to set pulse
 	osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
 	osThreadCreate (osThread(SET_POSITION), NULL);
-
-
-	// Clear target field
-	osMutexWait(arm_coord_mutex, osWaitForever);
-	sprintf(target_display, "                ");
-	osMutexRelease(arm_coord_mutex);
 
 	log_msg(USER, "TCP Server thread started.\n");
 
@@ -122,6 +117,19 @@ void socket_server_thread(void const *argument)
 				if (received_bytes == 0) {
 					osDelay(5);
 				} else {
+
+					// Wait for initial movement to finish
+					while(!set_position_on) {
+						osDelay(100);
+					}
+
+					// Clear target field
+					if (clear_field) {
+						osMutexWait(arm_coord_mutex, osWaitForever);
+						sprintf(target_display, "                ");
+						osMutexRelease(arm_coord_mutex);
+						clear_field = 0;
+					}
 
 					sprintf(tmp, "r:%d, b0:%d, b1:%d, b2:%d, b3:%d, b4:%d, b5:%d, b6:%d, b7:%d\n", received_bytes, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
 					log_msg(DEBUG, tmp);
