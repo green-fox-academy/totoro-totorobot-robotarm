@@ -13,7 +13,6 @@ TS_StateTypeDef touch_scr;
 int16_t save_x = 0;
 int16_t save_y = 0;
 
-uint8_t send_command[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t recieving_arm_feedback[1];
 
 /* Functions -----------------------------------------------------------------*/
@@ -22,9 +21,9 @@ void catching_answer(void)
 {
 	uint8_t catcher = 2;
 
-	while (catcher != 0) {
+	while (catcher != '0') {
 		osDelay(1);
-		if (catcher) {
+		if (catcher == '1') {
 			closesocket(client_sock);
 		} else {
 		recv(client_sock, recieving_arm_feedback, strlen((char *)recieving_arm_feedback), 0);
@@ -33,11 +32,14 @@ void catching_answer(void)
 	}
 }
 
-void sending_packet(void)
+void sending_packet(uint8_t *send_command)
 {
+	/*
 	int sent_bytes = send(client_sock, send_command, strlen((char *)send_command), 0);
 	if (sent_bytes > 0)
 		LCD_UsrLog("Socket client - data sent\n");
+	*/
+	send(client_sock, send_command, 8, 0);
 }
 
 void socket_client_thread(void const *argument)
@@ -227,6 +229,8 @@ void the_drawing_function(void)
 	char sys_stop[] = "                        SYSTEM STOPPED";
 	char sys_restart[] = "                        SYSTEM RESTART";
 
+	uint8_t send_command[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
 	uint8_t x_Lp;
 	uint8_t x_Hp;
 	uint8_t y_Lp;
@@ -251,6 +255,8 @@ void the_drawing_function(void)
 		if (ts_state.touchDetected) {
 			BSP_LED_On(LED1);
 
+			osDelay(100);
+
 			// Ez a négyzet területe, amiben rajzolni tudunk
 			// Dupla védelem - kattintás a területen belül ÉS a flag is legyen 1
 			// Vagyis csak akkor hívodik meg, ha volt már kattintás a négyzeten belül
@@ -270,7 +276,7 @@ void the_drawing_function(void)
 				send_command[0] = 0;
 				//Grip OPEN
 				send_command[1] = 3;
-				sending_packet();
+				sending_packet(send_command);
 			}
 			//GREEN button
 			else if ((396 < ts_state.touchX[0]) && (144 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (194 > ts_state.touchY[0]) && !red_button_flag) {
@@ -281,7 +287,7 @@ void the_drawing_function(void)
 				send_command[0] = 0;
 				//Grip CLOSE
 				send_command[1] = 4;
-				sending_packet();
+				sending_packet(send_command);
 			}
 			//YELLOW button
 			else if ((396 < ts_state.touchX[0]) && (80 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (130 > ts_state.touchY[0])) {
@@ -299,7 +305,7 @@ void the_drawing_function(void)
 				send_command[5] = 0;
 				send_command[6] = 0;
 				send_command[7] = 0;
-				sending_packet();
+				sending_packet(send_command);
 			}
 			//RED button ON
 			else if ((396 < ts_state.touchX[0]) && (14 < ts_state.touchY[0]) && (466 > ts_state.touchX[0]) && (64 > ts_state.touchY[0]) && !red_button_flag) {
@@ -309,7 +315,7 @@ void the_drawing_function(void)
 				send_command[0] = 0;
 				//Emergency STOP
 				send_command[1] = 0;
-				sending_packet();
+				sending_packet(send_command);
 				osDelay(300);
 			}
 			//RED button OFF
@@ -326,7 +332,7 @@ void the_drawing_function(void)
 				send_command[0] = 0;
 				//RESTART any process
 				send_command[1] = 1;
-				sending_packet();
+				sending_packet(send_command);
 				osDelay(300);
 			}
 			//Ez a terület felel azért, hogy rajzolásnál a pötty ne lógjon ki
@@ -338,6 +344,7 @@ void the_drawing_function(void)
 				cor_y = ts_state.touchY[0];
 				//COORDINATES
 				send_command[0] = 1;
+				send_command[1] = 0;
 				x_Hp = cor_x >> 8;
 				x_Lp = (uint8_t)cor_x;
 				y_Hp = cor_y >> 8;
@@ -346,9 +353,13 @@ void the_drawing_function(void)
 				send_command[3] = x_Lp;
 				send_command[4] = y_Hp;
 				send_command[5] = y_Lp;
-				sending_packet();
-				sprintf(coordinates, " X%3d - Y%3d", cor_x, abs(cor_y - 272));
+				sending_packet(send_command);
+				sprintf(coordinates, " X%3d - Y%3d", cor_x, cor_y);
 				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
+				sprintf(coordinates, " XHP%3d - XLP%3d - YHP%3d - YLP%3d", x_Hp, x_Lp, y_Hp, y_Lp);
+				BSP_LCD_DisplayStringAtLine(2, (uint8_t *)coordinates);
+				sprintf(coordinates, " XHP%3d - XLP%3d - YHP%3d - YLP%3d", send_command[2], send_command[3], send_command[4], send_command[5]);
+				BSP_LCD_DisplayStringAtLine(3, (uint8_t *)coordinates);
 			}
 		} else {
 			BSP_LED_Off(LED1);
@@ -360,8 +371,8 @@ void the_drawing_function(void)
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					//Vár amíg nem jön jelzés a robottól, hogy mehet tovább
-					catching_answer();
-					//osDelay(2000);
+					//catching_answer();
+					osDelay(1000);
 					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
@@ -467,7 +478,7 @@ void udp_server_thread(void const *argument)
         	osDelay(3000);
         }
 
-        //printf("UDP received from %s %d %s\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port, recvbuff);
+        printf("UDP received from %s %d %s\n", inet_ntoa(udp_client_addr.sin_addr), udp_client_addr.sin_port, recvbuff);
 
     } // END while
 

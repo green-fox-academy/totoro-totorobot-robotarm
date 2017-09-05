@@ -25,7 +25,7 @@ char *client_ip;
 
 //uint8_t debug;
 
-void sending_packet(void);
+void sending_packet(uint8_t *send_command);
 void socket_client_thread(void const *argument);
 
 void socket_server_thread(void const *argument);

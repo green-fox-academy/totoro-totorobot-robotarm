@@ -138,7 +138,7 @@ static void StartThread(void const * argument)
     osThreadCreate (osThread(DHCP), &gnetif);
     osDelay(2000);
 
-    osThreadDef(UDP_server, udp_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadDef(UDP_server, udp_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(UDP_server), NULL);
 
 /*
