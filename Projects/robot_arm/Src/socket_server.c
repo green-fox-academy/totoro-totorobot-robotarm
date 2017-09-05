@@ -123,10 +123,9 @@ void socket_server_thread(void const *argument)
 						osDelay(100);
 					}
 
-					log_msg(DEBUG, "Draw: arm has moved to start position.\n");
-
 					// Clear target field
 					if (clear_field) {
+						log_msg(DEBUG, "Draw: arm has moved to start position.\n");
 						osMutexWait(arm_coord_mutex, osWaitForever);
 						sprintf(target_display, "                ");
 						osMutexRelease(arm_coord_mutex);
@@ -178,7 +177,7 @@ void socket_server_thread(void const *argument)
 
 						// Move arm
 						if (xyz_to_pulse(&draw) != 0) {
-							log_msg(ERROR, "Pulse out of range, set_position_thread will terminate.\n");
+							log_msg(ERROR, "Pulse out of range, drawer will terminate.\n");
 							break;
 						} else {
 							sprintf(tmp, "movement to x:%d, y:%d, z:%d\n", (int16_t) draw.x, (int16_t) draw.y, (int16_t) draw.z);

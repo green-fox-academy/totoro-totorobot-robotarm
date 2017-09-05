@@ -385,7 +385,9 @@ uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 	// Verify if pulse width values are within allowed range
 	for (int i = 0; i < SERVOS - 1; i++) {
 		if (verify_pulse(i, pulse_width[i]) != 0) {
-			log_msg(ERROR, "Pulse width is out of allowed range!\n");
+			char tmp[100];
+			sprintf(tmp, "Pulse%d: %d is out of range [min: %d, max: %d]\n", i, pulse_width[i], servo_conf[i].min_pulse, servo_conf[i].max_pulse);
+			log_msg(ERROR, tmp);
 			return 1;
 		}
 	}
