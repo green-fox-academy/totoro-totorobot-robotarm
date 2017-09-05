@@ -361,6 +361,7 @@ void the_drawing_function(void)
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					//Vár amíg nem jön jelzés a robottól, hogy mehet tovább
 					catching_answer();
+					//osDelay(2000);
 					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
