@@ -346,23 +346,21 @@ void stop_device(void)
 
 void lcd_touch_display_thread(void const * argument)
 {
-	osDelay(1000);
+	TS_StateTypeDef TS_State_t;
+	BSP_TS_ResetTouchData(&TS_State_t);
 	uint8_t finger_down = 0;
 
-
-	// BSP_TS_ResetTouchData(&TS_State);
-	// BSP_TS_ResetTouchData(&TS_State_t);
+	osDelay(1000);
 
 	while(1) {
 
 		// Read touch values
 		BSP_TS_GetState(&TS_State_t);
-		if (TS_State.touchDetected) {
+		if (TS_State_t.touchDetected) {
 
 			// Stop logger start data display and exit from thread
 			if (finger_down) {
-				// start_lcd_data_display();
-				log_msg(DEBUG, "Touch detected.\n");
+				start_lcd_data_display();
 				break;
 			}
 
