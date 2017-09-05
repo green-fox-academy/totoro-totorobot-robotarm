@@ -8,7 +8,7 @@ void start_lcd_data_display(void)
 	init_buttons();
 
 	// Disable logging to LCD screen
-	//lcd_logger_on = 0;
+	lcd_logger_on = 0;
 
 	// Disable LCD debug utility
 	LCD_LOG_DeInit();
@@ -36,7 +36,6 @@ void stop_lcd_data_display(void)
 {
 	// Disable data display
 	lcd_data_display_on = 0;
-	osDelay(500);
 
 	// Restart LCD logging
 	BSP_LCD_Clear(LCD_COLOR_WHITE);
@@ -50,6 +49,10 @@ void stop_lcd_data_display(void)
 	lcd_logger_on = 1;
 
 	log_msg(USER, "LCD logging utility started\n");
+
+	// Start touch thread
+    osThreadDef(LCD_TOUCH, lcd_touch_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(LCD_TOUCH), NULL);
 
 	return;
 }
@@ -186,8 +189,6 @@ void lcd_data_display_thread(void const * argument)
 
 						case 2: // Draw
 
-							stop_lcd_data_display();
-
 							// Start UDP broadcaster
 							if (is_ip_ok()) {
 								osThreadDef(TCP_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
@@ -212,6 +213,11 @@ void lcd_data_display_thread(void const * argument)
 							// Disable buttons
 							buttons[1].touchable = 0;
 							buttons[2].touchable = 0;
+							break;
+
+						case 7: // Start logger screen
+
+							stop_lcd_data_display();
 							break;
 
 						case 8: // Gripper open
@@ -293,26 +299,27 @@ void lcd_data_display_thread(void const * argument)
 
 void draw_buttons(void)
 {
-	for (int i = 0; i < BUTTONS; i++) {
+	if (lcd_data_display_on) {
+		for (int i = 0; i < BUTTONS; i++) {
 
-		// Set color and text based on button state
-		if (buttons[i].state == 0) {
-			BSP_LCD_SetTextColor(buttons[i].btn_color0);
-			BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
-			BSP_LCD_SetBackColor(buttons[i].btn_color0);
-			BSP_LCD_SetTextColor(buttons[i].text_color0);
-			BSP_LCD_DisplayStringAt(buttons[i].text_x0, buttons[i].text_y, (uint8_t*) buttons[i].text0, LEFT_MODE);
-		} else {
-			BSP_LCD_SetTextColor(buttons[i].btn_color1);
-			BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
-			BSP_LCD_SetBackColor(buttons[i].btn_color1);
-			BSP_LCD_SetTextColor(buttons[i].text_color1);
-			BSP_LCD_DisplayStringAt(buttons[i].text_x1, buttons[i].text_y, (uint8_t*) buttons[i].text1, LEFT_MODE);
+			// Set color and text based on button state
+			if (buttons[i].state == 0) {
+				BSP_LCD_SetTextColor(buttons[i].btn_color0);
+				BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+				BSP_LCD_SetBackColor(buttons[i].btn_color0);
+				BSP_LCD_SetTextColor(buttons[i].text_color0);
+				BSP_LCD_DisplayStringAt(buttons[i].text_x0, buttons[i].text_y, (uint8_t*) buttons[i].text0, LEFT_MODE);
+			} else {
+				BSP_LCD_SetTextColor(buttons[i].btn_color1);
+				BSP_LCD_FillRect(buttons[i].x, buttons[i].y, buttons[i].width, buttons[i].height);
+				BSP_LCD_SetBackColor(buttons[i].btn_color1);
+				BSP_LCD_SetTextColor(buttons[i].text_color1);
+				BSP_LCD_DisplayStringAt(buttons[i].text_x1, buttons[i].text_y, (uint8_t*) buttons[i].text1, LEFT_MODE);
+			}
 		}
+		BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	}
-
-	BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
 	return;
 }
@@ -335,6 +342,42 @@ void stop_device(void)
 			buttons[i].state = 0;
 		}
 	}
+}
+
+void lcd_touch_display_thread(void const * argument)
+{
+	osDelay(1000);
+	uint8_t finger_down = 0;
+
+
+	// BSP_TS_ResetTouchData(&TS_State);
+	// BSP_TS_ResetTouchData(&TS_State_t);
+
+	while(1) {
+
+		// Read touch values
+		BSP_TS_GetState(&TS_State_t);
+		if (TS_State.touchDetected) {
+
+			// Stop logger start data display and exit from thread
+			if (finger_down) {
+				// start_lcd_data_display();
+				log_msg(DEBUG, "Touch detected.\n");
+				break;
+			}
+
+			finger_down = 1;
+		} else {
+			finger_down = 0;
+		}
+
+		osDelay(100);
+	}
+
+	while (1) {
+		log_msg(USER, "LCD touch thread terminated\n");
+		osThreadTerminate(NULL);
+    }
 }
 
 void init_buttons(void)
@@ -458,21 +501,21 @@ void init_buttons(void)
 	buttons[6].touchable = 0;
 	buttons[6].state = 0;
 
-	// Empty button
+	// Log button
 	buttons[7].x = 140;
 	buttons[7].y = 212;
 	buttons[7].width = 48;
 	buttons[7].height = 50;
-	buttons[7].btn_color0 = LCD_COLOR_WHITE;
+	buttons[7].btn_color0 = LCD_COLOR_DARKGRAY;
 	buttons[7].btn_color1 = LCD_COLOR_WHITE;
 	buttons[7].text_y = buttons[7].y + 18;
-	buttons[7].text_x0 = buttons[7].x + 18;
-	buttons[7].text_color0 = LCD_COLOR_BLACK;
-	strcpy(buttons[7].text0, "");
+	buttons[7].text_x0 = buttons[7].x + 7;
+	buttons[7].text_color0 = LCD_COLOR_WHITE;
+	strcpy(buttons[7].text0, "Log");
 	buttons[7].text_x1 = buttons[7].x + 18;
 	buttons[7].text_color1 = LCD_COLOR_BLACK;
 	strcpy(buttons[7].text1, "");
-	buttons[7].touchable = 0;
+	buttons[7].touchable = 1;
 	buttons[7].state = 0;
 
 	// Gripper close

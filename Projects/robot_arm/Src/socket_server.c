@@ -73,30 +73,43 @@ void socket_server_thread(void const *argument)
 				draw_command_t command;
 
 				// Receive a command
-				received_bytes = lwip_recv(client_socket, buffer, sizeof(buffer),0);
+				memset(buffer, 0, SERVER_BUFF_LEN);
+				received_bytes = lwip_recv(client_socket, buffer, SERVER_BUFF_LEN, 0);
 
-				log_msg(DEBUG, buffer);
-				log_msg(DEBUG, "\n");
-
-				// Deserialize buffer into command structure
-				deserialize(buffer, &command);
-
-				// Interpret command
-				if (command.command_type == 0) {
-
-					// Button sent, do action
-
+				if (received_bytes == 0) {
+					osDelay(5);
 				} else {
 
-					// Coordinates sent, set position without speed control if dist < 2 cm else with speed control
-					// Check if thread is running. If not, launch it. If other thread needed, kill original.
+					char tmp[100];
+					sprintf(tmp, "r:%d, b0:%d, b1:%d, b2:%d, b3:%d, b4:%d, b5:%d, b6:%d, b7:%d\n", received_bytes, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
+					log_msg(DEBUG, tmp);
 
 
-				}
+					// Deserialize buffer into command structure
+					deserialize(buffer, &command);
 
-				// After command ran, send acknowledge byte
-				uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
-				log_msg(DEBUG, "TCP ack sent.\n");
+
+
+					sprintf(tmp, "t:%d, b:%d, x:%d, y:%d, z:%d\n", command.command_type, command.button_value, command.x, command.y, command.z);
+					log_msg(DEBUG, tmp);
+
+					// Interpret command
+					if (command.command_type == 0) {
+
+						// Button sent, do action
+
+					} else {
+
+						// Coordinates sent, set position without speed control if dist < 2 cm else with speed control
+						// Check if thread is running. If not, launch it. If other thread needed, kill original.
+
+
+					}
+
+					// After command ran, send acknowledge byte
+					uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
+					log_msg(DEBUG, "TCP ack sent.\n");
+					}
 
 			} while ((received_bytes > 0) && socket_server_on);
 

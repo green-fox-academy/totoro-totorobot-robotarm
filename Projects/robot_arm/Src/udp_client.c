@@ -62,7 +62,7 @@ void udp_client_thread(void const *argument)
 									 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
 		log_msg(DEBUG, "UDP packet sent.\n");
 
-	    	osDelay(1000);
+	    	osDelay(1500);
     }
 
     // Close socket
@@ -75,3 +75,4 @@ void udp_client_thread(void const *argument)
     	osThreadTerminate(NULL);
     }
 }
+

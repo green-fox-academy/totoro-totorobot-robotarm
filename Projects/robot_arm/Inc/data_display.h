@@ -15,6 +15,7 @@ typedef struct {
 } touch_t;
 
 TS_StateTypeDef TS_State;
+TS_StateTypeDef TS_State_t;
 button_t buttons[BUTTONS];
 extern uint8_t debug;
 uint8_t lcd_data_display_on;
@@ -25,6 +26,7 @@ extern uint8_t socket_server_on;
 void start_lcd_data_display(void);
 void stop_lcd_data_display(void);
 void lcd_data_display_thread(void const * argument);
+void lcd_touch_display_thread(void const * argument);
 void draw_buttons(void);
 void init_buttons(void);
 void stop_device(void);

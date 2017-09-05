@@ -12,7 +12,7 @@
 #include "lwip/sockets.h"
 #include <string.h>
 
-#define SERVER_PORT			54545
+#define SERVER_PORT			54003
 #define SERVER_QUEUE_SIZE	2
 #define SERVER_BUFF_LEN		8
 
