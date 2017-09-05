@@ -549,8 +549,9 @@ uint8_t verify_angle(angles_t* ang_deg) {
 		return 10;
 	}
 
-	if ((ang_deg->theta1 > servo_conf[1].max_angle_deg) ||
-		(ang_deg->theta1 < servo_conf[1].min_angle_deg)) {
+	// NOTE: theta1 is measured counter clockwise, so MIN and MAX turns around
+	if ((ang_deg->theta1 < servo_conf[1].max_angle_deg) ||
+		(ang_deg->theta1 > servo_conf[1].min_angle_deg)) {
 		sprintf(tmp, "Theta1 is out of allowed range!: %f\n", ang_deg->theta1);
 		log_msg(ERROR, tmp);
 		return 11;

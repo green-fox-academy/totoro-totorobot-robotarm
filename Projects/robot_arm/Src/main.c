@@ -133,6 +133,8 @@ int main(void)
 	lcd_log_level = DEBUG;
 	file_log_level = DEBUG;
 
+	init_buttons();
+
     // Configure servos
     servo_config();
 

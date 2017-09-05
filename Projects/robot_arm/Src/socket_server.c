@@ -74,7 +74,14 @@ void socket_server_thread(void const *argument)
 
 				// Receive a command
 				memset(buffer, 0, SERVER_BUFF_LEN);
+
+
 				received_bytes = lwip_recv(client_socket, buffer, SERVER_BUFF_LEN, 0);
+
+				if (!socket_server_on) {
+					break;
+				}
+
 
 				if (received_bytes == 0) {
 					osDelay(5);
@@ -88,14 +95,24 @@ void socket_server_thread(void const *argument)
 					// Deserialize buffer into command structure
 					deserialize(buffer, &command);
 
-
-
 					sprintf(tmp, "t:%d, b:%d, x:%d, y:%d, z:%d\n", command.command_type, command.button_value, command.x, command.y, command.z);
 					log_msg(DEBUG, tmp);
 
-					// Interpret command
-					if (command.command_type == 0) {
+					/*
+					 *  Interpret command
+					 */
 
+					// Button press sent
+					if (command.command_type == 0) {
+						if (command.button_value == 0) {
+
+							// Stop action
+
+						} else if (command.button_value == 2) {
+
+							// Send robot to start position
+
+						}
 						// Button sent, do action
 
 					} else {
@@ -107,11 +124,15 @@ void socket_server_thread(void const *argument)
 					}
 
 					// After command ran, send acknowledge byte
-					uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
+					lwip_send(client_socket, "0", 1, 0);
 					log_msg(DEBUG, "TCP ack sent.\n");
-					}
+				}
 
 			} while ((received_bytes > 0) && socket_server_on);
+
+		// Send close connection byte
+		lwip_send(client_socket, "1", 1, 0);
+		LCD_ErrLog("TCP close byte sent.\n");
 
 		// Close client connection
 		lwip_close(client_socket);

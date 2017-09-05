@@ -15,12 +15,12 @@ typedef struct {
 } touch_t;
 
 TS_StateTypeDef TS_State;
-TS_StateTypeDef TS_State_t;
 button_t buttons[BUTTONS];
 extern uint8_t debug;
 uint8_t lcd_data_display_on;
 char lcd_data_buff[70];
 extern uint8_t socket_server_on;
+extern uint8_t udp_client_on;
 
 
 void start_lcd_data_display(void);

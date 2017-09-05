@@ -5,7 +5,7 @@ void start_lcd_data_display(void)
 	log_msg(USER, "Stopping LCD log utility\n");
 	log_msg(USER, "Starting LCD data display thread\n");
 
-	init_buttons();
+
 
 	// Disable logging to LCD screen
 	lcd_logger_on = 0;
@@ -26,7 +26,7 @@ void start_lcd_data_display(void)
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
 
-    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 20);
+    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 25);
     osThreadCreate (osThread(LCD_DATA_DISPLAY), NULL);
 
 	return;
@@ -239,8 +239,9 @@ void lcd_data_display_thread(void const * argument)
 
 						case 2: // Draw
 
-							// Stop draw TCP server thread
+							// Stop draw TCP and UDP server thread
 							socket_server_on = 0;
+							udp_client_on = 0;
 
 							// Enable buttons
 							buttons[1].touchable = 1;
@@ -505,14 +506,14 @@ void init_buttons(void)
 	buttons[7].width = 48;
 	buttons[7].height = 50;
 	buttons[7].btn_color0 = LCD_COLOR_DARKGRAY;
-	buttons[7].btn_color1 = LCD_COLOR_WHITE;
+	buttons[7].btn_color1 = LCD_COLOR_DARKGRAY;
 	buttons[7].text_y = buttons[7].y + 18;
 	buttons[7].text_x0 = buttons[7].x + 7;
 	buttons[7].text_color0 = LCD_COLOR_WHITE;
 	strcpy(buttons[7].text0, "Log");
-	buttons[7].text_x1 = buttons[7].x + 18;
-	buttons[7].text_color1 = LCD_COLOR_BLACK;
-	strcpy(buttons[7].text1, "");
+	buttons[7].text_x1 = buttons[7].x + 7;
+	buttons[7].text_color1 = LCD_COLOR_WHITE;
+	strcpy(buttons[7].text1, "Log");
 	buttons[7].touchable = 1;
 	buttons[7].state = 0;
 
