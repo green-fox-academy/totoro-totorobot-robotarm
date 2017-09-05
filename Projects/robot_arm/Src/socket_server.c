@@ -119,9 +119,11 @@ void socket_server_thread(void const *argument)
 				} else {
 
 					// Wait for initial movement to finish
-					while(!set_position_on) {
+					while(set_position_on) {
 						osDelay(100);
 					}
+
+					log_msg(DEBUG, "Draw: arm has moved to start position.\n");
 
 					// Clear target field
 					if (clear_field) {
@@ -130,6 +132,8 @@ void socket_server_thread(void const *argument)
 						osMutexRelease(arm_coord_mutex);
 						clear_field = 0;
 					}
+					log_msg(DEBUG, "Cleared target field.\n");
+
 
 					sprintf(tmp, "r:%d, b0:%d, b1:%d, b2:%d, b3:%d, b4:%d, b5:%d, b6:%d, b7:%d\n", received_bytes, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
 					log_msg(DEBUG, tmp);
@@ -162,12 +166,15 @@ void socket_server_thread(void const *argument)
 					} else {
 
 						// Calculate drawing coordinates, rotate by 90 degrees
-						draw.x  = map((double) command.x, (double) DRAW_X_ZERO_RECV, (double) DRAW_X_MAX_RECV,
+						draw.y  = map((double) command.x, (double) DRAW_X_ZERO_RECV, (double) DRAW_X_MAX_RECV,
 								                   (double) DRAW_Y_ZERO_CALC, (double) DRAW_Y_MAX_CALC);
-						draw.y  = map((double) command.y, (double) DRAW_Y_ZERO_RECV, (double) DRAW_Y_MAX_RECV,
+						draw.x  = map((double) command.y, (double) DRAW_Y_ZERO_RECV, (double) DRAW_Y_MAX_RECV,
 												   (double) DRAW_X_ZERO_CALC, (double) DRAW_X_MAX_CALC);
 
 						draw.z = (double) DRAW_Z_ZERO_CALC;
+
+						sprintf(tmp, "draw x:%d, y:%d, z:%d\n", (int16_t) draw.x, (int16_t) draw.y, (int16_t) draw.z);
+						log_msg(DEBUG, tmp);
 
 						// Move arm
 						if (xyz_to_pulse(&draw) != 0) {
