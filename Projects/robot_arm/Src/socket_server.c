@@ -7,7 +7,35 @@ void socket_server_thread(void const *argument)
 	struct sockaddr_in server_addr;
 	socket_server_on = 1;
 
+	// Send arm to starting position
+	while(1) {
+		osMutexWait(arm_coord_mutex, osWaitForever);
+		if (!next_coord_set) {
 
+			// Set xyz coordinates
+			target_xyz.x = (double) DRAW_X_ZERO_CALC;
+			target_xyz.y = (double) DRAW_Y_ZERO_CALC;
+			target_xyz.z = (double) DRAW_Z_ZERO_CALC;
+
+			// Set display message
+			sprintf(target_display, "%3d  %3d  %3d   ", DRAW_X_ZERO_CALC, DRAW_Y_ZERO_CALC, DRAW_Z_ZERO_CALC);
+
+			next_coord_set = 1;
+			osMutexRelease(arm_coord_mutex);
+			break;
+		}
+		osMutexRelease(arm_coord_mutex);
+		osDelay(10);
+	}
+
+	// Set flag to one movement only
+	end_moving = 1;
+
+	log_msg(DEBUG, "Moving arm to drawing position.\n");
+
+	// Launch process to set pulse
+	osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
+	osThreadCreate (osThread(SET_POSITION), NULL);
 
 	log_msg(USER, "TCP Server thread started.\n");
 
@@ -107,20 +135,24 @@ void socket_server_thread(void const *argument)
 						if (command.button_value == 0) {
 
 							// Stop action
+							break;
 
 						} else if (command.button_value == 2) {
 
 							// Send robot to start position
 
 						}
-						// Button sent, do action
 
+					// Coordinate sent
 					} else {
 
-						// Coordinates sent, set position without speed control if dist < 2 cm else with speed control
-						// Check if thread is running. If not, launch it. If other thread needed, kill original.
+						// Calculate drawing coordinates, rotate by 90 degrees
+						int16_t x  = (int16_t) map((double) command.x, (double) DRAW_X_ZERO_RECV, (double) DRAW_X_MAX_RECV,
+								                   (double) DRAW_Y_ZERO_CALC, (double) DRAW_Y_MAX_CALC);
+						int16_t y  = (int16_t) map((double) command.y, (double) DRAW_Y_ZERO_RECV, (double) DRAW_Y_MAX_RECV,
+												   (double) DRAW_X_ZERO_CALC, (double) DRAW_X_MAX_CALC);
 
-
+						int16_t z = DRAW_Z_ZERO_CALC;
 					}
 
 					// After command ran, send acknowledge byte
@@ -132,7 +164,7 @@ void socket_server_thread(void const *argument)
 
 		// Send close connection byte
 		lwip_send(client_socket, "1", 1, 0);
-		LCD_ErrLog("TCP close byte sent.\n");
+		log_msg(DEBUG, "TCP close byte sent.\n");
 
 		// Close client connection
 		lwip_close(client_socket);
