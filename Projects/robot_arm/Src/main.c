@@ -91,7 +91,7 @@ int main(void)
     MPU_Config();
 
     /* Enable the CPU Cache */
-    // CPU_CACHE_Enable();
+    CPU_CACHE_Enable();
 
     /* STM32F7xx HAL library initialization:
        - Configure the Flash ART accelerator on ITCM interface
@@ -105,7 +105,7 @@ int main(void)
     SystemClock_Config();
 
     BSP_Config();
-  
+
     pin_init();
     EXTI3_IRQHandler_Config();
     EXTI2_IRQHandler_Config();
@@ -164,32 +164,32 @@ static void StartThread(void const * argument)
 // Comment from here
 
     // Create tcp_ip stack thread
-//    tcpip_init(NULL, NULL);
+    tcpip_init(NULL, NULL);
 
     // Initialize the LwIP stack
-//    Netif_Config();
+    Netif_Config();
 
     // Notify user about the network interface config
-//    User_notification(&gnetif);
+    User_notification(&gnetif);
 
     // Start DHCPClient
- //   osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
- //   osThreadCreate (osThread(DHCP), &gnetif);
+    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(DHCP), &gnetif);
 
     // Wait for IP address
-//	while(!is_ip_ok()) {
-//		LCD_UsrLog((char*) "Waiting for IP address.\n");
-//		osDelay(100);
-//	}
+	while(!is_ip_ok()) {
+		LCD_UsrLog((char*) "Waiting for IP address.\n");
+		osDelay(500);
+	}
 
-//	LCD_UsrLog((char*) "Received IP address.\n");
+	LCD_UsrLog((char*) "Received IP address.\n");
 
 // Until here
 
 
     // Start NTP client, set RTC time
-    // osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    // osThreadCreate (osThread(NTP), NULL);
+    osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(NTP), NULL);
 
 	osDelay(100);
 
@@ -211,6 +211,7 @@ static void StartThread(void const * argument)
 
     while (1) {
         /* Delete the Init Thread */
+        log_msg(USER, "Init thread terminated.\n");
         osThreadTerminate(NULL);
     }
 }
@@ -271,7 +272,7 @@ static void BSP_Config(void)
     LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
-    // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
+    LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 }
 
 /**

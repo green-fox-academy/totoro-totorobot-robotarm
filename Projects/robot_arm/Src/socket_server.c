@@ -7,6 +7,10 @@ void socket_server_thread(void const *argument)
 	struct sockaddr_in server_addr;
 	socket_server_on = 1;
 
+
+
+	log_msg(USER, "TCP Server thread started.\n");
+
 	// Create server socket
 	server_socket = lwip_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (server_socket < 0) {
@@ -33,7 +37,9 @@ void socket_server_thread(void const *argument)
 		log_msg(ERROR, "Server listen failed.\n");
 		lwip_close(server_socket);
 		osThreadTerminate(NULL);
-	} else
+	} else {
+		log_msg(DEBUG, "TCP server is listening.\n");
+	}
 
 	// Accept incoming connection -> client socket
 	while (socket_server_on) {
@@ -51,6 +57,8 @@ void socket_server_thread(void const *argument)
 	    // Accept connection
 	    client_socket = lwip_accept(server_socket, (struct sockaddr*) &client_addr, (socklen_t*) &client_addr_len);
 
+	    log_msg(DEBUG, "TCP server: connection accepted.\n");
+
 	    // Turn off UDP client
 	    udp_client_on = 0;
 
@@ -61,47 +69,48 @@ void socket_server_thread(void const *argument)
 
 	    // Keep receiving messages
 	    if ((client_socket > 0) && socket_server_on) {
-	    do {
-	    	draw_command_t command;
+			do {
+				draw_command_t command;
 
-	    	// Receive a command
-			received_bytes = lwip_recv(client_socket, buffer, sizeof(buffer),0);
+				// Receive a command
+				received_bytes = lwip_recv(client_socket, buffer, sizeof(buffer),0);
 
-			// Deserialize buffer into command structure
-			deserialize(buffer, &command);
+				log_msg(DEBUG, buffer);
+				log_msg(DEBUG, "\n");
 
-			// Interpret command
-			if (command.command_type == 0) {
+				// Deserialize buffer into command structure
+				deserialize(buffer, &command);
 
-				// Button sent, do action
+				// Interpret command
+				if (command.command_type == 0) {
 
+					// Button sent, do action
 
+				} else {
 
-			} else {
-
-				// Coordinates sent, set position without speed control if dist < 2 cm else with speed control
-				// Check if thread is running. If not, launch it. If other thread needed, kill original.
-
-
-			}
-
-			// After command ran, send acknowledge byte
-			uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
+					// Coordinates sent, set position without speed control if dist < 2 cm else with speed control
+					// Check if thread is running. If not, launch it. If other thread needed, kill original.
 
 
-	    } while ((received_bytes > 0) && socket_server_on);
+				}
 
-	    	// Close client connection
-	    	lwip_close(client_socket);
+				// After command ran, send acknowledge byte
+				uint8_t sent_bytes = lwip_send(client_socket, "0", 1, 0);
+				log_msg(DEBUG, "TCP ack sent.\n");
 
-	    	// Change button color to orange
-	    	buttons[2].btn_color1 = LCD_COLOR_ORANGE;
+			} while ((received_bytes > 0) && socket_server_on);
 
-	        // Send buffer content to another thread via mail queue
-	        mail_t* mail;
-	        mail = (mail_t*) osMailAlloc(mail_q_id, osWaitForever);
-	        strcpy(mail->text, buffer);
-	        osMailPut(mail_q_id, mail);
+		// Close client connection
+		lwip_close(client_socket);
+
+		// Change button color to orange
+		buttons[2].btn_color1 = LCD_COLOR_ORANGE;
+
+		// Send buffer content to another thread via mail queue
+//		mail_t* mail;
+//		mail = (mail_t*) osMailAlloc(mail_q_id, osWaitForever);
+//		strcpy(mail->text, buffer);
+//		osMailPut(mail_q_id, mail);
 	    }
 	}
 

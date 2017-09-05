@@ -8,7 +8,7 @@ void start_lcd_data_display(void)
 	init_buttons();
 
 	// Disable logging to LCD screen
-	lcd_logger_on = 0;
+	//lcd_logger_on = 0;
 
 	// Disable LCD debug utility
 	LCD_LOG_DeInit();
@@ -26,7 +26,7 @@ void start_lcd_data_display(void)
 	// Start continuously updating data on display
 	lcd_data_display_on = 1;
 
-    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 30);
+    osThreadDef(LCD_DATA_DISPLAY, lcd_data_display_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 20);
     osThreadCreate (osThread(LCD_DATA_DISPLAY), NULL);
 
 	return;
@@ -186,15 +186,19 @@ void lcd_data_display_thread(void const * argument)
 
 						case 2: // Draw
 
+							stop_lcd_data_display();
+
 							// Start UDP broadcaster
 							if (is_ip_ok()) {
-								osThreadDef(UDP_CLIENT, udp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
+								osThreadDef(TCP_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
+								osThreadCreate (osThread(TCP_SERVER), NULL);
+								log_msg(USER, "TCP server start from button press.\n");
+
+
+								osThreadDef(UDP_CLIENT, udp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
 								osThreadCreate (osThread(UDP_CLIENT), NULL);
 								log_msg(USER, "UDP client start from button press.\n");
 
-								osThreadDef(TCP_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
-								osThreadCreate (osThread(TCP_SERVER), NULL);
-								log_msg(USER, "TCP server start from button press.\n");
 							}
 
 							// Disable buttons

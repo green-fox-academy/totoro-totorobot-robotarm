@@ -60,6 +60,7 @@ void udp_client_thread(void const *argument)
     	// Send udp package
 		uint8_t send_result = sendto(udp_client_socket, send_buffer, strlen(send_buffer),
 									 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
+		log_msg(DEBUG, "UDP packet sent.\n");
 
 	    	osDelay(1000);
     }
