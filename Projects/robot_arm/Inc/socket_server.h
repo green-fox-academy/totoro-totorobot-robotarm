@@ -12,6 +12,7 @@
 #include "lwip/sockets.h"
 #include <string.h>
 #include "robot_arm_conf.h"
+#include "servo_control.h"
 
 #define SERVER_PORT			54003
 #define SERVER_QUEUE_SIZE	2
@@ -38,8 +39,8 @@ void socket_server_thread(void const *argument);
 void deserialize(char* buffer, draw_command_t* command);
 
 extern uint8_t udp_client_on;
-extern double map(double input, double min_in, double max_in, double min_out, double max_out);
-extern void set_position_thread(void const *argument);
+//extern double map(double input, double min_in, double max_in, double min_out, double max_out);
+//extern void set_position_thread(void const *argument);
 
 
 #endif /* __SOCKET_SERVER_H */

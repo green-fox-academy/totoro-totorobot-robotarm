@@ -6,6 +6,8 @@ void socket_server_thread(void const *argument)
 	int server_socket;
 	struct sockaddr_in server_addr;
 	socket_server_on = 1;
+	coord_cart_t draw;
+	char tmp[100];
 
 	// Send arm to starting position
 	while(1) {
@@ -36,6 +38,12 @@ void socket_server_thread(void const *argument)
 	// Launch process to set pulse
 	osThreadDef(SET_POSITION, set_position_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 10);
 	osThreadCreate (osThread(SET_POSITION), NULL);
+
+
+	// Clear target field
+	osMutexWait(arm_coord_mutex, osWaitForever);
+	sprintf(target_display, "                ");
+	osMutexRelease(arm_coord_mutex);
 
 	log_msg(USER, "TCP Server thread started.\n");
 
@@ -115,7 +123,6 @@ void socket_server_thread(void const *argument)
 					osDelay(5);
 				} else {
 
-					char tmp[100];
 					sprintf(tmp, "r:%d, b0:%d, b1:%d, b2:%d, b3:%d, b4:%d, b5:%d, b6:%d, b7:%d\n", received_bytes, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
 					log_msg(DEBUG, tmp);
 
@@ -147,13 +154,25 @@ void socket_server_thread(void const *argument)
 					} else {
 
 						// Calculate drawing coordinates, rotate by 90 degrees
-						int16_t x  = (int16_t) map((double) command.x, (double) DRAW_X_ZERO_RECV, (double) DRAW_X_MAX_RECV,
+						draw.x  = map((double) command.x, (double) DRAW_X_ZERO_RECV, (double) DRAW_X_MAX_RECV,
 								                   (double) DRAW_Y_ZERO_CALC, (double) DRAW_Y_MAX_CALC);
-						int16_t y  = (int16_t) map((double) command.y, (double) DRAW_Y_ZERO_RECV, (double) DRAW_Y_MAX_RECV,
+						draw.y  = map((double) command.y, (double) DRAW_Y_ZERO_RECV, (double) DRAW_Y_MAX_RECV,
 												   (double) DRAW_X_ZERO_CALC, (double) DRAW_X_MAX_CALC);
 
-						int16_t z = DRAW_Z_ZERO_CALC;
+						draw.z = (double) DRAW_Z_ZERO_CALC;
+
+						// Move arm
+						if (xyz_to_pulse(&draw) != 0) {
+							log_msg(ERROR, "Pulse out of range, set_position_thread will terminate.\n");
+							break;
+						} else {
+							sprintf(tmp, "movement to x:%d, y:%d, z:%d\n", (int16_t) draw.x, (int16_t) draw.y, (int16_t) draw.z);
+							log_msg(DEBUG, tmp);
+						}
+
 					}
+
+					osDelay(5);
 
 					// After command ran, send acknowledge byte
 					lwip_send(client_socket, "0", 1, 0);
@@ -172,11 +191,6 @@ void socket_server_thread(void const *argument)
 		// Change button color to orange
 		buttons[2].btn_color1 = LCD_COLOR_ORANGE;
 
-		// Send buffer content to another thread via mail queue
-//		mail_t* mail;
-//		mail = (mail_t*) osMailAlloc(mail_q_id, osWaitForever);
-//		strcpy(mail->text, buffer);
-//		osMailPut(mail_q_id, mail);
 	    }
 	}
 
