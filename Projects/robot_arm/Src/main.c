@@ -128,8 +128,13 @@ int main(void)
 	osMailQDef(LOG_Q, 10, msg_log_t);
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
+	osMailQDef(SYSLOG_Q, 10, msg_log_t);
+	sys_log_q = osMailCreate(osMailQ(SYSLOG_Q), NULL);
+
+
 	lcd_logger_on = 1;
 	sd_logger_on = 0;
+	sys_logger_on = 1;
 
 	lcd_log_level = DEBUG;
 	file_log_level = DEBUG;
@@ -193,29 +198,29 @@ static void StartThread(void const * argument)
     osThreadDef(SYSLOG_FINDER, udp_syslog_server_finder_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(SYSLOG_FINDER), NULL);
 
-	osDelay(100);
+	osDelay(2000);
 
     // Start NTP client, set RTC time
-    osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(NTP), NULL);
-
-	osDelay(100);
-
-    // Start UART RX interface
-    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
-    osThreadCreate (osThread(UART_RX), NULL);
-
-    osDelay(100);
-
-    // Start robot arm control
-    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
-    osThreadCreate (osThread(PWM), NULL);
+//    osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+//    osThreadCreate (osThread(NTP), NULL);
+//
+//	osDelay(100);
+//
+//    // Start UART RX interface
+//    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
+//    osThreadCreate (osThread(UART_RX), NULL);
+//
+//    osDelay(100);
+//
+//    // Start robot arm control
+//    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
+//    osThreadCreate (osThread(PWM), NULL);
 
     log_msg(USER, "TotoRobot started.\n");
 
     osDelay(1000);
 
-    start_lcd_data_display();
+//    start_lcd_data_display();
 
     while (1) {
         /* Delete the Init Thread */

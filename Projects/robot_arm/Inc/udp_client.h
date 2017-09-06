@@ -10,6 +10,7 @@
 #include "udp_server.h"
 
 #define SERVICE_ID	"totorobot"
+#define SYSLOG_ID	"trobotsyslog"
 #define UDP_SERVER_PORT		54002
 #define UDP_SYSLOG_FINDER_PORT	54006
 #define UDP_SYSLOG_SERVER_PORT	54005

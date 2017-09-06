@@ -80,7 +80,7 @@ void udp_syslog_client_thread(void const *argument)
 {
 	udp_syslog_client_ready = 0;
 	udp_syslog_client_on = 1;
-	char send_buffer[255];
+	char line[255];
 
     // Create a new client socket
 	int udp_syslog_client_socket = lwip_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -102,34 +102,52 @@ void udp_syslog_client_thread(void const *argument)
 
 	while(udp_syslog_client_on) {
 
-		// mail queue
+		// Wait for log messages in the MailQueue
+		osEvent event = osMailGet(sys_log_q, osWaitForever);
 
-		// Construct message
-		send_buffer[255] = SERVICE_ID;
+		// Collect incoming mail. ".p" indicates that the message is a pointer
+		msg_log_t* received = (msg_log_t*) event.value.p;       //
+
+		// Process the message
+		switch (received->log_level) {
+		case NONE:
+			// Nothing to do
+			break;
+		case ERROR:
+			sprintf(line, "ERROR %s", received->string);
+			break;
+		case USER:
+			sprintf(line, "USER %s", received->string);
+			break;
+		case DEBUG:
+			sprintf(line, "DEBUG %s", received->string);
+			break;
+		}
+
+		// Free up memory block, so it can be reused
+		osMailFree(sys_log_q, received);
 
 		// Send udp package
-		sendto(udp_syslog_client_socket, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
+		sendto(udp_syslog_client_socket, line, strlen(line), 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
 		osDelay(5);
 
 	}
 
     // Close socket
+	udp_syslog_client_ready = 0;
     lwip_close(udp_syslog_client_socket);
 
     // Close thread
     while (1) {
-    	udp_syslog_client_ready = 0;
     	log_msg(USER, "Closing UDP syslog client.\n");
     	osThreadTerminate(NULL);
     }
 }
 
-#include "udp_server.h"
-
 void udp_syslog_server_finder_thread(void const *argument)
 {
 	udp_syslog_server_finder_ready = 0;
-	udp_syslog_server_finder_on = 0;
+	udp_syslog_server_finder_on = 1;
 	char remote_ip_addr[20];
 
     // Create a new socket to listen for client connections.
@@ -164,11 +182,15 @@ void udp_syslog_server_finder_thread(void const *argument)
 
 	log_msg(USER, "UDP syslog server finder is ready.\n");
 
+	printf("syslog finder server ok\n");
+
     while(udp_syslog_server_finder_on) {
 
         struct sockaddr_in udp_client_addr;
         int udp_client_addr_size = sizeof(udp_client_addr);
         char recvbuff[1024];
+
+        printf("in syslog finder while\n");
 
         int message = recvfrom(udp_server_socket, recvbuff, sizeof(recvbuff),
         			  	  	   0, (struct sockaddr*) &udp_client_addr,
@@ -176,7 +198,9 @@ void udp_syslog_server_finder_thread(void const *argument)
 
         recvbuff[message] = 0;	// insert end of string terminator
 
-        if (strcmp(recvbuff, "trobotsyslog") == 0) {
+        printf("UDP recv: %s\n", recvbuff);
+
+        if (strcmp(recvbuff, SYSLOG_ID) == 0) {
         	udp_syslog_server_finder_on = 0;
         	strcpy(remote_ip_addr, inet_ntoa(udp_client_addr.sin_addr));
         	break;

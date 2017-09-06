@@ -23,11 +23,30 @@ void log_msg(uint8_t log_level, char* message)
 		strcpy(log_data->string, message);
 		log_data->log_level = log_level;
 
-		// Send the pointer through the mail queue to the logger thread
-		osMailPut(msg_log_q, log_data);
+		// Send the log through the mail queue to the logger thread
+		if (sd_logger_on) {
+			osMailPut(msg_log_q, log_data);
+		}
 	}
 
-	// TODO implement UART and HTTP logging if needed
+	// If allowed, write to syslog
+	if (sys_logger_on) {
+
+		// Create data structure in memory and a pointer to it
+		msg_log_t* log_data;
+		log_data = (msg_log_t*) osMailAlloc(sys_log_q, osWaitForever);
+
+		// Fill in data
+		strcpy(log_data->string, message);
+		log_data->log_level = log_level;
+
+		// Send the log through the mail queue to the logger thread
+		if (udp_syslog_client_ready) {
+			osMailPut(sys_log_q, log_data);
+		}
+	}
+
+	// TODO implement UART logging if needed
 
 	return;
 }
