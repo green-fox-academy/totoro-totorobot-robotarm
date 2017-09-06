@@ -60,6 +60,7 @@
 #include "sd_card.h"
 #include "rtc.h"
 #include "interrupt.h"
+#include "udp_client.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -188,6 +189,11 @@ static void StartThread(void const * argument)
 
 // Until here
 
+	// Find syslog server IP address, then launch syslog sender
+    osThreadDef(SYSLOG_FINDER, udp_syslog_server_finder_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadCreate (osThread(SYSLOG_FINDER), NULL);
+
+	osDelay(100);
 
     // Start NTP client, set RTC time
     osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);

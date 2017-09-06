@@ -95,8 +95,8 @@ void udp_syslog_client_thread(void const *argument)
 	// Create remote server address structure
 	struct sockaddr_in udp_remote_addr;
 	udp_remote_addr.sin_family = AF_INET;
-	udp_remote_addr.sin_addr.s_addr = inet_addr(SYSLOG_SERVER_IP);
-	udp_remote_addr.sin_port = htons(SYSLOG_SERVER_PORT);
+	udp_remote_addr.sin_addr.s_addr = inet_addr((char*) argument);
+	udp_remote_addr.sin_port = htons(UDP_SYSLOG_SERVER_PORT);
 
 	udp_syslog_client_ready = 1;
 
@@ -120,6 +120,80 @@ void udp_syslog_client_thread(void const *argument)
     while (1) {
     	udp_syslog_client_ready = 0;
     	log_msg(USER, "Closing UDP syslog client.\n");
+    	osThreadTerminate(NULL);
+    }
+}
+
+#include "udp_server.h"
+
+void udp_syslog_server_finder_thread(void const *argument)
+{
+	udp_syslog_server_finder_ready = 0;
+	udp_syslog_server_finder_on = 0;
+	char remote_ip_addr[20];
+
+    // Create a new socket to listen for client connections.
+    int udp_server_socket;
+
+	udp_server_socket = lwip_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (udp_server_socket < 0) {
+		log_msg(ERROR, "Cannot create UDP server socket\n");
+		log_msg(ERROR, "Closing application\n");
+		osThreadTerminate(NULL);
+	} else {
+		log_msg(USER, "UDP server socket is up.\n");
+	}
+
+	// Create server address structure
+	struct sockaddr_in udp_server_addr;
+	udp_server_addr.sin_family = AF_INET;
+	udp_server_addr.sin_addr.s_addr = INADDR_ANY;
+	udp_server_addr.sin_port = htons(UDP_SYSLOG_FINDER_PORT);
+
+	// Bind the server address info to socket
+	if (lwip_bind(udp_server_socket, (struct sockaddr*) &udp_server_addr, (socklen_t) sizeof(udp_server_addr)) < 0) {
+		log_msg(ERROR, "UDP server socket bind failed.\n");
+		log_msg(ERROR, "Closing application\n");
+		lwip_close(udp_server_socket);
+		osThreadTerminate(NULL);
+	} else {
+		log_msg(USER, "UDP server bind successful.\n");
+	}
+
+	udp_syslog_server_finder_ready = 1;
+
+	log_msg(USER, "UDP syslog server finder is ready.\n");
+
+    while(udp_syslog_server_finder_on) {
+
+        struct sockaddr_in udp_client_addr;
+        int udp_client_addr_size = sizeof(udp_client_addr);
+        char recvbuff[1024];
+
+        int message = recvfrom(udp_server_socket, recvbuff, sizeof(recvbuff),
+        			  	  	   0, (struct sockaddr*) &udp_client_addr,
+							   (socklen_t*) &udp_client_addr_size);
+
+        recvbuff[message] = 0;	// insert end of string terminator
+
+        if (strcmp(recvbuff, "trobotsyslog") == 0) {
+        	udp_syslog_server_finder_on = 0;
+        	strcpy(remote_ip_addr, inet_ntoa(udp_client_addr.sin_addr));
+        	break;
+        }
+        osDelay(10);
+
+    } // END while
+
+    // Close socket
+    lwip_close(udp_server_socket);
+
+    // Start UDP syslog sender
+    osThreadDef(SYSLOG_SENDER, udp_syslog_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
+    osThreadCreate (osThread(SYSLOG_SENDER), remote_ip_addr);
+
+    // Close thread
+    while (1) {
     	osThreadTerminate(NULL);
     }
 }
