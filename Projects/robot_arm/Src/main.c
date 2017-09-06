@@ -55,7 +55,7 @@
 #include "lwip/tcpip.h"
 #include "app_ethernet.h"
 #include "lcd_log.h"
-#include "robot_arm.h"
+#include "syslogger.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -138,25 +138,14 @@ static void StartThread(void const * argument)
     osThreadCreate (osThread(DHCP), &gnetif);
     osDelay(2000);
 
-    osThreadDef(UDP_server, udp_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
-    osThreadCreate (osThread(UDP_server), NULL);
+    osThreadDef(UDP_CLIENT, udp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 3);
+    osThreadCreate (osThread(UDP_CLIENT), NULL);
 
-/*
-    osThreadDef(SOCKET_SERVER, socket_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(SOCKET_SERVER), NULL);
-*/
 
-/*
-    osThreadDef(TOUCH, touch_screen_test_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(TOUCH), NULL);
-*/
+    osThreadDef(UDP_SERVER, udp_server_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadCreate (osThread(UDP_SERVER), NULL);
 
-/*
-    osThreadDef(MOUSE, mouse_coordinate_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
-    osThreadCreate (osThread(MOUSE), NULL);
-*/
-
-    LCD_UsrLog((char*) "\nTotoRobot started.\n\n");
+    LCD_UsrLog((char*) "\nLOCAL TotoRobot syslogger started.\n\n");
 
     while (1) {
         /* Delete the Init Thread */
@@ -219,7 +208,7 @@ static void BSP_Config(void)
     LCD_LOG_Init();
   
     /* Show Header and Footer texts */
-    LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
+    LCD_LOG_SetHeader((uint8_t *)"TotoRobot - syslog server");
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
     LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");

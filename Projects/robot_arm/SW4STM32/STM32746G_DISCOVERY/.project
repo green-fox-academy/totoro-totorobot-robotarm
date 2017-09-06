@@ -56,11 +56,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/main.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/robot_arm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Src/robot_arm.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/stm32f7xx_hal_msp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Src/stm32f7xx_hal_msp.c</locationURI>
@@ -74,6 +69,11 @@
 			<name>Application/User/stm32f7xx_it.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Src/stm32f7xx_it.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/syslogger.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/syslogger.c</locationURI>
 		</link>
 		<link>
 			<name>Application/Utilities/lcd_log.c</name>
