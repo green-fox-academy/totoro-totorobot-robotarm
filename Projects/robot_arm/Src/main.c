@@ -201,26 +201,26 @@ static void StartThread(void const * argument)
 	osDelay(2000);
 
     // Start NTP client, set RTC time
-//    osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-//    osThreadCreate (osThread(NTP), NULL);
-//
-//	osDelay(100);
-//
-//    // Start UART RX interface
-//    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
-//    osThreadCreate (osThread(UART_RX), NULL);
-//
-//    osDelay(100);
-//
-//    // Start robot arm control
-//    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
-//    osThreadCreate (osThread(PWM), NULL);
+    osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(NTP), NULL);
+
+	osDelay(100);
+
+    // Start UART RX interface
+    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(UART_RX), NULL);
+
+    osDelay(100);
+
+    // Start robot arm control
+    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(PWM), NULL);
 
     log_msg(USER, "TotoRobot started.\n");
 
     osDelay(1000);
 
-//    start_lcd_data_display();
+    start_lcd_data_display();
 
     while (1) {
         /* Delete the Init Thread */

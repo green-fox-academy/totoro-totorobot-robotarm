@@ -182,23 +182,17 @@ void udp_syslog_server_finder_thread(void const *argument)
 
 	log_msg(USER, "UDP syslog server finder is ready.\n");
 
-	printf("syslog finder server ok\n");
-
     while(udp_syslog_server_finder_on) {
 
         struct sockaddr_in udp_client_addr;
         int udp_client_addr_size = sizeof(udp_client_addr);
         char recvbuff[1024];
 
-        printf("in syslog finder while\n");
-
         int message = recvfrom(udp_server_socket, recvbuff, sizeof(recvbuff),
         			  	  	   0, (struct sockaddr*) &udp_client_addr,
 							   (socklen_t*) &udp_client_addr_size);
 
         recvbuff[message] = 0;	// insert end of string terminator
-
-        printf("UDP recv: %s\n", recvbuff);
 
         if (strcmp(recvbuff, SYSLOG_ID) == 0) {
         	udp_syslog_server_finder_on = 0;
