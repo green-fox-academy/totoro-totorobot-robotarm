@@ -76,3 +76,50 @@ void udp_client_thread(void const *argument)
     }
 }
 
+void udp_syslog_client_thread(void const *argument)
+{
+	udp_syslog_client_ready = 0;
+	udp_syslog_client_on = 1;
+	char send_buffer[255];
+
+    // Create a new client socket
+	int udp_syslog_client_socket = lwip_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (udp_syslog_client_socket < 0) {
+		log_msg(ERROR, "Cannot create UDP syslog client socket.\n");
+		log_msg(ERROR, "Closing UDP syslog client.\n");
+		osThreadTerminate(NULL);
+	} else {
+		log_msg(USER, "UDP syslog client socket is up.\n");
+	}
+
+	// Create remote server address structure
+	struct sockaddr_in udp_remote_addr;
+	udp_remote_addr.sin_family = AF_INET;
+	udp_remote_addr.sin_addr.s_addr = inet_addr(SYSLOG_SERVER_IP);
+	udp_remote_addr.sin_port = htons(SYSLOG_SERVER_PORT);
+
+	udp_syslog_client_ready = 1;
+
+	while(udp_syslog_client_on) {
+
+		// mail queue
+
+		// Construct message
+		send_buffer[255] = SERVICE_ID;
+
+		// Send udp package
+		sendto(udp_syslog_client_socket, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
+		osDelay(5);
+
+	}
+
+    // Close socket
+    lwip_close(udp_syslog_client_socket);
+
+    // Close thread
+    while (1) {
+    	udp_syslog_client_ready = 0;
+    	log_msg(USER, "Closing UDP syslog client.\n");
+    	osThreadTerminate(NULL);
+    }
+}
