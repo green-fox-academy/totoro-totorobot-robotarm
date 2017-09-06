@@ -48,7 +48,7 @@ void udp_client_thread(void const *argument)
 		sendto(udp_client_socket, send_buffer, strlen(send_buffer), 0, (struct sockaddr*) &udp_remote_addr, sizeof(udp_remote_addr));
 		LCD_UsrLog("LOCAL UDP packet sent.\n");
 
-	    	osDelay(500);
+	    osDelay(1000);
     }
 
     // Close socket
