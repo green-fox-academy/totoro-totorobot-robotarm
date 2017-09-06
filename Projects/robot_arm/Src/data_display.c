@@ -162,7 +162,7 @@ void lcd_data_display_thread(void const * argument)
 						case 0: // STOP
 
 							// Turn off power
-							HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
+							HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_RESET);
 
 							stop_device();
 							break;
