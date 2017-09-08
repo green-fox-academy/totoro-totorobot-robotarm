@@ -25,11 +25,13 @@ void catching_answer(void)
 		osDelay(1);
 		if (catcher == '1') {
 			closesocket(client_sock);
+			break;
 		} else {
-		recv(client_sock, recieving_arm_feedback, strlen((char *)recieving_arm_feedback), 0);
+		recv(client_sock, recieving_arm_feedback, 1, 0);
 		catcher = recieving_arm_feedback[0];
 		}
 	}
+	BSP_LCD_DisplayStringAtLine(3, (uint8_t *)recieving_arm_feedback);
 }
 
 void sending_packet(uint8_t *send_command)
@@ -242,15 +244,19 @@ void the_drawing_function(void)
 
 	char coordinates[20];
 
+	drawing_stage(sys_opening_scr);
+
 	// Run the APP infinite loop
 	while (1) {
 
 		// Get touch screen state
 		BSP_TS_GetState(&ts_state);
 
+		/*
 		if (BSP_PB_GetState(BUTTON_KEY)) {
 			drawing_stage(sys_opening_scr);
 		}
+		*/
 
 		if (ts_state.touchDetected) {
 			BSP_LED_On(LED1);
@@ -358,8 +364,6 @@ void the_drawing_function(void)
 				BSP_LCD_DisplayStringAtLine(1, (uint8_t *)coordinates);
 				sprintf(coordinates, " XHP%3d - XLP%3d - YHP%3d - YLP%3d", x_Hp, x_Lp, y_Hp, y_Lp);
 				BSP_LCD_DisplayStringAtLine(2, (uint8_t *)coordinates);
-				sprintf(coordinates, " XHP%3d - XLP%3d - YHP%3d - YLP%3d", send_command[2], send_command[3], send_command[4], send_command[5]);
-				BSP_LCD_DisplayStringAtLine(3, (uint8_t *)coordinates);
 			}
 		} else {
 			BSP_LED_Off(LED1);
@@ -371,8 +375,8 @@ void the_drawing_function(void)
 					BSP_LCD_SetTextColor(LCD_COLOR_RED);
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					//Vár amíg nem jön jelzés a robottól, hogy mehet tovább
-					//catching_answer();
-					osDelay(1000);
+					catching_answer();
+					//osDelay(1000);
 					BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 					BSP_LCD_DrawCircle(ts_state.touchX[0], ts_state.touchY[0], 20);
 					BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
@@ -478,7 +482,7 @@ void udp_server_thread(void const *argument)
         	osDelay(3000);
         }
 
-        printf("UDP received from %s %d %s\n", inet_ntoa(udp_client_addr.sin_addr), udp_client_addr.sin_port, recvbuff);
+        //printf("UDP received from %s %d %s\n", inet_ntoa(udp_client_addr.sin_addr), udp_client_addr.sin_port, recvbuff);
 
     } // END while
 
