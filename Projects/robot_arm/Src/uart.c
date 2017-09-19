@@ -84,7 +84,6 @@ void UART_send_help(void)
 	UART_send(" get position | set position <x,y,z>    : Get/set arm xyz coordinates");
 	UART_send(" get manual | set manual <0|1>          : Get/set manual control");
 	UART_send(" get display | set display <0|1>        : Get/set LCD data display");
-	UART_send(" get demo | set demo <0|1>              : Get/set demo playing");
 	UART_send(" exec file <file_name.g>                : Execute G code from SD card");
 	UART_send("*** Always terminate commands with LF! ***");
 
@@ -212,8 +211,6 @@ void process_command(void)
 		c_params.attrib = MANUAL_CONTROL;
 	} else if ((strcmp(s, "display") == 0) || (strcmp(s, "dis") == 0)) {
 		c_params.attrib = DATA_DISP;
-	} else if ((strcmp(s, "demo") == 0) || (strcmp(s, "dem") == 0)) {
-		c_params.attrib = DEMO;
 	} else if ((strcmp(s, "file") == 0) || (strcmp(s, "fil") == 0)) {
 		c_params.attrib = FILE_NAME;
 	} else {
@@ -331,11 +328,11 @@ void process_command(void)
 	}
 
 	// Uncomment for debug
-	 char tmp[100];
-	 sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, file_n: %s, err: %d\n",
-				c_params.command, c_params.attrib, c_params.device_id, c_params.value,
-				c_params.value_x, c_params.value_y, c_params.value_z, c_params.file_name, c_params.error);
-	 log_msg(DEBUG, tmp);
+	// char tmp[100];
+	// sprintf(tmp, "command: %d, attrib: %d, dev: %d, value: %d, x: %d, y: %d, z: %d, file_n: %s, err: %d\n",
+	//			c_params.command, c_params.attrib, c_params.device_id, c_params.value,
+	//			c_params.value_x, c_params.value_y, c_params.value_z, c_params.file_name, c_params.error);
+	// log_msg(DEBUG, tmp);
 
 	return;
 }
@@ -385,6 +382,7 @@ void UART_send_settings(void)
 	switch (c_params.attrib) {
 
 	case PULSE:
+
 		for (int i = 0; i < SERVOS; i++) {
 			// Read value from global storage
 			osMutexWait(servo_pulse_mutex, osWaitForever);
@@ -435,21 +433,19 @@ void UART_send_settings(void)
 		break;
 
 	case MANUAL_CONTROL:
+
 		sprintf((char*) TX_buffer, "Manual control is %s", adc_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 
 	case DATA_DISP:
+
 		sprintf((char*) TX_buffer, "LCD data display is %s", lcd_data_display_on ? "on" : "off");
 		UART_send((char*) TX_buffer);
 		break;
 
-	case DEMO:
-		sprintf((char*) TX_buffer, "Demo is %s", demo_on ? "running" : "off");
-		UART_send((char*) TX_buffer);
-		break;
-
 	case NO_ATTRIB:
+
 		break;
 	}
 	return;
@@ -460,6 +456,7 @@ void set_value(void)
 	switch (c_params.attrib) {
 
 	case PULSE:
+
 		// A block statement is needed for the declaration
 		{
 			uint32_t targ_pulse[SERVOS];
@@ -603,7 +600,7 @@ void set_value(void)
 				target_xyz.z = (double) c_params.value_z;
 
 				// Set display message
-				sprintf(target_display, "X: %3d  Y: %3d  Z: %3d   ", c_params.value_x, c_params.value_y, c_params.value_z);
+				sprintf(target_display, "%3d  %3d  %3d   ", c_params.value_x, c_params.value_y, c_params.value_z);
 
 				next_coord_set = 1;
 				osMutexRelease(arm_coord_mutex);
@@ -624,6 +621,7 @@ void set_value(void)
 		break;
 
 	case MANUAL_CONTROL:
+
 		if (c_params.value > 0) {
 			start_adc_thread();
 			UART_send("Manual control started, ADC running.");
@@ -634,6 +632,7 @@ void set_value(void)
 		break;
 
 	case DATA_DISP:
+
 		if (c_params.value > 0) {
 			start_lcd_data_display();
 			UART_send("LCD data display turned on.");
@@ -643,27 +642,12 @@ void set_value(void)
 		}
 		break;
 
-	case DEMO:
-
-		// If manual control is on, turn it off
-		if (adc_on) {
-			stop_adc_thread();
-			UART_send("Manual control ended, ADC terminated.");
-		}
-
-		if (c_params.value > 0) {
-			start_demo();
-			UART_send("Demo is on.");
-		} else {
-			stop_demo();
-			UART_send("Demo is turned off.");
-		}
-		break;
-
 	case FILE_NAME:
+
 		break;
 
 	case NO_ATTRIB:
+
 		break;
 	}
 	return;

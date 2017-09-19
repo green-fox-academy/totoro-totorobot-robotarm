@@ -11,19 +11,36 @@ void pin_init(void)
 	// D4 PG7
 	GPIO_Init.Pin = GPIO_PIN_7;
 	GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_Init.Pull = GPIO_PULLUP;
+	GPIO_Init.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOG, &GPIO_Init);
 
 	// Set POWER_ON and MOVEMENT_LED state
-	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
 
 	return;
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_pin)
 {
-	if ((GPIO_Pin == GPIO_PIN_3) || (GPIO_Pin == GPIO_PIN_2) || (GPIO_Pin == GPIO_PIN_1)) {
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_SET);
+	switch (GPIO_pin) {
+
+	case GPIO_PIN_1:
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_RESET);
+		buttons[4].state = 1;
+		buttons[0].state = 1;
+		break;
+
+	case GPIO_PIN_2:
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_RESET);
+		buttons[5].state = 1;
+		buttons[0].state = 1;
+		break;
+
+	case GPIO_PIN_3:
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, GPIO_PIN_RESET);
+		buttons[6].state = 1;
+		buttons[0].state = 1;
+		break;
 	}
 }
 

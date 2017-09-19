@@ -167,13 +167,20 @@ void adc_measure(void)
 		HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
 		// Measure
-		HAL_ADC_Start(&adc);
-		HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
-		uint32_t adc_measurement = HAL_ADC_GetValue(&adc);
+		uint32_t adc_measurement = 0;
+		for (int j = 0; j < 8; j++) {
+			HAL_ADC_Start(&adc);
+			HAL_ADC_PollForConversion(&adc, HAL_MAX_DELAY);
+			adc_measurement += HAL_ADC_GetValue(&adc);
+		}
+		adc_measurement /= 8;
+
+		// Convert to percentage
+		uint32_t adc_p = (uint32_t) map(adc_measurement, MIN_ADC_VALUE, MAX_ADC_VALUE, MIN_ADC_P, MAX_ADC_P);
 
 		// Update global storage of ADC data
 		osMutexWait(servo_adc_mutex, osWaitForever);
-		adc_values[i] = adc_measurement;
+		adc_values[i] = adc_p;	// adc_measurement;
 		osMutexRelease(servo_adc_mutex);
 
 		osDelay(5);
@@ -196,8 +203,13 @@ void start_adc_thread(void)
 {
 	adc_init();
 	adc_on = 1;
+	flash_on = 1;
 
 	log_msg(USER, "ADC thread started\n");
+
+	osMutexWait(arm_coord_mutex, osWaitForever);
+	sprintf(target_display, "                ");
+	osMutexRelease(arm_coord_mutex);
 
     osThreadDef(ADC_MEASURE, adc_thread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(ADC_MEASURE), NULL);
@@ -208,8 +220,10 @@ void start_adc_thread(void)
 void stop_adc_thread(void)
 {
 	adc_on = 0;
+	buttons[2].state = 0;
 	osDelay(100);
 	adc_deinit();
+	flash_on = 0;
 
 	return;
 }
@@ -270,7 +284,7 @@ void adc_thread(void const * argument)
 
 			// Calculate PMW pulse width
 			osMutexWait(servo_adc_mutex, osWaitForever);
-			uint32_t adc_pulse = (uint32_t) map((double) adc_values[i], (double) MIN_ADC_VALUE, (double) MAX_ADC_VALUE,
+			uint32_t adc_pulse = (uint32_t) map((double) adc_values[i], MIN_ADC_P, MAX_ADC_P,
 							                    (double) servo_conf[i].min_pulse, (double) servo_conf[i].max_pulse);
 			osMutexRelease(servo_adc_mutex);
 
@@ -280,7 +294,7 @@ void adc_thread(void const * argument)
 			osMutexRelease(servo_pulse_mutex);
 		}
 
-		osDelay(100);
+		osDelay(150);
 	}
 
 	while (1) {
@@ -371,7 +385,9 @@ uint8_t ang_abs_to_pulse(angles_t* joint_angles)
 	// Verify if pulse width values are within allowed range
 	for (int i = 0; i < SERVOS - 1; i++) {
 		if (verify_pulse(i, pulse_width[i]) != 0) {
-			log_msg(ERROR, "Pulse width is out of allowed range!\n");
+			char tmp[100];
+			sprintf(tmp, "Pulse%d: %d is out of range [min: %d, max: %d]\n", i, pulse_width[i], servo_conf[i].min_pulse, servo_conf[i].max_pulse);
+			log_msg(ERROR, tmp);
 			return 1;
 		}
 	}
@@ -535,8 +551,9 @@ uint8_t verify_angle(angles_t* ang_deg) {
 		return 10;
 	}
 
-	if ((ang_deg->theta1 > servo_conf[1].max_angle_deg) ||
-		(ang_deg->theta1 < servo_conf[1].min_angle_deg)) {
+	// NOTE: theta1 is measured counter clockwise, so MIN and MAX turns around
+	if ((ang_deg->theta1 < servo_conf[1].max_angle_deg) ||
+		(ang_deg->theta1 > servo_conf[1].min_angle_deg)) {
 		sprintf(tmp, "Theta1 is out of allowed range!: %f\n", ang_deg->theta1);
 		log_msg(ERROR, tmp);
 		return 11;
@@ -584,7 +601,7 @@ void set_position_thread(void const * argument)
 	// Give time to other processes
 	osDelay(100);
 
-	while (1) {
+	while (set_position_on) {
 
 		uint8_t new_coord_ready = 0;
 
@@ -599,9 +616,10 @@ void set_position_thread(void const * argument)
 				target_pos.y = target_xyz.y;
 				target_pos.z = target_xyz.z;
 
-				// Reset next coordinate flag,
-				// so that other side can send next target
-				next_coord_set = 0;
+				// Check if this is the last coordinate in this series
+				if (end_moving) {
+					set_position_on = 0;
+				}
 
 				// Quit loop when we got new target
 				new_coord_ready = 1;
@@ -659,15 +677,17 @@ void set_position_thread(void const * argument)
 			}
 		}
 
-		// Quit from loop so we can terminate thread if there is no more movement
-		if (end_moving) {
-			flash_on = 0;
-			break;
-		}
+		// Reset next coordinate flag,
+		// so that other side can send next target
+		osMutexWait(arm_coord_mutex, osWaitForever);
+		next_coord_set = 0;
+		osMutexRelease(arm_coord_mutex);
+
 	}
 
 	while (1) {
 		// Terminate thread
+		flash_on = 0;
 		log_msg(USER, "set_position_thread terminated\n");
 		set_position_on = 0;
 		osThreadTerminate(NULL);
@@ -693,7 +713,7 @@ void set_angle_thread(void const * argument)
 	flash_on = 1;
 
 	// Set thread flag to ready
-	set_position_on = 1;
+	set_position_on = 3;
 
 	while (1) {
 
@@ -807,7 +827,7 @@ void set_pulse_thread(void const * argument)
 	flash_on = 1;
 
 	// Set thread flag to ready
-	set_position_on = 1;
+	set_position_on = 4;
 
 	while (1) {
 
@@ -967,3 +987,90 @@ void m_led_flash_thread(void const * argument)
 		osThreadTerminate(NULL);
 	}
 }
+
+void set_position_nsc_thread(void const * argument)
+{
+	// Set XYZ coordinates without speed control
+
+	// Define variables
+	coord_cart_t current_pos;
+	coord_cart_t target_pos;
+	double step_size = DEFAULT_STEP;
+	double speed = DEFAULT_SPEED;
+	uint32_t wait_time = (step_size * 1000) / speed;
+	flash_on = 1;
+
+	// Set thread flag to ready
+	set_position_on = 2;
+
+	// Give time to other processes
+	osDelay(100);
+
+	while (1) {
+
+		uint8_t new_coord_ready = 0;
+
+		// Loop until a new target coordinate appears
+		while (!new_coord_ready) {
+			osMutexWait(arm_coord_mutex, osWaitForever);
+
+			if (next_coord_set) {
+
+				// Read in target position
+				target_pos.x = target_xyz.x;
+				target_pos.y = target_xyz.y;
+				target_pos.z = target_xyz.z;
+
+				// Reset next coordinate flag,
+				// so that other side can send next target
+				next_coord_set = 0;
+
+				// Quit loop when we got new target
+				new_coord_ready = 1;
+			}
+
+			osMutexRelease(arm_coord_mutex);
+			osDelay(5);
+		}
+
+		// Get current position based on servo PWM parameters
+		pulse_to_xyz(&current_pos);
+
+		// Debug
+		// printf("current x: %f y %f z: %f\n", current_pos.x, current_pos.y, current_pos.z);
+		// printf("target x: %f y %f z: %f\n", target_pos.x, target_pos.y, target_pos.z);
+
+
+		// If target differs from current...
+		if ((abs(target_pos.x - current_pos.x) > MIN_X_RES) ||
+			(abs(target_pos.y - current_pos.y) > MIN_Y_RES) ||
+			(abs(target_pos.z - current_pos.z) > MIN_Z_RES)) {
+
+			// Convert steps to motor pulse.
+			// In case of error terminate the thread
+			if (xyz_to_pulse(&target_pos) != 0) {
+				log_msg(ERROR, "Pulse out of range, set_position_thread will terminate.\n");
+				break;
+			} else {
+				char tmp[100];
+				sprintf(tmp, "movement to x:%d, y:%d, z:%d\n", (int16_t) target_pos.x, (int16_t) target_pos.y, (int16_t) target_pos.z);
+				log_msg(DEBUG, tmp);
+			}
+			osDelay(wait_time);
+		}
+
+		// Quit from loop so we can terminate thread if there is no more movement
+		if (end_moving) {
+			flash_on = 0;
+			break;
+		}
+	}
+
+	while (1) {
+		// Terminate thread
+		log_msg(USER, "set_position_thread terminated\n");
+		set_position_on = 0;
+		osThreadTerminate(NULL);
+	}
+}
+

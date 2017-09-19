@@ -60,6 +60,7 @@
 #include "sd_card.h"
 #include "rtc.h"
 #include "interrupt.h"
+#include "udp_client.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -105,28 +106,13 @@ int main(void)
     SystemClock_Config();
 
     BSP_Config();
-  
+
     pin_init();
     EXTI3_IRQHandler_Config();
     EXTI2_IRQHandler_Config();
     EXTI1_IRQHandler_Config();
     m_led_init();
 
-    // Init thread
-    osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
-    osThreadCreate (osThread(Start), NULL);
-  
-    // Start scheduler
-    osKernelStart();
-}
-
-/**
-  * @brief  Start Thread 
-  * @param  argument not used
-  * @retval None
-  */
-static void StartThread(void const * argument)
-{ 
 	osMutexDef(SERVO_PULSE);
 	servo_pulse_mutex = osMutexCreate(osMutex(SERVO_PULSE));
 
@@ -142,11 +128,39 @@ static void StartThread(void const * argument)
 	osMailQDef(LOG_Q, 10, msg_log_t);
 	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
 
+	osMailQDef(SYSLOG_Q, 10, msg_log_t);
+	sys_log_q = osMailCreate(osMailQ(SYSLOG_Q), NULL);
+
+
 	lcd_logger_on = 1;
 	sd_logger_on = 0;
+	sys_logger_on = 1;
 
 	lcd_log_level = DEBUG;
 	file_log_level = DEBUG;
+
+	init_buttons();
+
+    // Configure servos
+    servo_config();
+
+
+    // Init thread
+    osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(Start), NULL);
+
+    // Start scheduler
+    osKernelStart();
+}
+
+/**
+  * @brief  Start Thread
+  * @param  argument not used
+  * @retval None
+  */
+static void StartThread(void const * argument)
+{
+
 
 	// Led flashing thread.
     osThreadDef(M_LED_FLASH, m_led_flash_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 1);
@@ -155,30 +169,48 @@ static void StartThread(void const * argument)
     osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
     osThreadCreate (osThread(SD_LOGGER), NULL);
 
+// Comment from here
+
     // Create tcp_ip stack thread
-    // tcpip_init(NULL, NULL);
-  
+    tcpip_init(NULL, NULL);
+
     // Initialize the LwIP stack
-    // Netif_Config();
+    Netif_Config();
 
     // Notify user about the network interface config
-    // User_notification(&gnetif);
-  
-    // Enable for networking
+    User_notification(&gnetif);
+
     // Start DHCPClient
-    // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    // osThreadCreate (osThread(DHCP), &gnetif);
+    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(DHCP), &gnetif);
+
+    // Wait for IP address
+	while(!is_ip_ok()) {
+		LCD_UsrLog((char*) "Waiting for IP address.\n");
+		osDelay(500);
+	}
+
+	LCD_UsrLog((char*) "Received IP address.\n");
+
+// Until here
+
+	// Find syslog server IP address, then launch syslog sender
+    osThreadDef(SYSLOG_FINDER, udp_syslog_server_finder_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    osThreadCreate (osThread(SYSLOG_FINDER), NULL);
+
+	osDelay(2000);
 
     // Start NTP client, set RTC time
-    // osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    // osThreadCreate (osThread(NTP), NULL);
+    osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate (osThread(NTP), NULL);
 
-    // Configure servos
-    servo_config();
+	osDelay(100);
 
     // Start UART RX interface
     osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
     osThreadCreate (osThread(UART_RX), NULL);
+
+    osDelay(100);
 
     // Start robot arm control
     osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
@@ -186,8 +218,13 @@ static void StartThread(void const * argument)
 
     log_msg(USER, "TotoRobot started.\n");
 
+    osDelay(1000);
+
+    start_lcd_data_display();
+
     while (1) {
         /* Delete the Init Thread */
+        log_msg(USER, "Init thread terminated.\n");
         osThreadTerminate(NULL);
     }
 }
@@ -217,7 +254,7 @@ static void Netif_Config(void)
         netif_set_up(&gnetif);
     else
         /* When the netif link is down this function must be called */
-    netif_set_down(&gnetif);
+    	netif_set_down(&gnetif);
 }
 
 /**
@@ -248,7 +285,7 @@ static void BSP_Config(void)
     LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
-    // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
+    LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 }
 
 /**

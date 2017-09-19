@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "kinematics.h"
+#include "robot_arm_conf.h"
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
@@ -28,6 +29,7 @@ typedef struct {
 } msg_log_t;
 
 osMailQId(msg_log_q);
+osMailQId(sys_log_q);
 
 uint8_t lcd_log_level;
 uint8_t file_log_level;
@@ -35,8 +37,11 @@ uint8_t uart_log_level;
 uint8_t http_log_level;
 
 uint8_t sd_logger_on;
+uint8_t sys_logger_on;
 uint8_t lcd_logger_on;
 uint8_t file_reader_on;
+extern button_t buttons[BUTTONS];
+extern uint8_t udp_syslog_client_ready;
 
 FATFS SDFatFs;  /* File system object for SD card logical drive */
 FRESULT res;    /* FatFs function common result code */

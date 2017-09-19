@@ -5,12 +5,14 @@
 #include "cmsis_os.h"
 #include "sd_card.h"
 #include "robot_arm_conf.h"
-//#include "kinematics.h"
+#include "kinematics.h"
 #include <string.h>
 
 #define SERVOS				4
 #define MIN_ADC_VALUE		0
 #define MAX_ADC_VALUE		4095
+#define MIN_ADC_P			0
+#define MAX_ADC_P			400
 
 /* SERVO 0 Configuration */
 
@@ -35,14 +37,14 @@
 
 // PWM D6 PH6 TIM12_CH1
 // ADC A1 PF10 ADC3_IN8
-// 90 deg @ 5063
+// 90 deg @ 4045
 #define SERVO1_INST			TIM12
 #define SERVO1_PERIOD		0xffff
 #define SERVO1_PRESCALER	30
-#define SERVO1_MIN_PULSE	4190
-#define SERVO1_MAX_PULSE	6850
-#define SERVO1_MIN_ANGLE	52
-#define SERVO1_MAX_ANGLE	133
+#define SERVO1_MIN_PULSE	2660 // 4190
+#define SERVO1_MAX_PULSE	5430 // 6850
+#define SERVO1_MIN_ANGLE	130 // 48
+#define SERVO1_MAX_ANGLE	45 // 134
 #define SERVO1_PWM_PORT		GPIOH
 #define SERVO1_PWM_PIN		GPIO_PIN_6
 #define SERVO1_PWM_AF		GPIO_AF9_TIM12
@@ -59,9 +61,9 @@
 #define SERVO2_PERIOD		0xffff
 #define SERVO2_PRESCALER	30
 #define SERVO2_MIN_PULSE	4860
-#define SERVO2_MAX_PULSE	7300
-#define SERVO2_MIN_ANGLE	-65
-#define SERVO2_MAX_ANGLE	18
+#define SERVO2_MAX_PULSE	6900
+#define SERVO2_MIN_ANGLE	-57
+#define SERVO2_MAX_ANGLE	12
 #define SERVO2_PWM_PORT		GPIOA
 #define SERVO2_PWM_PIN		GPIO_PIN_15
 #define SERVO2_PWM_AF		GPIO_AF1_TIM2
@@ -174,5 +176,6 @@ void set_angle_thread(void const * argument);
 void set_pulse_thread(void const * argument);
 void m_led_flash_thread(void const * argument);
 void m_led_init(void);
+void set_position_nsc_thread(void const * argument);
 
 #endif /* __SERVO_CONTROL_H_ */
