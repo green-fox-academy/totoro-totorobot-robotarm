@@ -56,6 +56,10 @@
 #include "app_ethernet.h"
 #include "lcd_log.h"
 #include "robot_arm.h"
+#include "uart.h"
+#include "sd_card.h"
+#include "rtc.h"
+#include "interrupt.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -81,6 +85,8 @@ static void CPU_CACHE_Enable(void);
   */
 int main(void)
 {
+	debug = 1;
+
     /* Configure the MPU attributes as Device memory for ETH DMA descriptors */
     MPU_Config();
 
@@ -97,18 +103,21 @@ int main(void)
   
     /* Configure the system clock to 200 MHz */
     SystemClock_Config();
+
+    BSP_Config();
   
-    /* Init thread */
-    osThreadDef(Start, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 5);
+    pin_init();
+    EXTI3_IRQHandler_Config();
+    EXTI2_IRQHandler_Config();
+    EXTI1_IRQHandler_Config();
+    m_led_init();
+
+    // Init thread
+    osThreadDef(Start, StartThread, osPriorityHigh, 0, configMINIMAL_STACK_SIZE * 5);
     osThreadCreate (osThread(Start), NULL);
   
-    /* Start scheduler */
+    // Start scheduler
     osKernelStart();
-  
-    /* We should never get here as control is now taken by the scheduler */
-    while(1) {
-
-  }
 }
 
 /**
@@ -116,25 +125,66 @@ int main(void)
   * @param  argument not used
   * @retval None
   */
-
 static void StartThread(void const * argument)
 { 
+	osMutexDef(SERVO_PULSE);
+	servo_pulse_mutex = osMutexCreate(osMutex(SERVO_PULSE));
 
-    /* Initialize LCD */
-    BSP_Config();
-  
-    /* Create tcp_ip stack thread */
-    tcpip_init(NULL, NULL);
-  
-    /* Initialize the LwIP stack */
-    Netif_Config();
+	osMutexDef(SERVO_ADC);
+	servo_adc_mutex = osMutexCreate(osMutex(SERVO_ADC));
 
-    /* Notify user about the network interface config */
-    User_notification(&gnetif);
+	osMutexDef(ARM_COORD);
+	arm_coord_mutex = osMutexCreate(osMutex(ARM_COORD));
+
+	osMutexDef(ARM_MOVE);
+	arm_moving_mutex = osMutexCreate(osMutex(ARM_MOVE));
+
+	osMailQDef(LOG_Q, 10, msg_log_t);
+	msg_log_q = osMailCreate(osMailQ(LOG_Q), NULL);
+
+	lcd_logger_on = 1;
+	sd_logger_on = 0;
+
+	lcd_log_level = DEBUG;
+	file_log_level = DEBUG;
+
+	// Led flashing thread.
+    osThreadDef(M_LED_FLASH, m_led_flash_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 1);
+	osThreadCreate (osThread(M_LED_FLASH), NULL);
+
+    osThreadDef(SD_LOGGER, sd_logger_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 15);
+    osThreadCreate (osThread(SD_LOGGER), NULL);
+
+    // Create tcp_ip stack thread
+    // tcpip_init(NULL, NULL);
   
-    /* Start DHCPClient */
-    osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
-    osThreadCreate (osThread(DHCP), &gnetif);
+    // Initialize the LwIP stack
+    // Netif_Config();
+
+    // Notify user about the network interface config
+    // User_notification(&gnetif);
+  
+    // Enable for networking
+    // Start DHCPClient
+    // osThreadDef(DHCP, DHCP_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    // osThreadCreate (osThread(DHCP), &gnetif);
+
+    // Start NTP client, set RTC time
+    // osThreadDef(NTP, ntp_client_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    // osThreadCreate (osThread(NTP), NULL);
+
+    // Configure servos
+    servo_config();
+
+    // Start UART RX interface
+    osThreadDef(UART_RX, UART_rx_thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(UART_RX), NULL);
+
+    // Start robot arm control
+    osThreadDef(PWM, pwm_thread, osPriorityAboveNormal, 0, configMINIMAL_STACK_SIZE * 10);
+    osThreadCreate (osThread(PWM), NULL);
+
+    log_msg(USER, "TotoRobot started.\n");
 
     while (1) {
         /* Delete the Init Thread */
@@ -198,7 +248,7 @@ static void BSP_Config(void)
     LCD_LOG_SetHeader((uint8_t *)"TotoRobot - robot arm");
     LCD_LOG_SetFooter((uint8_t *)"STM32746G-DISCO - GreenFoxAcademy");
   
-    LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
+    // LCD_UsrLog ((char *)"Notification - Ethernet Initialization ...\n");
 }
 
 /**
@@ -236,11 +286,11 @@ static void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLN = 400;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 9;
-    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     	Error_Handler();
 
     /* activate the OverDrive */
-    if(HAL_PWREx_EnableOverDrive() != HAL_OK)
+    if (HAL_PWREx_EnableOverDrive() != HAL_OK)
     	Error_Handler();
 
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
@@ -250,7 +300,7 @@ static void SystemClock_Config(void)
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-    if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
     	Error_Handler();
 }
 
@@ -262,7 +312,7 @@ static void SystemClock_Config(void)
 static void Error_Handler(void)
 {
     /* User may add here some code to deal with this error */
-    while(1);
+    while (1);
 }
 
 /**
@@ -331,5 +381,13 @@ void assert_failed(uint8_t* file, uint32_t line)
   while (1);
 }
 #endif
+
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+	while (1) {
+
+	}
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

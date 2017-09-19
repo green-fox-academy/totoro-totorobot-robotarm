@@ -98,7 +98,7 @@
 #define configMAX_PRIORITIES			(  7 )
 #define configMINIMAL_STACK_SIZE		( ( uint16_t ) 128 )
 #if defined(__GNUC__)
- #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 25 * 1024 ) )
+ #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 50 * 1024 ) )
 #else
  #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 20 * 1024 ) )
 #endif
@@ -108,7 +108,7 @@
 #define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES			1
 #define configQUEUE_REGISTRY_SIZE		8
-#define configCHECK_FOR_STACK_OVERFLOW	        0
+#define configCHECK_FOR_STACK_OVERFLOW	        1
 #define configUSE_RECURSIVE_MUTEXES		1
 #define configUSE_MALLOC_FAILED_HOOK	        0
 #define configUSE_APPLICATION_TASK_TAG	        0
